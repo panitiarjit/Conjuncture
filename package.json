@@ -1,5 +1,5 @@
 {
-  "name": "prokuer",
+  "name": "conjuncture",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,9 +8,15 @@
     "start": "next start"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "firebase": "^12.13.0",
+    "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.76.0",
+    "resend": "^6.12.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

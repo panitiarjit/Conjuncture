@@ -1,0 +1,675 @@
+// ─── Shared types ─────────────────────────────────────────────────────────────
+
+export type TenderStatus = 'open' | 'closing_soon' | 'closed';
+export type ProjectStatus = 'open' | 'in_progress' | 'completed';
+export type VendorVerified = 'new' | 'verified' | 'verified_pro';
+export type ProjectCategory =
+  | 'renovation'
+  | 'technology'
+  | 'logistics'
+  | 'agriculture'
+  | 'cleaning'
+  | 'construction'
+  | 'consulting'
+  | 'other';
+
+// ─── Tender ───────────────────────────────────────────────────────────────────
+
+export interface Tender {
+  id: string;
+  title: string;
+  agency: string;
+  deadline: string;
+  budget: number;
+  category: string;
+  region: string;
+  description: string;
+  requirements: string[];
+  status: TenderStatus;
+}
+
+export const TENDERS: Tender[] = [
+  {
+    id: 'tender-001',
+    title: 'โครงการก่อสร้างระบบชลประทานและประตูระบายน้ำ จังหวัดเชียงใหม่',
+    agency: 'กรมชลประทาน',
+    deadline: '2026-07-15',
+    budget: 48_500_000,
+    category: 'construction',
+    region: 'เชียงใหม่',
+    description:
+      'ก่อสร้างระบบชลประทานขนาดกลาง พร้อมประตูระบายน้ำ และระบบส่งน้ำสาย 1–3 รวมระยะทางไม่น้อยกว่า 12 กม. เพื่อรองรับพื้นที่การเกษตรในอำเภอดอยสะเก็ด',
+    requirements: [
+      'ผู้รับจ้างต้องมีผลงานก่อสร้างงานชลประทานที่แล้วเสร็จไม่ต่ำกว่า 30 ล้านบาท',
+      'ต้องได้รับการรับรอง ISO 9001:2015 ด้านงานก่อสร้าง',
+      'มีวิศวกรโยธาระดับสามัญวิศวกรหรือสูงกว่าประจำโครงการ',
+      'มีประสบการณ์งานชลประทานไม่น้อยกว่า 5 ปี',
+    ],
+    status: 'open',
+  },
+  {
+    id: 'tender-002',
+    title: 'จัดซื้อระบบซอฟต์แวร์บริหารจัดการทะเบียนราษฎร์และบัตรประชาชน',
+    agency: 'กรุงเทพมหานคร',
+    deadline: '2026-05-25',
+    budget: 12_800_000,
+    category: 'technology',
+    region: 'กรุงเทพมหานคร',
+    description:
+      'พัฒนาและติดตั้งระบบซอฟต์แวร์สำหรับบริหารจัดการทะเบียนราษฎร์ บัตรประชาชน และฐานข้อมูลประชากร รองรับสำนักงานเขต 50 แห่งทั่วกรุงเทพฯ พร้อมบริการบำรุงรักษา 3 ปี',
+    requirements: [
+      'บริษัทต้องจดทะเบียนในประเทศไทยไม่น้อยกว่า 5 ปี',
+      'มีผลงานพัฒนาระบบสารสนเทศภาครัฐมูลค่าไม่น้อยกว่า 5 ล้านบาท',
+      'ระบบต้องรองรับมาตรฐาน PDPA และ ISO/IEC 27001',
+      'ต้องจัดอบรมผู้ใช้งานและให้บริการ Help Desk 24/7',
+    ],
+    status: 'closing_soon',
+  },
+  {
+    id: 'tender-003',
+    title: 'โครงการปรับปรุงทางหลวงหมายเลข 11 สายเชียงใหม่–ลำพูน ช่วง กม. 14+000–20+500',
+    agency: 'กรมทางหลวง',
+    deadline: '2026-08-10',
+    budget: 85_200_000,
+    category: 'construction',
+    region: 'ลำพูน',
+    description:
+      'งานปรับปรุงผิวจราจรแอสฟัลต์คอนกรีต ระยะทาง 6.5 กม. พร้อมงานก่อสร้างสะพาน 2 แห่ง และระบบไฟฟ้าแสงสว่าง งานป้ายจราจร และงานระบายน้ำ',
+    requirements: [
+      'ต้องมีผลงานก่อสร้างทางหลวงแล้วเสร็จมูลค่าไม่น้อยกว่า 50 ล้านบาท',
+      'มีเครื่องจักรและอุปกรณ์ครบถ้วนตามรายการที่กำหนด',
+      'วิศวกรโยธาสามัญวิศวกรประจำโครงการไม่น้อยกว่า 2 คน',
+      'ผ่านการรับรองระบบบริหารงานคุณภาพ ISO 9001',
+    ],
+    status: 'open',
+  },
+  {
+    id: 'tender-004',
+    title: 'จัดซื้อครุภัณฑ์การแพทย์ประจำโรงพยาบาลสงขลา ประจำปีงบประมาณ 2568',
+    agency: 'กระทรวงสาธารณสุข',
+    deadline: '2026-05-22',
+    budget: 23_600_000,
+    category: 'other',
+    region: 'สงขลา',
+    description:
+      'จัดซื้อเครื่องมือแพทย์และครุภัณฑ์การแพทย์รวม 47 รายการ ประกอบด้วยเครื่อง MRI, CT Scan, เครื่องตรวจอัลตร้าซาวด์ และอุปกรณ์ผ่าตัด สำหรับโรงพยาบาลสงขลา',
+    requirements: [
+      'ผู้เสนอราคาต้องเป็นตัวแทนจำหน่ายที่ได้รับการแต่งตั้งจากผู้ผลิต',
+      'ครุภัณฑ์ต้องได้รับการรับรองจาก อย. หรือ CE Mark / FDA',
+      'มีศูนย์บริการหลังการขายในประเทศไทย',
+      'รับประกันอะไหล่และชิ้นส่วนสำคัญไม่น้อยกว่า 5 ปี',
+    ],
+    status: 'closing_soon',
+  },
+  {
+    id: 'tender-005',
+    title: 'โครงการพัฒนาระบบโลจิสติกส์และคลังสินค้าอัจฉริยะ นิคมอุตสาหกรรมอมตะ',
+    agency: 'การนิคมอุตสาหกรรมแห่งประเทศไทย',
+    deadline: '2026-09-01',
+    budget: 67_000_000,
+    category: 'logistics',
+    region: 'ชลบุรี',
+    description:
+      'ออกแบบและก่อสร้างคลังสินค้าอัตโนมัติ พื้นที่ 8,000 ตร.ม. พร้อมระบบ WMS, AGV, และระบบควบคุมอุณหภูมิ รองรับสินค้า Cold Chain และสินค้าอิเล็กทรอนิกส์',
+    requirements: [
+      'ประสบการณ์ออกแบบและก่อสร้างคลังสินค้าอัตโนมัติไม่น้อยกว่า 3 โครงการ',
+      'ทีมวิศวกรที่มีใบอนุญาตประกอบวิชาชีพ ทั้งวิศวกรรมโยธา ไฟฟ้า และเครื่องกล',
+      'ระบบ WMS ต้องรองรับการเชื่อมต่อ API กับระบบ ERP ของลูกค้า',
+      'รับประกันระบบอัตโนมัติและซอฟต์แวร์ไม่น้อยกว่า 3 ปี',
+    ],
+    status: 'open',
+  },
+  {
+    id: 'tender-006',
+    title: 'จัดจ้างทำความสะอาดอาคารสำนักงานคณะกรรมการกฤษฎีกา ประจำปี 2568–2569',
+    agency: 'สำนักงานคณะกรรมการกฤษฎีกา',
+    deadline: '2026-04-30',
+    budget: 3_240_000,
+    category: 'cleaning',
+    region: 'กรุงเทพมหานคร',
+    description:
+      'จัดจ้างทำความสะอาดอาคารสำนักงาน 2 อาคาร พื้นที่รวม 12,000 ตร.ม. พร้อมดูแลภูมิทัศน์และพื้นที่ส่วนกลาง ระยะเวลา 24 เดือน เริ่มตั้งแต่ 1 ตุลาคม 2568',
+    requirements: [
+      'มีผลงานทำความสะอาดอาคารสำนักงานขนาดใหญ่ไม่น้อยกว่า 3 แห่ง',
+      'พนักงานต้องผ่านการฝึกอบรมด้านความปลอดภัยและอาชีวอนามัย',
+      'มีประกันภัยความรับผิดต่อบุคคลภายนอก',
+      'จัดทำรายงานผลการปฏิบัติงานรายเดือนพร้อมรูปถ่ายประกอบ',
+    ],
+    status: 'closed',
+  },
+  {
+    id: 'tender-007',
+    title: 'โครงการจัดหาและติดตั้งระบบไฟฟ้าพลังงานแสงอาทิตย์บนหลังคา อาคารราชการ จ.ภูเก็ต',
+    agency: 'สำนักงานพลังงานจังหวัดภูเก็ต',
+    deadline: '2026-07-28',
+    budget: 18_900_000,
+    category: 'other',
+    region: 'ภูเก็ต',
+    description:
+      'จัดหาและติดตั้งระบบผลิตไฟฟ้าพลังงานแสงอาทิตย์แบบ On-Grid บนหลังคาอาคารราชการ 6 แห่ง กำลังติดตั้งรวมไม่น้อยกว่า 1,200 kWp พร้อมระบบติดตามและรายงานผลออนไลน์',
+    requirements: [
+      'ผู้รับจ้างต้องได้รับใบอนุญาตประกอบกิจการพลังงานจาก กกพ.',
+      'แผงโซล่าเซลล์ต้องมีประสิทธิภาพไม่ต่ำกว่า 21% และรับประกัน 25 ปี',
+      'ช่างติดตั้งต้องผ่านการอบรมและได้รับการรับรองจาก กฟน. หรือ กฟภ.',
+      'มีระบบติดตามผลผลิตพลังงานแบบ Real-time ผ่านแอปพลิเคชัน',
+    ],
+    status: 'open',
+  },
+  {
+    id: 'tender-008',
+    title: 'จัดซื้อปุ๋ยเคมีและวัสดุการเกษตรเพื่อกระจายให้แก่เกษตรกร โครงการส่งเสริมการเกษตร',
+    agency: 'กรมส่งเสริมการเกษตร',
+    deadline: '2026-05-23',
+    budget: 31_500_000,
+    category: 'agriculture',
+    region: 'ขอนแก่น',
+    description:
+      'จัดซื้อปุ๋ยเคมีสูตร 15-15-15 จำนวน 5,000 ตัน ปุ๋ยอินทรีย์ 2,000 ตัน และวัสดุการเกษตรอื่นๆ เพื่อกระจายให้เกษตรกรในเขตภาคตะวันออกเฉียงเหนือ 8 จังหวัด',
+    requirements: [
+      'ผู้เสนอราคาต้องมีใบอนุญาตค้าปุ๋ยตาม พ.ร.บ. ปุ๋ย พ.ศ. 2518',
+      'ต้องมีคลังสินค้าและศูนย์กระจายสินค้าในภาคตะวันออกเฉียงเหนือ',
+      'ปุ๋ยต้องได้รับการรับรองคุณภาพจากกรมวิชาการเกษตร',
+      'จัดส่งสินค้าได้ภายใน 30 วันหลังลงนามสัญญา',
+    ],
+    status: 'closing_soon',
+  },
+];
+
+// ─── Project ──────────────────────────────────────────────────────────────────
+
+export interface Project {
+  id: string;
+  title: string;
+  category: ProjectCategory;
+  location: string;
+  budgetMin: number;
+  budgetMax: number;
+  bidsReceived: number;
+  deadline: string;
+  description: string;
+  buyerName: string;
+  buyerVerified: boolean;
+  postedAt: string;
+  status: ProjectStatus;
+}
+
+export const PROJECTS: Project[] = [
+  {
+    id: 'project-001',
+    title: 'รีโนเวทสำนักงาน 3 ชั้น ย่านสีลม กรุงเทพฯ',
+    category: 'renovation',
+    location: 'กรุงเทพมหานคร',
+    budgetMin: 800_000,
+    budgetMax: 1_200_000,
+    bidsReceived: 7,
+    deadline: '2026-06-01',
+    description:
+      'ต้องการผู้รับเหมารีโนเวทสำนักงานขนาด 450 ตร.ม. บนอาคารพาณิชย์ 3 ชั้นย่านสีลม รวมงานผนัง พื้น ฝ้าเพดาน ระบบไฟฟ้า และระบบปรับอากาศ คาดการณ์ระยะเวลาการทำงาน 45 วัน',
+    buyerName: 'Bangkok Development Co., Ltd.',
+    buyerVerified: true,
+    postedAt: '2026-04-01',
+    status: 'open',
+  },
+  {
+    id: 'project-002',
+    title: 'พัฒนาแอปพลิเคชันมือถือ iOS/Android สำหรับธุรกิจอาหาร',
+    category: 'technology',
+    location: 'กรุงเทพมหานคร',
+    budgetMin: 350_000,
+    budgetMax: 600_000,
+    bidsReceived: 14,
+    deadline: '2026-05-28',
+    description:
+      'พัฒนาแอปสั่งอาหารออนไลน์ รองรับ iOS และ Android ฟีเจอร์หลัก: เมนูอาหาร, ตะกร้าสินค้า, การชำระเงินออนไลน์ (PromptPay/บัตรเครดิต), ติดตามสถานะออเดอร์ real-time, ระบบสมาชิกและสะสมแต้ม',
+    buyerName: 'Siam Food Group',
+    buyerVerified: true,
+    postedAt: '2026-05-05',
+    status: 'open',
+  },
+  {
+    id: 'project-003',
+    title: 'จัดการขนส่งสินค้าจากโรงงานไปยังศูนย์กระจายสินค้า 5 แห่ง',
+    category: 'logistics',
+    location: 'ชลบุรี',
+    budgetMin: 120_000,
+    budgetMax: 180_000,
+    bidsReceived: 5,
+    deadline: '2026-06-09',
+    description:
+      'ต้องการผู้ให้บริการขนส่งสินค้าประเภทอิเล็กทรอนิกส์จากโรงงานนิคมอมตะ ชลบุรี ไปยังศูนย์กระจายสินค้า 5 แห่งในกรุงเทพฯ เชียงใหม่ ขอนแก่น หาดใหญ่ และภูเก็ต รายเดือน 8–10 เที่ยว',
+    buyerName: 'Eastern Electronics Manufacturing',
+    buyerVerified: true,
+    postedAt: '2026-05-08',
+    status: 'open',
+  },
+  {
+    id: 'project-004',
+    title: 'ติดตั้งระบบชลประทานหยดสำหรับสวนทุเรียนพื้นที่ 200 ไร่',
+    category: 'agriculture',
+    location: 'จันทบุรี',
+    budgetMin: 250_000,
+    budgetMax: 380_000,
+    bidsReceived: 3,
+    deadline: '2026-06-14',
+    description:
+      'ออกแบบและติดตั้งระบบน้ำหยดอัตโนมัติสำหรับสวนทุเรียน 200 ไร่ รวมปั๊มน้ำ หัวหยด ท่อพีวีซี ตัวควบคุมอัตโนมัติ และระบบติดตามความชื้นดินผ่านแอปพลิเคชัน',
+    buyerName: 'Chanthaburi Durian Farm Co., Ltd.',
+    buyerVerified: false,
+    postedAt: '2026-05-10',
+    status: 'open',
+  },
+  {
+    id: 'project-005',
+    title: 'บริการทำความสะอาดโรงงานและคลังสินค้า นิคมอุตสาหกรรมลาดกระบัง',
+    category: 'cleaning',
+    location: 'กรุงเทพมหานคร',
+    budgetMin: 45_000,
+    budgetMax: 65_000,
+    bidsReceived: 9,
+    deadline: '2026-05-25',
+    description:
+      'ต้องการบริษัททำความสะอาดโรงงานประกอบชิ้นส่วงยานยนต์ พื้นที่ 6,000 ตร.ม. พร้อมคลังสินค้า 2,000 ตร.ม. ทำความสะอาดรายวัน จันทร์–เสาร์ ต้องการพนักงาน 8 คน',
+    buyerName: 'Thai Auto Parts Manufacturing',
+    buyerVerified: true,
+    postedAt: '2026-05-12',
+    status: 'open',
+  },
+  {
+    id: 'project-006',
+    title: 'ก่อสร้างโกดังเก็บสินค้า พื้นที่ 2,000 ตร.ม. จังหวัดนครราชสีมา',
+    category: 'construction',
+    location: 'นครราชสีมา',
+    budgetMin: 4_500_000,
+    budgetMax: 6_000_000,
+    bidsReceived: 6,
+    deadline: '2026-06-07',
+    description:
+      'ก่อสร้างโกดังเก็บสินค้าโครงสร้างเหล็กพร้อมหลังคา Sandwich Panel พื้นที่ 2,000 ตร.ม. สูง 8 เมตร พร้อมสำนักงาน 150 ตร.ม. ห้องน้ำ และระบบสาธารณูปโภคครบครัน',
+    buyerName: 'Korat Distribution Center',
+    buyerVerified: true,
+    postedAt: '2026-04-28',
+    status: 'open',
+  },
+  {
+    id: 'project-007',
+    title: 'ที่ปรึกษาด้านการเงินและบัญชีสำหรับ SME ขยายธุรกิจต่างประเทศ',
+    category: 'consulting',
+    location: 'กรุงเทพมหานคร',
+    budgetMin: 80_000,
+    budgetMax: 150_000,
+    bidsReceived: 11,
+    deadline: '2026-04-01',
+    description:
+      'ต้องการที่ปรึกษาด้านการเงิน บัญชี และภาษีระหว่างประเทศ เพื่อวางแผนการขยายธุรกิจไปยังเวียดนามและอินโดนีเซีย รวมถึงการจัดโครงสร้างองค์กรและการระดมทุน',
+    buyerName: 'Thai SME Global Ventures',
+    buyerVerified: false,
+    postedAt: '2026-03-15',
+    status: 'completed',
+  },
+  {
+    id: 'project-008',
+    title: 'ออกแบบและติดตั้งระบบ IT Infrastructure สำหรับโรงแรม 5 ดาว เชียงใหม่',
+    category: 'technology',
+    location: 'เชียงใหม่',
+    budgetMin: 2_200_000,
+    budgetMax: 3_500_000,
+    bidsReceived: 4,
+    deadline: '2026-06-19',
+    description:
+      'ออกแบบและติดตั้ง IT Infrastructure ครบวงจรสำหรับโรงแรม 5 ดาว 180 ห้อง ประกอบด้วยระบบเครือข่าย Wi-Fi 6, Server, ระบบ CCTV IP, ระบบ PMS, และระบบ Smart Room Control',
+    buyerName: 'Northern Luxury Hotels Co., Ltd.',
+    buyerVerified: true,
+    postedAt: '2026-05-15',
+    status: 'open',
+  },
+  {
+    id: 'project-009',
+    title: 'ปรับปรุงภูมิทัศน์และสวนหย่อมโครงการบ้านจัดสรร ภูเก็ต',
+    category: 'renovation',
+    location: 'ภูเก็ต',
+    budgetMin: 600_000,
+    budgetMax: 900_000,
+    bidsReceived: 8,
+    deadline: '2026-06-03',
+    description:
+      'ปรับปรุงภูมิทัศน์และพื้นที่สวนหย่อมส่วนกลางโครงการบ้านจัดสรร 120 หลัง พื้นที่รวม 5 ไร่ รวมงานปลูกต้นไม้ ทางเดิน น้ำพุ สระน้ำตกแต่ง และระบบแสงไฟ',
+    buyerName: 'Andaman Property Development',
+    buyerVerified: true,
+    postedAt: '2026-05-03',
+    status: 'in_progress',
+  },
+  {
+    id: 'project-010',
+    title: 'จัดจ้างบริษัทรักษาความปลอดภัย อาคารสำนักงาน 12 ชั้น กรุงเทพฯ',
+    category: 'other',
+    location: 'กรุงเทพมหานคร',
+    budgetMin: 240_000,
+    budgetMax: 360_000,
+    bidsReceived: 12,
+    deadline: '2026-05-27',
+    description:
+      'จัดจ้างบริษัทรักษาความปลอดภัยสำหรับอาคารสำนักงาน 12 ชั้น ย่านอโศก พนักงานรปภ. 6 นาย ทำงาน 24 ชม./วัน 7 วัน/สัปดาห์ รวมระบบ CCTV Monitoring และรายงานประจำวัน',
+    buyerName: 'Asoke Business Tower Management',
+    buyerVerified: true,
+    postedAt: '2026-05-11',
+    status: 'open',
+  },
+];
+
+// ─── Vendor ───────────────────────────────────────────────────────────────────
+
+export interface VendorReview {
+  id: string;
+  author: string;
+  rating: number;
+  quality: number;
+  communication: number;
+  timeliness: number;
+  priceAccuracy: number;
+  comment: string;
+  date: string;
+}
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  imageUrl: null;
+}
+
+export interface Vendor {
+  id: string;
+  companyName: string;
+  logo: null;
+  verified: VendorVerified;
+  completedJobs: number;
+  rating: number;
+  responseRate: number;
+  memberSince: string;
+  reviews: VendorReview[];
+  portfolio: PortfolioItem[];
+  categories: string[];
+  location: string;
+}
+
+export const VENDORS: Vendor[] = [
+  {
+    id: 'vendor-001',
+    companyName: 'Thai Tech Solutions Co., Ltd.',
+    logo: null,
+    verified: 'verified_pro',
+    completedJobs: 87,
+    rating: 4.9,
+    responseRate: 97,
+    memberSince: '2020-03-15',
+    categories: ['technology', 'consulting'],
+    location: 'กรุงเทพมหานคร',
+    reviews: [
+      {
+        id: 'r-001-1',
+        author: 'คุณสมชาย วงศ์สุวรรณ',
+        rating: 5,
+        quality: 5,
+        communication: 5,
+        timeliness: 5,
+        priceAccuracy: 4,
+        comment:
+          'ทีมงานมืออาชีพมาก ส่งมอบงานก่อนกำหนด ระบบทำงานได้อย่างมีเสถียรภาพ แนะนำเป็นอย่างยิ่ง',
+        date: '2025-04-10',
+      },
+      {
+        id: 'r-001-2',
+        author: 'คุณนภาพร รัตนกุล',
+        rating: 5,
+        quality: 5,
+        communication: 4,
+        timeliness: 5,
+        priceAccuracy: 5,
+        comment: 'ราคาสมเหตุสมผล คุณภาพงานดีเยี่ยม ให้คำแนะนำที่เป็นประโยชน์ตลอดโครงการ',
+        date: '2025-03-22',
+      },
+      {
+        id: 'r-001-3',
+        author: 'คุณประวิทย์ ศิริมงคล',
+        rating: 5,
+        quality: 5,
+        communication: 5,
+        timeliness: 4,
+        priceAccuracy: 5,
+        comment: 'บริการหลังการขายดีมาก ตอบสนองรวดเร็ว แก้ปัญหาได้ตรงจุด',
+        date: '2025-02-15',
+      },
+    ],
+    portfolio: [
+      { id: 'p-001-1', title: 'ระบบ ERP สำหรับโรงงานผลิต', imageUrl: null },
+      { id: 'p-001-2', title: 'แพลตฟอร์ม E-Commerce B2B', imageUrl: null },
+      { id: 'p-001-3', title: 'ระบบบริหารคลังสินค้า WMS', imageUrl: null },
+      { id: 'p-001-4', title: 'Mobile App จองคิวสถานพยาบาล', imageUrl: null },
+    ],
+  },
+  {
+    id: 'vendor-002',
+    companyName: 'PS Construction & Engineering Co., Ltd.',
+    logo: null,
+    verified: 'verified',
+    completedJobs: 43,
+    rating: 4.7,
+    responseRate: 88,
+    memberSince: '2021-08-20',
+    categories: ['construction', 'renovation'],
+    location: 'กรุงเทพมหานคร',
+    reviews: [
+      {
+        id: 'r-002-1',
+        author: 'คุณอภิชาต ลิ้มสกุล',
+        rating: 5,
+        quality: 5,
+        communication: 4,
+        timeliness: 5,
+        priceAccuracy: 4,
+        comment: 'งานก่อสร้างเรียบร้อย วัสดุคุณภาพดี ทีมช่างมีประสบการณ์',
+        date: '2025-04-28',
+      },
+      {
+        id: 'r-002-2',
+        author: 'คุณวรรณา กิตติพงษ์',
+        rating: 4,
+        quality: 4,
+        communication: 5,
+        timeliness: 4,
+        priceAccuracy: 5,
+        comment: 'ราคาดีกว่าที่อื่น การสื่อสารชัดเจน แต่มีเล็กน้อยที่ต้องแก้ไขหลังรับงาน',
+        date: '2025-03-10',
+      },
+    ],
+    portfolio: [
+      { id: 'p-002-1', title: 'รีโนเวทอาคารพาณิชย์ 5 ชั้น สีลม', imageUrl: null },
+      { id: 'p-002-2', title: 'ก่อสร้างโกดังโครงสร้างเหล็ก สมุทรปราการ', imageUrl: null },
+      { id: 'p-002-3', title: 'ปรับปรุงสำนักงานใหญ่ธนาคาร', imageUrl: null },
+    ],
+  },
+  {
+    id: 'vendor-003',
+    companyName: 'Greenline Logistics Thailand',
+    logo: null,
+    verified: 'verified_pro',
+    completedJobs: 156,
+    rating: 4.8,
+    responseRate: 99,
+    memberSince: '2019-01-10',
+    categories: ['logistics'],
+    location: 'สมุทรปราการ',
+    reviews: [
+      {
+        id: 'r-003-1',
+        author: 'คุณเกรียงศักดิ์ สุขประเสริฐ',
+        rating: 5,
+        quality: 5,
+        communication: 5,
+        timeliness: 5,
+        priceAccuracy: 5,
+        comment:
+          'บริการยอดเยี่ยม ตรงเวลาทุกครั้ง ระบบติดตามสินค้า real-time ทำให้ลูกค้าไว้วางใจ',
+        date: '2025-05-02',
+      },
+      {
+        id: 'r-003-2',
+        author: 'คุณสิริพร ธนะวงศ์',
+        rating: 5,
+        quality: 4,
+        communication: 5,
+        timeliness: 5,
+        priceAccuracy: 4,
+        comment: 'ราคาสมเหตุสมผล พนักงานสุภาพ สินค้าถึงมือลูกค้าในสภาพสมบูรณ์',
+        date: '2025-04-18',
+      },
+      {
+        id: 'r-003-3',
+        author: 'คุณอานนท์ วิจิตรพงษ์',
+        rating: 5,
+        quality: 5,
+        communication: 5,
+        timeliness: 5,
+        priceAccuracy: 5,
+        comment: 'ใช้บริการมา 2 ปีแล้ว ไม่เคยผิดหวัง แนะนำทุกคนเลย',
+        date: '2025-04-01',
+      },
+    ],
+    portfolio: [
+      { id: 'p-003-1', title: 'โครงการขนส่งชิ้นส่วงยานยนต์ Toyota', imageUrl: null },
+      { id: 'p-003-2', title: 'บริการขนส่ง Cold Chain ยา–อาหาร', imageUrl: null },
+      { id: 'p-003-3', title: 'Last Mile Delivery ห้างสรรพสินค้า 12 สาขา', imageUrl: null },
+    ],
+  },
+  {
+    id: 'vendor-004',
+    companyName: 'CleanPro Services Co., Ltd.',
+    logo: null,
+    verified: 'verified',
+    completedJobs: 62,
+    rating: 4.6,
+    responseRate: 92,
+    memberSince: '2022-04-05',
+    categories: ['cleaning'],
+    location: 'กรุงเทพมหานคร',
+    reviews: [
+      {
+        id: 'r-004-1',
+        author: 'คุณพิมพ์ใจ สิงห์ทอง',
+        rating: 5,
+        quality: 5,
+        communication: 4,
+        timeliness: 5,
+        priceAccuracy: 5,
+        comment: 'พนักงานทำงานละเอียด สุภาพ และตรงต่อเวลา ราคาดีมากเมื่อเทียบกับคุณภาพ',
+        date: '2025-04-15',
+      },
+      {
+        id: 'r-004-2',
+        author: 'คุณธนะชัย รุ่งเรือง',
+        rating: 4,
+        quality: 4,
+        communication: 4,
+        timeliness: 5,
+        priceAccuracy: 4,
+        comment: 'บริการดีโดยรวม มีบางจุดที่อยากให้ปรับปรุง แต่แก้ไขให้ทันทีเมื่อแจ้ง',
+        date: '2025-03-30',
+      },
+    ],
+    portfolio: [
+      { id: 'p-004-1', title: 'ทำความสะอาดโรงพยาบาลเอกชน 350 เตียง', imageUrl: null },
+      { id: 'p-004-2', title: 'บริการทำความสะอาดโรงงานอาหาร GMP', imageUrl: null },
+    ],
+  },
+  {
+    id: 'vendor-005',
+    companyName: 'Agri Smart Solutions Co., Ltd.',
+    logo: null,
+    verified: 'new',
+    completedJobs: 8,
+    rating: 4.5,
+    responseRate: 80,
+    memberSince: '2024-09-01',
+    categories: ['agriculture'],
+    location: 'เชียงใหม่',
+    reviews: [
+      {
+        id: 'r-005-1',
+        author: 'คุณสมศักดิ์ พรมแสง',
+        rating: 5,
+        quality: 5,
+        communication: 4,
+        timeliness: 4,
+        priceAccuracy: 5,
+        comment:
+          'ระบบชลประทานที่ติดตั้งทำงานได้ดีมาก ประหยัดน้ำได้จริง ทีมงานมีความรู้เรื่องเกษตรดี',
+        date: '2025-04-05',
+      },
+    ],
+    portfolio: [
+      { id: 'p-005-1', title: 'ระบบน้ำหยดสวนลำไย 80 ไร่ เชียงใหม่', imageUrl: null },
+      { id: 'p-005-2', title: 'Smart Farm IoT สวนสตรอเบอร์รี่', imageUrl: null },
+    ],
+  },
+  {
+    id: 'vendor-006',
+    companyName: 'Meridian Consulting Group (Thailand)',
+    logo: null,
+    verified: 'verified',
+    completedJobs: 34,
+    rating: 4.8,
+    responseRate: 95,
+    memberSince: '2021-02-14',
+    categories: ['consulting'],
+    location: 'กรุงเทพมหานคร',
+    reviews: [
+      {
+        id: 'r-006-1',
+        author: 'คุณภูริ ตั้งมั่นคง',
+        rating: 5,
+        quality: 5,
+        communication: 5,
+        timeliness: 5,
+        priceAccuracy: 4,
+        comment:
+          'ที่ปรึกษามีความรู้เชิงลึก วิเคราะห์ตรงประเด็น รายงานผลชัดเจนและนำไปใช้ได้จริง',
+        date: '2025-05-01',
+      },
+      {
+        id: 'r-006-2',
+        author: 'คุณกานต์ชนก อรรถวิภาต',
+        rating: 5,
+        quality: 4,
+        communication: 5,
+        timeliness: 5,
+        priceAccuracy: 5,
+        comment: 'บริการดีเยี่ยม ให้คำแนะนำที่ปฏิบัติได้จริง ช่วยให้ธุรกิจเติบโตอย่างชัดเจน',
+        date: '2025-04-12',
+      },
+    ],
+    portfolio: [
+      { id: 'p-006-1', title: 'ที่ปรึกษาการควบรวมกิจการ SME ไทย–เวียดนาม', imageUrl: null },
+      { id: 'p-006-2', title: 'ออกแบบโครงสร้างภาษีธุรกิจ E-Commerce ข้ามพรมแดน', imageUrl: null },
+      { id: 'p-006-3', title: 'แผนธุรกิจระดมทุน Series A บริษัท Fintech', imageUrl: null },
+    ],
+  },
+];
+
+// ─── Category ─────────────────────────────────────────────────────────────────
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  count: number;
+}
+
+export const CATEGORIES: Category[] = [
+  { id: 'construction', name: 'ก่อสร้าง', icon: 'HardHat', count: 142 },
+  { id: 'technology', name: 'เทคโนโลยี & IT', icon: 'Monitor', count: 98 },
+  { id: 'renovation', name: 'ปรับปรุง & ตกแต่ง', icon: 'Hammer', count: 76 },
+  { id: 'logistics', name: 'โลจิสติกส์', icon: 'Truck', count: 64 },
+  { id: 'cleaning', name: 'ทำความสะอาด', icon: 'Sparkles', count: 53 },
+  { id: 'consulting', name: 'ที่ปรึกษา', icon: 'Briefcase', count: 47 },
+  { id: 'agriculture', name: 'เกษตรกรรม', icon: 'Sprout', count: 39 },
+  { id: 'other', name: 'อื่นๆ', icon: 'MoreHorizontal', count: 88 },
+];

@@ -1,0 +1,33 @@
+const val = {
+  en: {
+    'val.title': 'Built for Both Sides',
+    'val.buyers.badge': 'For Buyers',
+    'val.buyers.title': 'Source smarter',
+    'val.buyers.f1': 'Post projects in minutes with a guided form',
+    'val.buyers.f2': 'Receive sealed, competitive bids from verified vendors',
+    'val.buyers.f3': 'Escrow-protected payments — funds release on milestone',
+    'val.buyers.f4': 'Full audit trail for compliance and governance',
+    'val.vendors.badge': 'For Vendors',
+    'val.vendors.title': 'Grow with trust',
+    'val.vendors.f1': 'Get matched to relevant tenders and private projects',
+    'val.vendors.f2': 'Build a verified profile that wins buyer confidence',
+    'val.vendors.f3': 'Transparent scoring — win on merit, not connections',
+    'val.vendors.f4': 'Access government procurement alongside private work',
+  },
+  th: {
+    'val.title': 'ตอบโจทย์ทั้งสองฝ่าย',
+    'val.buyers.badge': 'สำหรับผู้ซื้อ',
+    'val.buyers.title': 'จัดซื้อได้ฉลาดขึ้น',
+    'val.buyers.f1': 'ลงประกาศได้ในไม่กี่นาที มีฟอร์มแนะนำทีละขั้น',
+    'val.buyers.f2': 'รับใบเสนอจากผู้ขายที่ยืนยันตัวตนแล้ว แบบปิดผนึก',
+    'val.buyers.f3': 'จ่ายเงินผ่าน Escrow ปล่อยให้เมื่องานเสร็จ',
+    'val.buyers.f4': 'มี audit trail ครบสำหรับการตรวจสอบย้อนหลัง',
+    'val.vendors.badge': 'สำหรับผู้ขาย',
+    'val.vendors.title': 'รับงานมากขึ้น ด้วยโปรไฟล์ที่น่าเชื่อถือ',
+    'val.vendors.f1': 'จับคู่กับงานที่ตรงสายของคุณ',
+    'val.vendors.f2': 'โปรไฟล์ที่ผ่านการยืนยัน ทำให้ผู้ซื้อไว้วางใจมากขึ้น',
+    'val.vendors.f3': 'ระบบให้คะแนนโปร่งใส ชนะงานด้วยฝีมือ ไม่ใช่เส้นสาย',
+    'val.vendors.f4': 'รับทั้งงานภาครัฐและเอกชนในที่เดียว',
+  },
+};
+export default val;
