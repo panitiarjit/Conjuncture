@@ -12,10 +12,13 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-const app = firebaseConfig.apiKey
-  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
-  : null;
+const isClient = typeof window !== 'undefined';
 
-export const auth = app ? getAuth(app) : (null as unknown as ReturnType<typeof getAuth>);
-export const db = app ? getFirestore(app) : (null as unknown as ReturnType<typeof getFirestore>);
+const app =
+  isClient && firebaseConfig.apiKey
+    ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
+    : null;
+
+export const auth = (app ? getAuth(app) : null) as ReturnType<typeof getAuth>;
+export const db = (app ? getFirestore(app) : null) as ReturnType<typeof getFirestore>;
 export default app;
