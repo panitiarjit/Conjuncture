@@ -16,7 +16,7 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VerifiedBadge from '@/components/ui/VerifiedBadge';
-import { VENDORS } from '@/lib/mock-data';
+import { getVendorById } from '@/lib/data-service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -191,7 +191,7 @@ export default function VendorProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const vendor = VENDORS.find((v) => v.id === id);
+  const vendor = getVendorById(id);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const { isAuthenticated, isLoading } = useProtectedRoute();
 

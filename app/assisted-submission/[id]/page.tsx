@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { TENDERS } from '@/lib/mock-data';
+import { getTenderById } from '@/lib/data-service';
 import { useAuth } from '@/lib/auth-context';
 import { getProcurementMethod, requiresBidBond } from '@/lib/procurement';
 import { useProtectedRoute } from '@/lib/use-protected-route';
@@ -157,7 +157,7 @@ export default function AssistedSubmissionPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
-  const tender = TENDERS.find((t) => t.id === id);
+  const tender = getTenderById(id);
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -252,7 +252,7 @@ export default function AssistedSubmissionPage() {
               dashboard.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/dashboard" className="btn-primary">
+              <Link href={user?.role === 'vendor' ? '/dashboard/vendor' : '/dashboard/buyer'} className="btn-primary">
                 Track in Dashboard
               </Link>
               <Link href="/tenders" className="btn-outline">

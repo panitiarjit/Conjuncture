@@ -2,19 +2,20 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import strings from './translations';
+import type { TranslationKey } from './translation-keys';
 
 export type Language = 'en' | 'th';
 
 interface LanguageContextValue {
   lang: Language;
   setLang: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: TranslationKey) => string;
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
   lang: 'en',
   setLang: () => {},
-  t: (key) => key,
+  t: (key: TranslationKey) => key,
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
@@ -30,7 +31,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('conjuncture-lang', l);
   }
 
-  function t(key: string): string {
+  function t(key: TranslationKey): string {
     return strings[lang][key] ?? key;
   }
 

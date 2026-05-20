@@ -389,7 +389,7 @@ function Step5({ formData, onBack, onPublish, published }: {
     'gt-6-months': t('post.dur.gt6m'),
   };
 
-  const catLabel = (id: string) => t(`post.cat.${id}`) ?? id;
+  const catLabel = (id: string) => t(`post.cat.${id}` as Parameters<typeof t>[0]);
 
   if (published) {
     return (

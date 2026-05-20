@@ -14,7 +14,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
 import ProtectedShell from '@/components/layout/ProtectedShell';
-import { PROJECTS } from '@/lib/mock-data';
+import { getProjectById } from '@/lib/data-service';
 import { getDaysRemaining, computeProjectStatus } from '@/lib/deadline';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = PROJECTS.find((p) => p.id === id);
+  const project = getProjectById(id);
 
   if (!project) {
     return (

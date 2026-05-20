@@ -1,32 +1,28 @@
-// ─── Shared types ─────────────────────────────────────────────────────────────
+import type {
+  TenderStatus,
+  ProjectStatus,
+  VendorVerified,
+  ProjectCategory,
+  Tender,
+  Project,
+  VendorReview,
+  PortfolioItem,
+  Vendor,
+  Category,
+} from './types';
 
-export type TenderStatus = 'open' | 'closing_soon' | 'closed';
-export type ProjectStatus = 'open' | 'in_progress' | 'completed';
-export type VendorVerified = 'new' | 'verified' | 'verified_pro';
-export type ProjectCategory =
-  | 'renovation'
-  | 'technology'
-  | 'logistics'
-  | 'agriculture'
-  | 'cleaning'
-  | 'construction'
-  | 'consulting'
-  | 'other';
-
-// ─── Tender ───────────────────────────────────────────────────────────────────
-
-export interface Tender {
-  id: string;
-  title: string;
-  agency: string;
-  deadline: string;
-  budget: number;
-  category: string;
-  region: string;
-  description: string;
-  requirements: string[];
-  status: TenderStatus;
-}
+export type {
+  TenderStatus,
+  ProjectStatus,
+  VendorVerified,
+  ProjectCategory,
+  Tender,
+  Project,
+  VendorReview,
+  PortfolioItem,
+  Vendor,
+  Category,
+};
 
 export const TENDERS: Tender[] = [
   {
@@ -176,22 +172,6 @@ export const TENDERS: Tender[] = [
 ];
 
 // ─── Project ──────────────────────────────────────────────────────────────────
-
-export interface Project {
-  id: string;
-  title: string;
-  category: ProjectCategory;
-  location: string;
-  budgetMin: number;
-  budgetMax: number;
-  bidsReceived: number;
-  deadline: string;
-  description: string;
-  buyerName: string;
-  buyerVerified: boolean;
-  postedAt: string;
-  status: ProjectStatus;
-}
 
 export const PROJECTS: Project[] = [
   {
@@ -357,39 +337,6 @@ export const PROJECTS: Project[] = [
 ];
 
 // ─── Vendor ───────────────────────────────────────────────────────────────────
-
-export interface VendorReview {
-  id: string;
-  author: string;
-  rating: number;
-  quality: number;
-  communication: number;
-  timeliness: number;
-  priceAccuracy: number;
-  comment: string;
-  date: string;
-}
-
-export interface PortfolioItem {
-  id: string;
-  title: string;
-  imageUrl: null;
-}
-
-export interface Vendor {
-  id: string;
-  companyName: string;
-  logo: null;
-  verified: VendorVerified;
-  completedJobs: number;
-  rating: number;
-  responseRate: number;
-  memberSince: string;
-  reviews: VendorReview[];
-  portfolio: PortfolioItem[];
-  categories: string[];
-  location: string;
-}
 
 export const VENDORS: Vendor[] = [
   {
@@ -655,13 +602,6 @@ export const VENDORS: Vendor[] = [
 ];
 
 // ─── Category ─────────────────────────────────────────────────────────────────
-
-export interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  count: number;
-}
 
 export const CATEGORIES: Category[] = [
   { id: 'construction', name: 'ก่อสร้าง', icon: 'HardHat', count: 142 },

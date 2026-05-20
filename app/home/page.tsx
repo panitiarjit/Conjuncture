@@ -13,7 +13,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
 import ProjectCard from '@/components/ui/ProjectCard';
-import { TENDERS, PROJECTS } from '@/lib/mock-data';
+import { getTenders, getProjects } from '@/lib/data-service';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 import { useLanguage } from '@/lib/language-context';
 
@@ -21,8 +21,8 @@ export default function HomePage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { t } = useLanguage();
   if (isLoading || !isAuthenticated) return null;
-  const featuredTenders = TENDERS.slice(0, 3);
-  const featuredProjects = PROJECTS.slice(0, 3);
+  const featuredTenders = getTenders().slice(0, 3);
+  const featuredProjects = getProjects().slice(0, 3);
 
   const buyerSteps = [
     { n: '1', h: t('how.buyers.s1.h'), d: t('how.buyers.s1.d') },

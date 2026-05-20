@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { ShieldCheck, Star } from 'lucide-react';
-import type { VendorVerified } from '@/lib/mock-data';
+import type { VendorVerified } from '@/lib/types';
+import { VERIFIED_COLORS } from '@/lib/theme';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,9 +21,7 @@ export default function VerifiedBadge({ tier, size = 'md' }: VerifiedBadgeProps)
 
   if (tier === 'new') {
     return (
-      <span
-        className={`inline-flex items-center gap-1 ${paddingClass} ${textClass} font-medium rounded-full border border-[#E0E0E0] bg-[#F7F7F7] text-[#717171]`}
-      >
+      <span className={`inline-flex items-center gap-1 ${paddingClass} ${textClass} font-medium rounded-full border ${VERIFIED_COLORS.new}`}>
         New Vendor
       </span>
     );
@@ -30,20 +29,15 @@ export default function VerifiedBadge({ tier, size = 'md' }: VerifiedBadgeProps)
 
   if (tier === 'verified') {
     return (
-      <span
-        className={`inline-flex items-center gap-1 ${paddingClass} ${textClass} font-medium rounded-full border border-[#BFDBFE] bg-[#EFF6FF] text-[#1D4ED8]`}
-      >
+      <span className={`inline-flex items-center gap-1 ${paddingClass} ${textClass} font-medium rounded-full border ${VERIFIED_COLORS.verified}`}>
         <ShieldCheck size={iconSize} aria-hidden="true" />
         Verified
       </span>
     );
   }
 
-  // verified_pro
   return (
-    <span
-      className={`inline-flex items-center gap-1 ${paddingClass} ${textClass} font-medium rounded-full border border-[#111111] bg-[#111111] text-white`}
-    >
+    <span className={`inline-flex items-center gap-1 ${paddingClass} ${textClass} font-medium rounded-full border ${VERIFIED_COLORS.verified_pro}`}>
       <Star size={iconSize} aria-hidden="true" />
       <ShieldCheck size={iconSize} aria-hidden="true" />
       Verified Pro

@@ -13,7 +13,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
 import ProtectedShell from '@/components/layout/ProtectedShell';
-import { TENDERS } from '@/lib/mock-data';
+import { getTenderById } from '@/lib/data-service';
 import { computeTenderStatus } from '@/lib/deadline';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ export default async function TenderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const tender = TENDERS.find((t) => t.id === id);
+  const tender = getTenderById(id);
   const tenderStatus = tender ? computeTenderStatus(tender.deadline) : 'open';
 
   if (!tender) {

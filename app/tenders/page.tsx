@@ -1,67 +1,44 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Search, Info } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
 import FilterSection from '@/components/ui/FilterSection';
-import { TENDERS, CATEGORIES } from '@/lib/mock-data';
-import { filterAndSortTenders, type TenderFilters } from '@/lib/filters';
+import { getTenders, getCategories } from '@/lib/data-service';
+import { filterAndSortTenders } from '@/lib/filters';
+import type { Tender } from '@/lib/types';
+import { CATEGORY_KEYS } from '@/lib/translation-keys';
 import { ALL_THAI_PROVINCES, getProvinceName } from '@/lib/data-utils';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 import { useLanguage } from '@/lib/language-context';
-
-type StatusFilter = 'all' | 'open' | 'closing_soon';
-type SortOption = 'deadline' | 'budget' | 'recent';
+import { useListingFilters } from '@/lib/use-listing-filters';
 
 export default function TendersPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { t, lang } = useLanguage();
+  const {
+    search, setSearch,
+    selectedCategories, toggleCategory,
+    location, setLocation,
+    statusFilter, setStatusFilter,
+    budgetMin, setBudgetMin,
+    budgetMax, setBudgetMax,
+    sort, setSort,
+    clearFilters,
+    results: filteredTenders,
+  } = useListingFilters<Tender, 'all' | 'open' | 'closing_soon'>(
+    getTenders(), filterAndSortTenders, 'all', 'deadline',
+  );
+
   if (isLoading || !isAuthenticated) return null;
 
-  const [search, setSearch] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [budgetMin, setBudgetMin] = useState('');
-  const [budgetMax, setBudgetMax] = useState('');
-  const [sort, setSort] = useState<SortOption>('deadline');
-
-  function toggleCategory(id: string) {
-    setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-    );
-  }
-
-  function clearFilters() {
-    setSearch('');
-    setSelectedCategories([]);
-    setSelectedRegion('');
-    setStatusFilter('all');
-    setBudgetMin('');
-    setBudgetMax('');
-    setSort('deadline');
-  }
-
-  const filteredTenders = useMemo(() => {
-    const filters: TenderFilters = {
-      search,
-      selectedCategories,
-      selectedRegion,
-      statusFilter,
-      budgetMin,
-      budgetMax,
-      sort,
-    };
-    return filterAndSortTenders(TENDERS, filters);
-  }, [search, selectedCategories, selectedRegion, statusFilter, budgetMin, budgetMax, sort]);
-
-  const statusOptions: { value: StatusFilter; label: string }[] = [
-    { value: 'all', label: t('common.all') },
-    { value: 'open', label: t('common.open') },
-    { value: 'closing_soon', label: t('tp.closingSoon') },
+  const statusOptions = [
+    { value: 'all' as const, label: t('common.all') },
+    { value: 'open' as const, label: t('common.open') },
+    { value: 'closing_soon' as const, label: t('tp.closingSoon') },
   ];
 
   return (
@@ -115,7 +92,7 @@ export default function TendersPage() {
               </div>
 
               <FilterSection title={t('common.category')}>
-                {CATEGORIES.map((cat) => (
+                {getCategories().map((cat) => (
                   <label
                     key={cat.id}
                     className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors"
@@ -126,7 +103,7 @@ export default function TendersPage() {
                       onChange={() => toggleCategory(cat.id)}
                       className="rounded border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0"
                     />
-                    <span className="flex-1">{t(`cat.${cat.id}`)}</span>
+                    <span className="flex-1">{t(CATEGORY_KEYS[cat.id])}</span>
                     <span className="text-xs text-[#717171]">{cat.count}</span>
                   </label>
                 ))}
@@ -134,8 +111,8 @@ export default function TendersPage() {
 
               <FilterSection title={t('tp.region')}>
                 <select
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   className="input text-sm"
                   aria-label={t('tp.region')}
                 >
@@ -215,7 +192,7 @@ export default function TendersPage() {
                   <select
                     id="sort-tenders"
                     value={sort}
-                    onChange={(e) => setSort(e.target.value as SortOption)}
+                    onChange={(e) => setSort(e.target.value as 'deadline' | 'budget' | 'recent')}
                     className="input text-sm py-2 w-auto"
                   >
                     <option value="deadline">{t('common.sort.deadline')}</option>

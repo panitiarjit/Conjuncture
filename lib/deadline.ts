@@ -1,4 +1,4 @@
-import type { TenderStatus, ProjectStatus } from './mock-data';
+import type { TenderStatus, ProjectStatus } from './types';
 
 export function computeTenderStatus(deadline: string): TenderStatus {
   const diffDays = Math.ceil((new Date(deadline).getTime() - Date.now()) / 86_400_000);

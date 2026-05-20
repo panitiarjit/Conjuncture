@@ -3,12 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { MapPin, Users, Clock, Banknote } from 'lucide-react';
-import type { Project } from '@/lib/mock-data';
+import type { Project } from '@/lib/types';
 import { formatBudget, getInitials } from '@/lib/format';
 import StatusPill from './StatusPill';
 import VerifiedBadge from './VerifiedBadge';
 import { useLanguage } from '@/lib/language-context';
 import { getDaysRemaining, computeProjectStatus } from '@/lib/deadline';
+import { CATEGORY_KEYS } from '@/lib/translation-keys';
 
 interface ProjectCardProps {
   project: Project;
@@ -20,14 +21,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const status = computeProjectStatus(project.deadline, project.status);
   const urgentDays = daysRemaining <= 3;
 
-  function categoryLabel(cat: string): string {
-    return t(`cat.${cat}`) !== `cat.${cat}` ? t(`cat.${cat}`) : cat;
-  }
-
   return (
     <article className="card-hover flex flex-col gap-4">
       <div className="flex items-start justify-between gap-2">
-        <span className="badge">{categoryLabel(project.category)}</span>
+        <span className="badge">{t(CATEGORY_KEYS[project.category])}</span>
         <StatusPill status={status} />
       </div>
 

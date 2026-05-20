@@ -1,3 +1,6 @@
+import { STATUS_COLORS } from './theme';
+import type { TranslationKey } from './translation-keys';
+
 export type StatusValue =
   | 'open'
   | 'closing_soon'
@@ -10,43 +13,15 @@ export type StatusValue =
 export interface StatusConfig {
   pill: string;
   dot: string;
-  key: string;
+  key: TranslationKey;
 }
 
 export const STATUS_CONFIG: Record<StatusValue, StatusConfig> = {
-  open: {
-    pill: 'bg-[#d8f3dc] text-[#2D6A4F] border border-[#b7e4c7]',
-    dot: 'bg-[#2D6A4F]',
-    key: 'status.open',
-  },
-  closing_soon: {
-    pill: 'bg-[#fef3c7] text-[#B45309] border border-[#fde68a]',
-    dot: 'bg-[#B45309]',
-    key: 'status.closingSoon',
-  },
-  closed: {
-    pill: 'bg-[#F7F7F7] text-[#717171] border border-[#E0E0E0]',
-    dot: 'bg-[#717171]',
-    key: 'status.closed',
-  },
-  in_progress: {
-    pill: 'bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]',
-    dot: 'bg-[#1D4ED8]',
-    key: 'status.inProgress',
-  },
-  completed: {
-    pill: 'bg-[#F7F7F7] text-[#717171] border border-[#E0E0E0]',
-    dot: 'bg-[#717171]',
-    key: 'status.completed',
-  },
-  escrow_held: {
-    pill: 'bg-[#fef3c7] text-[#B45309] border border-[#fde68a]',
-    dot: 'bg-[#B45309]',
-    key: 'status.escrowHeld',
-  },
-  escrow_released: {
-    pill: 'bg-[#d8f3dc] text-[#2D6A4F] border border-[#b7e4c7]',
-    dot: 'bg-[#2D6A4F]',
-    key: 'status.escrowReleased',
-  },
+  open:            { ...STATUS_COLORS.open,            key: 'status.open' },
+  closing_soon:    { ...STATUS_COLORS.closing_soon,    key: 'status.closingSoon' },
+  closed:          { ...STATUS_COLORS.closed,          key: 'status.closed' },
+  in_progress:     { ...STATUS_COLORS.in_progress,     key: 'status.inProgress' },
+  completed:       { ...STATUS_COLORS.completed,       key: 'status.completed' },
+  escrow_held:     { ...STATUS_COLORS.escrow_held,     key: 'status.escrowHeld' },
+  escrow_released: { ...STATUS_COLORS.escrow_released, key: 'status.escrowReleased' },
 };

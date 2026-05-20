@@ -151,7 +151,7 @@ export default function Header() {
                     </div>
 
                     <Link
-                      href="/dashboard"
+                      href={user.role === 'vendor' ? '/dashboard/vendor' : '/dashboard/buyer'}
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#111111] hover:bg-[#F7F7F7] transition-colors duration-100 focus-ring"
                       role="menuitem"
                       onClick={() => setUserMenuOpen(false)}

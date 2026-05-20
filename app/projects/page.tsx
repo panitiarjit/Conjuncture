@@ -1,67 +1,44 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProjectCard from '@/components/ui/ProjectCard';
 import FilterSection from '@/components/ui/FilterSection';
-import { PROJECTS, CATEGORIES } from '@/lib/mock-data';
-import { filterAndSortProjects, type ProjectFilters } from '@/lib/filters';
+import { getProjects, getCategories } from '@/lib/data-service';
+import { filterAndSortProjects } from '@/lib/filters';
+import type { Project } from '@/lib/types';
+import { CATEGORY_KEYS } from '@/lib/translation-keys';
 import { ALL_THAI_PROVINCES, getProvinceName } from '@/lib/data-utils';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 import { useLanguage } from '@/lib/language-context';
-
-type StatusFilter = 'all' | 'open' | 'in_progress';
-type SortOption = 'deadline' | 'budget' | 'recent';
+import { useListingFilters } from '@/lib/use-listing-filters';
 
 export default function ProjectsPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const { t, lang } = useLanguage();
+  const {
+    search, setSearch,
+    selectedCategories, toggleCategory,
+    location, setLocation,
+    statusFilter, setStatusFilter,
+    budgetMin, setBudgetMin,
+    budgetMax, setBudgetMax,
+    sort, setSort,
+    clearFilters,
+    results: filteredProjects,
+  } = useListingFilters<Project, 'all' | 'open' | 'in_progress'>(
+    getProjects(), filterAndSortProjects, 'all', 'recent',
+  );
+
   if (isLoading || !isAuthenticated) return null;
 
-  const [search, setSearch] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [budgetMin, setBudgetMin] = useState('');
-  const [budgetMax, setBudgetMax] = useState('');
-  const [sort, setSort] = useState<SortOption>('recent');
-
-  function toggleCategory(id: string) {
-    setSelectedCategories((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-    );
-  }
-
-  function clearFilters() {
-    setSearch('');
-    setSelectedCategories([]);
-    setSelectedLocation('');
-    setStatusFilter('all');
-    setBudgetMin('');
-    setBudgetMax('');
-    setSort('recent');
-  }
-
-  const filteredProjects = useMemo(() => {
-    const filters: ProjectFilters = {
-      search,
-      selectedCategories,
-      selectedLocation,
-      statusFilter,
-      budgetMin,
-      budgetMax,
-      sort,
-    };
-    return filterAndSortProjects(PROJECTS, filters);
-  }, [search, selectedCategories, selectedLocation, statusFilter, budgetMin, budgetMax, sort]);
-
-  const statusOptions: { value: StatusFilter; label: string }[] = [
-    { value: 'all', label: t('common.all') },
-    { value: 'open', label: t('common.open') },
-    { value: 'in_progress', label: t('pp.inProgress') },
+  const statusOptions = [
+    { value: 'all' as const, label: t('common.all') },
+    { value: 'open' as const, label: t('common.open') },
+    { value: 'in_progress' as const, label: t('pp.inProgress') },
   ];
 
   return (
@@ -106,7 +83,7 @@ export default function ProjectsPage() {
               </div>
 
               <FilterSection title={t('common.category')}>
-                {CATEGORIES.map((cat) => (
+                {getCategories().map((cat) => (
                   <label
                     key={cat.id}
                     className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors"
@@ -117,7 +94,7 @@ export default function ProjectsPage() {
                       onChange={() => toggleCategory(cat.id)}
                       className="rounded border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0"
                     />
-                    <span className="flex-1">{t(`cat.${cat.id}`)}</span>
+                    <span className="flex-1">{t(CATEGORY_KEYS[cat.id])}</span>
                     <span className="text-xs text-[#717171]">{cat.count}</span>
                   </label>
                 ))}
@@ -125,8 +102,8 @@ export default function ProjectsPage() {
 
               <FilterSection title={t('common.location')}>
                 <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
                   className="input text-sm"
                   aria-label={t('common.location')}
                 >
@@ -206,7 +183,7 @@ export default function ProjectsPage() {
                   <select
                     id="sort-projects"
                     value={sort}
-                    onChange={(e) => setSort(e.target.value as SortOption)}
+                    onChange={(e) => setSort(e.target.value as 'deadline' | 'budget' | 'recent')}
                     className="input text-sm py-2 w-auto"
                   >
                     <option value="recent">{t('common.sort.recent')}</option>

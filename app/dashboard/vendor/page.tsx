@@ -1,5 +1,4 @@
 'use client';
-import { useProtectedRoute } from '@/lib/use-protected-route';
 
 import React, { useState } from 'react';
 import {
@@ -19,7 +18,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
 import ProjectCard from '@/components/ui/ProjectCard';
-import { PROJECTS, TENDERS } from '@/lib/mock-data';
+import { getTenders, getProjects } from '@/lib/data-service';
 import { computeTenderStatus } from '@/lib/deadline';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -79,7 +78,7 @@ const DOCUMENT_SLOTS = [
   { name: 'Portfolio of Completed Projects', uploaded: false },
 ];
 
-const TENDER_MATCHES = TENDERS.filter((t) =>
+const TENDER_MATCHES = getTenders().filter((t) =>
   ['technology', 'consulting'].includes(t.category)
 ).slice(0, 4);
 
@@ -134,7 +133,7 @@ function OverviewSection() {
 }
 
 function AvailableProjectsSection() {
-  const openProjects = PROJECTS.filter((p) => p.status === 'open');
+  const openProjects = getProjects().filter((p) => p.status === 'open');
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-semibold text-[#111111]">Available Projects</h2>
@@ -367,9 +366,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function VendorDashboardPage() {
-  const { isAuthenticated, isLoading } = useProtectedRoute();
   const [activeNav, setActiveNav] = useState<NavKey>('overview');
-  if (isLoading || !isAuthenticated) return null;
 
   const userName = 'คุณวิชัย ทองดี';
   const userInitials = getInitials(userName);

@@ -1,4 +1,4 @@
-import type { Tender, Project } from './mock-data';
+import type { Tender, Project } from './types';
 
 export const ALL_THAI_PROVINCES: readonly string[] = [
   'กระบี่',

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const ADMIN_EMAIL = 'stagelinkcreator@gmail.com';
 
 function waitlistEmailHtml(roleLabel: string) {
@@ -77,6 +76,10 @@ function waitlistEmailHtml(roleLabel: string) {
 export async function POST(req: NextRequest) {
   const { email, role } = await req.json();
   if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 });
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return NextResponse.json({ error: 'Email service not configured' }, { status: 503 });
+  const resend = new Resend(apiKey);
 
   const roleLabel = role === 'vendor' ? 'ผู้ขาย / ซัพพลายเออร์' : 'ผู้ซื้อ / หน่วยงาน';
 

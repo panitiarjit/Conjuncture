@@ -1,10 +1,10 @@
-import type { Tender, Project } from './mock-data';
+import type { Tender, Project } from './types';
 import { computeTenderStatus, getDaysRemaining } from './deadline';
 
 export interface TenderFilters {
   search: string;
   selectedCategories: string[];
-  selectedRegion: string;
+  location: string;
   statusFilter: 'all' | 'open' | 'closing_soon';
   budgetMin: string;
   budgetMax: string;
@@ -12,7 +12,7 @@ export interface TenderFilters {
 }
 
 export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters): Tender[] {
-  const { search, selectedCategories, selectedRegion, statusFilter, budgetMin, budgetMax, sort } =
+  const { search, selectedCategories, location, statusFilter, budgetMin, budgetMax, sort } =
     filters;
 
   const result = tenders.filter((tender) => {
@@ -26,7 +26,7 @@ export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters):
         return false;
     }
     if (selectedCategories.length > 0 && !selectedCategories.includes(tender.category)) return false;
-    if (selectedRegion !== '' && tender.region !== selectedRegion) return false;
+    if (location !== '' && tender.region !== location) return false;
     if (statusFilter !== 'all' && computeTenderStatus(tender.deadline) !== statusFilter) return false;
     if (budgetMin !== '') {
       const min = Number(budgetMin);
@@ -49,7 +49,7 @@ export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters):
 export interface ProjectFilters {
   search: string;
   selectedCategories: string[];
-  selectedLocation: string;
+  location: string;
   statusFilter: 'all' | 'open' | 'in_progress';
   budgetMin: string;
   budgetMax: string;
@@ -60,7 +60,7 @@ export function filterAndSortProjects(projects: Project[], filters: ProjectFilte
   const {
     search,
     selectedCategories,
-    selectedLocation,
+    location,
     statusFilter,
     budgetMin,
     budgetMax,
@@ -78,7 +78,7 @@ export function filterAndSortProjects(projects: Project[], filters: ProjectFilte
         return false;
     }
     if (selectedCategories.length > 0 && !selectedCategories.includes(p.category)) return false;
-    if (selectedLocation !== '' && p.location !== selectedLocation) return false;
+    if (location !== '' && p.location !== location) return false;
     if (statusFilter !== 'all' && p.status !== statusFilter) return false;
     if (budgetMin !== '') {
       const min = Number(budgetMin);

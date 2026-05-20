@@ -15,7 +15,7 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
-import { PROJECTS } from '@/lib/mock-data';
+import { getProjectById } from '@/lib/data-service';
 import { getDaysRemaining, computeProjectStatus } from '@/lib/deadline';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ export default function SubmitBidPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
 
-  const project = PROJECTS.find((p) => p.id === id);
+  const project = getProjectById(id);
   const daysRemaining = project ? getDaysRemaining(project.deadline) : 0;
   const projectStatus = project ? computeProjectStatus(project.deadline, project.status) : 'open';
 
