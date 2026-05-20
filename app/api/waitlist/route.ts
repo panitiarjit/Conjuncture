@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
+export const dynamic = 'force-dynamic';
+
 const ADMIN_EMAIL = 'stagelinkcreator@gmail.com';
 
 function waitlistEmailHtml(roleLabel: string) {
