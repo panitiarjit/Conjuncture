@@ -90,13 +90,11 @@ export default function RootLayout({
       lang="th"
       className={`${ibmPlexSans.variable} ${ibmPlexSansThai.variable} h-full antialiased`}
     >
-      <head>
+      <body className="min-h-full flex flex-col bg-white text-[#111111]">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-      </head>
-      <body className="min-h-full flex flex-col bg-white text-[#111111]">
         <LanguageProvider>
           <AuthProvider>{children}</AuthProvider>
         </LanguageProvider>
