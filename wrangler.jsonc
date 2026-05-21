@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "conjuncture",
+  "account_id": "489882053324a35696a401d4fbb39af3",
   "compatibility_date": "2026-05-20",
   "compatibility_flags": [
     "nodejs_compat"
