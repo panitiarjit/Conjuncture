@@ -15,6 +15,7 @@ const waitlist = {
     'waitlist.successSub':
       "We'll email you as soon as Conjuncture opens. In the meantime, tell a colleague.",
     'waitlist.privacy': 'No spam. Unsubscribe any time.',
+    'waitlist.spamNote': 'Confirmation email may land in Spam, Promotions, or Social — check those folders if you don\'t see it.',
     'waitlist.featuresTitle': 'Everything procurement needs',
     'waitlist.f1.h': 'Sealed Competitive Bids',
     'waitlist.f1.d': 'Vendors submit proposals privately — no collusion, no price-sharing.',
@@ -40,6 +41,7 @@ const waitlist = {
     'waitlist.successHeadline': 'รับสิทธิ์แล้ว!',
     'waitlist.successSub': 'เปิดตัวเมื่อไหร่ส่งอีเมลแจ้งทันที ระหว่างนี้ฝากบอกต่อด้วยนะ',
     'waitlist.privacy': 'ไม่มีสแปม ยกเลิกได้ตลอด',
+    'waitlist.spamNote': 'อีเมลยืนยันอาจตกไปอยู่ในโฟลเดอร์ สแปม, โปรโมชั่น หรือ โซเชียล — ลองเช็กด้วยนะ',
     'waitlist.featuresTitle': 'ครบ จบในที่เดียว',
     'waitlist.f1.h': 'ราคาลับ ไม่มีฮั้ว',
     'waitlist.f1.d': 'ยื่นราคาโดยไม่เห็นของคู่แข่ง ไม่มีฮั้ว ยุติธรรมทุกฝ่าย',

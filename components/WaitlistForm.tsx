@@ -93,6 +93,10 @@ export default function WaitlistForm() {
         {formState === 'submitting' ? t('waitlist.submitting') : t('waitlist.cta')}
       </button>
       <p className="text-xs text-[#717171]">{t('waitlist.privacy')}</p>
+      <div className="w-full rounded-[8px] bg-[#FFF9EC] border border-[#F5C842] px-3 py-2.5 flex items-start gap-2">
+        <span className="text-[#B45309] text-sm leading-none mt-[1px]">⚠</span>
+        <p className="text-xs text-[#92400E] leading-relaxed">{t('waitlist.spamNote')}</p>
+      </div>
     </form>
   );
 }
