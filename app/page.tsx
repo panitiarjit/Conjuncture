@@ -1,8 +1,6 @@
-import dynamic from 'next/dynamic';
 import { EyeOff, Lock, Scale, ShieldCheck } from 'lucide-react';
 import WaitlistHeader from '@/components/WaitlistHeader';
-
-const WaitlistForm = dynamic(() => import('@/components/WaitlistForm'), { ssr: false });
+import WaitlistFormLoader from '@/components/WaitlistFormLoader';
 
 const features = [
   {
@@ -48,7 +46,7 @@ export default function WaitlistPage() {
                 through transparent, competitive procurement. Be the first to know when we launch.
               </p>
 
-              <WaitlistForm />
+              <WaitlistFormLoader />
             </div>
           </div>
         </section>
