@@ -70,11 +70,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string, _role: UserRole): Promise<boolean> => {
-      if (!auth) return false;
+      if (!auth) { console.error('[auth] Firebase not initialized'); return false; }
       try {
         await signInWithEmailAndPassword(auth, email, password);
         return true;
-      } catch {
+      } catch (err) {
+        console.error('[auth] login failed:', err);
         return false;
       }
     },
