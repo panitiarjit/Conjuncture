@@ -60,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) { setIsLoading(false); return; }
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       setUser(fbUser ? mapFirebaseUser(fbUser) : null);
       setIsLoading(false);
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string, _role: UserRole): Promise<boolean> => {
+      if (!auth) return false;
       try {
         await signInWithEmailAndPassword(auth, email, password);
         return true;
@@ -80,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => {
-    signOut(auth);
+    if (auth) signOut(auth);
   }, []);
 
   const value: AuthContextValue = {
