@@ -41,10 +41,16 @@ export default function WaitlistForm() {
 
   if (formState === 'success') {
     return (
-      <div className="w-full rounded-[12px] border border-[#b7e4c7] bg-[#d8f3dc] px-8 py-10 flex flex-col items-center gap-3">
-        <CheckCircle2 size={36} className="text-[#2D6A4F]" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-[#2D6A4F]">{t('waitlist.successHeadline')}</h2>
-        <p className="text-sm text-[#2D6A4F]/80 leading-relaxed">{t('waitlist.successSub')}</p>
+      <div className="w-full flex flex-col gap-3">
+        <div className="rounded-[12px] border border-[#b7e4c7] bg-[#d8f3dc] px-8 py-10 flex flex-col items-center gap-3">
+          <CheckCircle2 size={36} className="text-[#2D6A4F]" aria-hidden="true" />
+          <h2 className="text-lg font-semibold text-[#2D6A4F]">{t('waitlist.successHeadline')}</h2>
+          <p className="text-sm text-[#2D6A4F]/80 leading-relaxed">{t('waitlist.successSub')}</p>
+        </div>
+        <div className="rounded-[8px] bg-[#FFF9EC] border border-[#F5C842] px-3 py-2.5 flex items-start gap-2">
+          <span className="text-[#B45309] text-sm leading-none mt-[1px]">⚠</span>
+          <p className="text-xs text-[#92400E] leading-relaxed">{t('waitlist.spamNote')}</p>
+        </div>
       </div>
     );
   }
@@ -93,10 +99,6 @@ export default function WaitlistForm() {
         {formState === 'submitting' ? t('waitlist.submitting') : t('waitlist.cta')}
       </button>
       <p className="text-xs text-[#717171]">{t('waitlist.privacy')}</p>
-      <div className="w-full rounded-[8px] bg-[#FFF9EC] border border-[#F5C842] px-3 py-2.5 flex items-start gap-2">
-        <span className="text-[#B45309] text-sm leading-none mt-[1px]">⚠</span>
-        <p className="text-xs text-[#92400E] leading-relaxed">{t('waitlist.spamNote')}</p>
-      </div>
     </form>
   );
 }
