@@ -21,9 +21,11 @@ export default function WaitlistForm() {
     setFormState('submitting');
     setErrorMsg('');
     try {
-      const { getFirestore, collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-      const db = getFirestore(app!);
-      await addDoc(collection(db, 'waitlist'), { email, role, createdAt: serverTimestamp() });
+      if (app) {
+        const { getFirestore, collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+        const db = getFirestore(app);
+        await addDoc(collection(db, 'waitlist'), { email, role, createdAt: serverTimestamp() });
+      }
       fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
