@@ -123,7 +123,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = getProjectById(id);
+  const project = await getProjectById(id);
 
   if (!project) {
     return (

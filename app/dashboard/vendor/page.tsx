@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
   Search,
@@ -78,9 +78,6 @@ const DOCUMENT_SLOTS = [
   { name: 'Portfolio of Completed Projects', uploaded: false },
 ];
 
-const TENDER_MATCHES = getTenders().filter((t) =>
-  ['technology', 'consulting'].includes(t.category)
-).slice(0, 4);
 
 // ─── Sub-sections ─────────────────────────────────────────────────────────────
 
@@ -133,7 +130,10 @@ function OverviewSection() {
 }
 
 function AvailableProjectsSection() {
-  const openProjects = getProjects().filter((p) => p.status === 'open');
+  const [openProjects, setOpenProjects] = useState<import('@/lib/types').Project[]>([]);
+  useEffect(() => {
+    getProjects().then((d) => setOpenProjects(d.filter((p) => p.status === 'open')));
+  }, []);
   return (
     <div className="flex flex-col gap-6">
       <h2 className="text-xl font-semibold text-[#111111]">Available Projects</h2>
@@ -195,6 +195,12 @@ function MyBidsSection() {
 }
 
 function GovTendersSection() {
+  const [tenderMatches, setTenderMatches] = useState<import('@/lib/types').Tender[]>([]);
+  useEffect(() => {
+    getTenders().then((d) =>
+      setTenderMatches(d.filter((t) => ['technology', 'consulting'].includes(t.category)).slice(0, 4))
+    );
+  }, []);
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -203,7 +209,7 @@ function GovTendersSection() {
       </div>
 
       <div className="flex flex-col gap-3">
-        {TENDER_MATCHES.map((tender) => (
+        {tenderMatches.map((tender) => (
           <div
             key={tender.id}
             className="bg-white border border-[#E0E0E0] rounded-xl px-5 py-4 flex items-start justify-between gap-4 flex-wrap"

@@ -77,7 +77,7 @@ export default async function TenderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const tender = getTenderById(id);
+  const tender = await getTenderById(id);
   const tenderStatus = tender ? computeTenderStatus(tender.deadline) : 'open';
 
   if (!tender) {

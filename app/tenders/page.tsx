@@ -6,40 +6,16 @@ import { Search, Info } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
-import FilterSection from '@/components/ui/FilterSection';
-import { getTenders, getCategories } from '@/lib/data-service';
-import { filterAndSortTenders } from '@/lib/filters';
+import TenderFiltersPanel from '@/components/ui/TenderFiltersPanel';
+import { getTenders } from '@/lib/data-service';
 import type { Tender } from '@/lib/types';
-import { CATEGORY_KEYS } from '@/lib/translation-keys';
-import { ALL_THAI_PROVINCES, getProvinceName } from '@/lib/data-utils';
-import { useProtectedRoute } from '@/lib/use-protected-route';
+import { filterAndSortTenders } from '@/lib/filters';
 import { useLanguage } from '@/lib/language-context';
 import { useListingFilters } from '@/lib/use-listing-filters';
 
 export default function TendersPage() {
-  const { isAuthenticated, isLoading } = useProtectedRoute();
-  const { t, lang } = useLanguage();
-  const {
-    search, setSearch,
-    selectedCategories, toggleCategory,
-    location, setLocation,
-    statusFilter, setStatusFilter,
-    budgetMin, setBudgetMin,
-    budgetMax, setBudgetMax,
-    sort, setSort,
-    clearFilters,
-    results: filteredTenders,
-  } = useListingFilters<Tender, 'all' | 'open' | 'closing_soon'>(
-    getTenders(), filterAndSortTenders, 'all', 'deadline',
-  );
-
-  if (isLoading || !isAuthenticated) return null;
-
-  const statusOptions = [
-    { value: 'all' as const, label: t('common.all') },
-    { value: 'open' as const, label: t('common.open') },
-    { value: 'closing_soon' as const, label: t('tp.closingSoon') },
-  ];
+  const { t } = useLanguage();
+  const filterState = useListingFilters<Tender, 'all' | 'open' | 'closing_soon'>(getTenders, filterAndSortTenders, 'all', 'deadline');
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -49,9 +25,7 @@ export default function TendersPage() {
         <div className="bg-[#F7F7F7] border-b border-[#E0E0E0]">
           <div className="container-app py-8">
             <nav className="flex items-center gap-2 text-sm text-[#717171] mb-3" aria-label="Breadcrumb">
-              <Link href="/" className="hover:text-[#111111] transition-colors">
-                {t('common.home')}
-              </Link>
+              <Link href="/" className="hover:text-[#111111] transition-colors">{t('common.home')}</Link>
               <span aria-hidden="true">/</span>
               <span className="text-[#111111] font-medium">{t('tp.title')}</span>
             </nav>
@@ -71,128 +45,21 @@ export default function TendersPage() {
 
         <div className="container-app py-8">
           <div className="flex gap-8 items-start">
-            <aside
-              className="hidden lg:flex flex-col w-64 flex-shrink-0 gap-5 sticky top-20"
-              aria-label="Tender filters"
-            >
-              <div className="relative">
-                <Search
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#717171] pointer-events-none"
-                  aria-hidden="true"
-                />
-                <input
-                  type="text"
-                  placeholder={t('tp.search')}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="input pl-9 text-sm"
-                  aria-label={t('tp.search')}
-                />
-              </div>
-
-              <FilterSection title={t('common.category')}>
-                {getCategories().map((cat) => (
-                  <label
-                    key={cat.id}
-                    className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(cat.id)}
-                      onChange={() => toggleCategory(cat.id)}
-                      className="rounded border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0"
-                    />
-                    <span className="flex-1">{t(CATEGORY_KEYS[cat.id])}</span>
-                    <span className="text-xs text-[#717171]">{cat.count}</span>
-                  </label>
-                ))}
-              </FilterSection>
-
-              <FilterSection title={t('tp.region')}>
-                <select
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="input text-sm"
-                  aria-label={t('tp.region')}
-                >
-                  <option value="">{t('tp.allRegions')}</option>
-                  {ALL_THAI_PROVINCES.map((province) => (
-                    <option key={province} value={province}>
-                      {getProvinceName(province, lang)}
-                    </option>
-                  ))}
-                </select>
-              </FilterSection>
-
-              <FilterSection title={t('common.status')}>
-                {statusOptions.map(({ value, label }) => (
-                  <label
-                    key={value}
-                    className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      name="status"
-                      value={value}
-                      checked={statusFilter === value}
-                      onChange={() => setStatusFilter(value)}
-                      className="border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0"
-                    />
-                    {label}
-                  </label>
-                ))}
-              </FilterSection>
-
-              <FilterSection title={t('common.budgetRange')}>
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="number"
-                    placeholder={t('common.min')}
-                    value={budgetMin}
-                    onChange={(e) => setBudgetMin(e.target.value)}
-                    className="input text-sm"
-                    min={0}
-                  />
-                  <input
-                    type="number"
-                    placeholder={t('common.max')}
-                    value={budgetMax}
-                    onChange={(e) => setBudgetMax(e.target.value)}
-                    className="input text-sm"
-                    min={0}
-                  />
-                </div>
-              </FilterSection>
-
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="btn-ghost text-sm w-full justify-center border border-[#E0E0E0] rounded-lg"
-              >
-                {t('common.clearFilters')}
-              </button>
-            </aside>
+            <TenderFiltersPanel state={filterState} />
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
                 <p className="text-sm text-[#717171]">
                   {t('tp.showing')}{' '}
-                  <span className="font-semibold text-[#111111]">{filteredTenders.length}</span>{' '}
-                  {filteredTenders.length !== 1 ? t('tp.tenders') : t('tp.tender')}
+                  <span className="font-semibold text-[#111111]">{filterState.results.length}</span>{' '}
+                  {filterState.results.length !== 1 ? t('tp.tenders') : t('tp.tender')}
                 </p>
-
                 <div className="flex items-center gap-2">
-                  <label
-                    htmlFor="sort-tenders"
-                    className="text-sm text-[#717171] whitespace-nowrap"
-                  >
-                    {t('common.sortBy')}
-                  </label>
+                  <label htmlFor="sort-tenders" className="text-sm text-[#717171] whitespace-nowrap">{t('common.sortBy')}</label>
                   <select
                     id="sort-tenders"
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value as 'deadline' | 'budget' | 'recent')}
+                    value={filterState.sort}
+                    onChange={(e) => filterState.setSort(e.target.value as 'deadline' | 'budget' | 'recent')}
                     className="input text-sm py-2 w-auto"
                   >
                     <option value="deadline">{t('common.sort.deadline')}</option>
@@ -202,9 +69,9 @@ export default function TendersPage() {
                 </div>
               </div>
 
-              {filteredTenders.length > 0 ? (
+              {filterState.results.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {filteredTenders.map((tender) => (
+                  {filterState.results.map((tender) => (
                     <TenderCard key={tender.id} tender={tender} />
                   ))}
                 </div>
@@ -217,7 +84,7 @@ export default function TendersPage() {
                     <p className="font-semibold text-[#111111] mb-1">{t('tp.noResults')}</p>
                     <p className="text-sm text-[#717171]">{t('common.noResults.desc')}</p>
                   </div>
-                  <button type="button" onClick={clearFilters} className="btn-outline text-sm">
+                  <button type="button" onClick={filterState.clearFilters} className="btn-outline text-sm">
                     {t('common.clearFilters')}
                   </button>
                 </div>

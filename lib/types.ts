@@ -24,6 +24,8 @@ export interface Tender {
   region: string;
   description: string;
   requirements: string[];
+  // Server hint only. Display and filter always use computeTenderStatus(deadline);
+  // this field is reserved for admin-set states (e.g. 'cancelled') not expressible by deadline.
   status: TenderStatus;
 }
 
@@ -40,6 +42,7 @@ export interface Project {
   buyerName: string;
   buyerVerified: boolean;
   postedAt: string;
+  // Server hint. computeProjectStatus(deadline, status) is the display source of truth.
   status: ProjectStatus;
 }
 

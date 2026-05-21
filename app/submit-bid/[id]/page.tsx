@@ -1,7 +1,7 @@
 'use client';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -45,7 +45,8 @@ export default function SubmitBidPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
 
-  const project = getProjectById(id);
+  const [project, setProject] = useState<import('@/lib/types').Project | undefined>(undefined);
+  useEffect(() => { getProjectById(id).then(setProject); }, [id]);
   const daysRemaining = project ? getDaysRemaining(project.deadline) : 0;
   const projectStatus = project ? computeProjectStatus(project.deadline, project.status) : 'open';
 

@@ -1,7 +1,7 @@
 'use client';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 
-import React, { useState, use } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import {
   Building2,
   Star,
@@ -191,7 +191,8 @@ export default function VendorProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const vendor = getVendorById(id);
+  const [vendor, setVendor] = useState<import('@/lib/types').Vendor | undefined>(undefined);
+  useEffect(() => { getVendorById(id).then(setVendor); }, [id]);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const { isAuthenticated, isLoading } = useProtectedRoute();
 

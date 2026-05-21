@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 
 export type SortOption = 'deadline' | 'budget' | 'recent';
 
@@ -33,11 +33,13 @@ export interface ListingFilterState<S extends string> {
 }
 
 export function useListingFilters<TItem, S extends string>(
-  data: TItem[],
+  fetchData: () => Promise<TItem[]>,
   filterFn: (items: TItem[], params: FilterParams<S>) => TItem[],
   defaultStatus: S,
   defaultSort: SortOption,
-): ListingFilterState<S> & { results: TItem[] } {
+): ListingFilterState<S> & { results: TItem[]; isLoading: boolean } {
+  const [data, setData] = useState<TItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [location, setLocation] = useState('');
@@ -45,6 +47,15 @@ export function useListingFilters<TItem, S extends string>(
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [sort, setSort] = useState<SortOption>(defaultSort);
+
+  useEffect(() => {
+    fetchData().then((d) => {
+      setData(d);
+      setIsLoading(false);
+    });
+    // fetchData is always a stable module-level function reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleCategory = useCallback((id: string) => {
     setSelectedCategories((prev) =>
@@ -86,5 +97,6 @@ export function useListingFilters<TItem, S extends string>(
     sort, setSort,
     clearFilters,
     results,
+    isLoading,
   };
 }

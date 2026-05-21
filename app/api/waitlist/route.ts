@@ -3,8 +3,6 @@ import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_EMAIL = 'stagelinkcreator@gmail.com';
-
 function waitlistEmailHtml(roleLabel: string) {
   return `<!DOCTYPE html>
 <html lang="th">
@@ -87,8 +85,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await resend.emails.send({
-      from: 'Conjuncture <onboarding@resend.dev>',
-      to: ADMIN_EMAIL,
+      from: 'Conjuncture <noreply@conjuncture.work>',
+      to: email,
       subject: 'รับสิทธิ์ Conjuncture แล้ว ✓',
       html: waitlistEmailHtml(roleLabel),
     });

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle2,
@@ -14,15 +14,18 @@ import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
 import ProjectCard from '@/components/ui/ProjectCard';
 import { getTenders, getProjects } from '@/lib/data-service';
-import { useProtectedRoute } from '@/lib/use-protected-route';
+import type { Tender, Project } from '@/lib/types';
 import { useLanguage } from '@/lib/language-context';
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading } = useProtectedRoute();
   const { t } = useLanguage();
-  if (isLoading || !isAuthenticated) return null;
-  const featuredTenders = getTenders().slice(0, 3);
-  const featuredProjects = getProjects().slice(0, 3);
+  const [featuredTenders, setFeaturedTenders] = useState<Tender[]>([]);
+  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+
+  useEffect(() => {
+    getTenders().then((d) => setFeaturedTenders(d.slice(0, 3)));
+    getProjects().then((d) => setFeaturedProjects(d.slice(0, 3)));
+  }, []);
 
   const buyerSteps = [
     { n: '1', h: t('how.buyers.s1.h'), d: t('how.buyers.s1.d') },

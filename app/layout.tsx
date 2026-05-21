@@ -18,26 +18,65 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   display: 'swap',
 });
 
+const SITE_URL = 'https://conjuncture.work';
+
 export const metadata: Metadata = {
-  title: "Conjuncture — Thailand's Trusted Procurement Marketplace",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Conjuncture — Thailand's Open Procurement Platform",
+    template: '%s | Conjuncture',
+  },
   description:
-    'Conjuncture connects Thai businesses and government agencies with verified vendors through transparent, competitive procurement. Browse tenders, post projects, and find trusted suppliers across Thailand.',
+    'Conjuncture connects Thai businesses and government agencies with verified vendors through transparent, competitive procurement. Sealed bids, escrow payments, government tenders.',
   keywords: [
     'Thailand procurement',
-    'B2B marketplace',
-    'government tenders',
-    'vendor sourcing',
+    'Thai government tenders',
+    'B2B marketplace Thailand',
+    'vendor sourcing Thailand',
+    'sealed bid procurement',
+    'escrow payments Thailand',
     'Thai suppliers',
     'ประมูล',
     'จัดซื้อจัดจ้าง',
+    'ผู้รับเหมา',
   ],
-  metadataBase: new URL('https://conjuncture.co.th'),
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
   openGraph: {
-    title: "Conjuncture — Thailand's Trusted Procurement Marketplace",
+    type: 'website',
+    url: SITE_URL,
+    siteName: 'Conjuncture',
+    title: "Conjuncture — Thailand's Open Procurement Platform",
     description:
       'Transparent competition. Trusted procurement. Connect with verified vendors and government agencies across Thailand.',
     locale: 'th_TH',
-    type: 'website',
+    alternateLocale: ['en_US'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Conjuncture — Thailand's Open Procurement Platform",
+    description:
+      'Transparent competition. Trusted procurement. Connect with verified vendors and government agencies across Thailand.',
+  },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Conjuncture',
+  url: SITE_URL,
+  description:
+    "Thailand's open procurement platform connecting businesses and government agencies with verified vendors.",
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Bangkok',
+    addressCountry: 'TH',
   },
 };
 
@@ -51,6 +90,12 @@ export default function RootLayout({
       lang="th"
       className={`${ibmPlexSans.variable} ${ibmPlexSansThai.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-white text-[#111111]">
         <LanguageProvider>
           <AuthProvider>{children}</AuthProvider>

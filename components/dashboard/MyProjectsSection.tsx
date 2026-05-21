@@ -1,12 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import StatusPill from '@/components/ui/StatusPill';
 import { getProjects } from '@/lib/data-service';
 import { getDaysRemaining } from '@/lib/deadline';
 
 export default function MyProjectsSection() {
-  const projects = getProjects().slice(0, 4);
+  const [projects, setProjects] = useState<import('@/lib/types').Project[]>([]);
+  useEffect(() => {
+    getProjects().then((d) => setProjects(d.slice(0, 4)));
+  }, []);
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">

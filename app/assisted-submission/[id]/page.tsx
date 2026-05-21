@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -157,7 +157,8 @@ export default function AssistedSubmissionPage() {
   const { isAuthenticated, isLoading } = useProtectedRoute();
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
-  const tender = getTenderById(id);
+  const [tender, setTender] = useState<import('@/lib/types').Tender | undefined>(undefined);
+  useEffect(() => { getTenderById(id).then(setTender); }, [id]);
   const { user } = useAuth();
   const { t } = useLanguage();
 
