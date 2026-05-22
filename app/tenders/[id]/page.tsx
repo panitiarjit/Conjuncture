@@ -9,6 +9,9 @@ import {
   FileText,
   Info,
   ArrowLeft,
+  Lock,
+  ExternalLink,
+  Hash,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -204,7 +207,7 @@ export default async function TenderDetailPage({
               </section>
 
               {/* Required documents */}
-              <section aria-labelledby="documents-heading">
+              <section className="mb-8" aria-labelledby="documents-heading">
                 <h2
                   id="documents-heading"
                   className="text-base font-semibold text-[#111111] mb-3"
@@ -223,6 +226,101 @@ export default async function TenderDetailPage({
                     </li>
                   ))}
                 </ul>
+              </section>
+
+              {/* e-GP Reference */}
+              <section className="mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <Hash size={15} className="text-[#717171]" aria-hidden="true" />
+                  <h2 className="text-base font-semibold text-[#111111]">Official Reference</h2>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 p-4 bg-[#F7F7F7] border border-[#E0E0E0] rounded-xl">
+                  <div>
+                    <p className="text-xs text-[#717171] mb-0.5">e-GP Project Reference</p>
+                    <p className="font-mono text-sm font-semibold text-[#111111] tracking-wide">{tender.id}</p>
+                  </div>
+                  <a
+                    href="https://process5.gprocurement.go.th/egp-agpc01-web/announcement"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1D4ED8] hover:underline focus-ring rounded ml-auto"
+                  >
+                    Search on e-GP Portal
+                    <ExternalLink size={12} aria-hidden="true" />
+                  </a>
+                </div>
+                <p className="text-xs text-[#717171] mt-2">
+                  Enter the reference number above in the e-GP portal search to view the official government listing.
+                </p>
+              </section>
+
+              {/* Full Report Paywall */}
+              <section aria-labelledby="report-heading">
+                <div className="relative border border-[#E0E0E0] rounded-2xl overflow-hidden">
+                  {/* Blurred preview */}
+                  <div className="p-6 select-none" aria-hidden="true">
+                    <div className="flex flex-col gap-4 blur-sm opacity-60 pointer-events-none">
+                      <div>
+                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Procurement Method</p>
+                        <div className="h-3 bg-[#E0E0E0] rounded w-3/4 mb-1.5" />
+                        <div className="h-3 bg-[#E0E0E0] rounded w-1/2" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Evaluation Criteria</p>
+                        <div className="h-3 bg-[#E0E0E0] rounded w-full mb-1.5" />
+                        <div className="h-3 bg-[#E0E0E0] rounded w-4/5 mb-1.5" />
+                        <div className="h-3 bg-[#E0E0E0] rounded w-2/3" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Contact Officer</p>
+                        <div className="h-3 bg-[#E0E0E0] rounded w-2/5 mb-1.5" />
+                        <div className="h-3 bg-[#E0E0E0] rounded w-1/3" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Submission Address</p>
+                        <div className="h-3 bg-[#E0E0E0] rounded w-full mb-1.5" />
+                        <div className="h-3 bg-[#E0E0E0] rounded w-3/5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lock overlay */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm px-6 py-8">
+                    <div className="w-12 h-12 rounded-full bg-[#111111] flex items-center justify-center mb-4">
+                      <Lock size={20} className="text-white" aria-hidden="true" />
+                    </div>
+                    <h2 id="report-heading" className="text-base font-semibold text-[#111111] mb-1 text-center">
+                      Full Tender Report
+                    </h2>
+                    <p className="text-sm text-[#717171] text-center mb-5 max-w-xs">
+                      Unlock the complete details for this procurement — everything you need to evaluate and bid.
+                    </p>
+                    <ul className="flex flex-col gap-2 mb-6 w-full max-w-xs">
+                      {[
+                        'Procurement method & legal basis',
+                        'Evaluation criteria & scoring weights',
+                        'Submission officer & contact info',
+                        'Bid bond amount & accepted forms',
+                        'TOR summary & scope of work',
+                        'Direct link to official portal listing',
+                      ].map((item) => (
+                        <li key={item} className="flex items-center gap-2 text-sm text-[#111111]">
+                          <CheckSquare size={14} className="flex-shrink-0 text-[#2D6A4F]" aria-hidden="true" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      href={`/assisted-submission/${tender.id}`}
+                      className="btn-primary w-full max-w-xs justify-center"
+                    >
+                      Unlock Full Report — ฿299
+                    </Link>
+                    <p className="text-xs text-[#717171] mt-3 text-center">
+                      One-time access. Instantly available after payment.
+                    </p>
+                  </div>
+                </div>
               </section>
             </div>
 

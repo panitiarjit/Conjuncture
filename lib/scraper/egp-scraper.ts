@@ -64,6 +64,7 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       }
 
       const rows = resp.data?.data ?? [];
+      console.log(`[egp-scraper] page ${pageNum}: rows=${rows.length}`);
       if (rows.length === 0) break;
 
       for (const raw of rows) {
@@ -84,8 +85,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         }
       }
 
-      const totalPages = resp.data?.totalPages ?? 1;
-      if (pageNum >= totalPages) break;
+      // API does not return a reliable totalPages — paginate until we get an empty page
+      if (rows.length < 10) break;
       pageNum++;
       await sleep(config.rateLimitMs);
     }

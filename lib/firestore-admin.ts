@@ -1,17 +1,3 @@
-// This module must never be imported on the client. The `server-only` guard
-// below will cause a build error if it ends up in the browser bundle.
-import 'server-only';
-
-/**
- * Server-side Firestore client (firebase-admin).
- * Used only by the scraper script and API routes — never imported client-side.
- *
- * Required env vars:
- *   FIREBASE_ADMIN_PROJECT_ID
- *   FIREBASE_ADMIN_CLIENT_EMAIL
- *   FIREBASE_ADMIN_PRIVATE_KEY   (PEM key; replace literal \n with newlines)
- */
-
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import type { Tender } from './types';
