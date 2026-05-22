@@ -256,7 +256,7 @@ export default async function TenderDetailPage({
 
               {/* Full Report Paywall */}
               <section aria-labelledby="report-heading">
-                <div className="relative border border-[#E0E0E0] rounded-2xl overflow-hidden">
+                <div className="relative border border-[#E0E0E0] rounded-2xl overflow-hidden min-h-[520px]">
                   {/* Blurred preview */}
                   <div className="p-6 select-none" aria-hidden="true">
                     <div className="flex flex-col gap-4 blur-sm opacity-60 pointer-events-none">
