@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import FilterSection from '@/components/ui/FilterSection';
-import { getCategories } from '@/lib/data-service';
+import { getCategories } from '@/lib/data-service-client';
 import type { Category } from '@/lib/types';
 import { CATEGORY_KEYS } from '@/lib/translation-keys';
 import { ALL_THAI_PROVINCES, getProvinceName } from '@/lib/data-utils';

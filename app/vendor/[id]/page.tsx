@@ -16,7 +16,7 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VerifiedBadge from '@/components/ui/VerifiedBadge';
-import { getVendorById } from '@/lib/data-service';
+import { getVendorById } from '@/lib/data-service-client';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

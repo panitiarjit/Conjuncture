@@ -9,18 +9,22 @@
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "scrape": "ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts",
+    "scrape:dry": "ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts --dry"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@opennextjs/cloudflare": "^1.19.11",
     "firebase": "^12.13.0",
+    "firebase-admin": "^12.7.0",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.76.0",
     "resend": "^6.12.3",
+    "server-only": "^0.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -28,8 +32,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.6.1",
     "playwright": "^1.60.0",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5",
     "wrangler": "^4.93.0"
   }

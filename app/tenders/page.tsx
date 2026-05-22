@@ -7,7 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
 import TenderFiltersPanel from '@/components/ui/TenderFiltersPanel';
-import { getTenders } from '@/lib/data-service';
+import { getTenders } from '@/lib/data-service-client';
 import type { Tender } from '@/lib/types';
 import { filterAndSortTenders } from '@/lib/filters';
 import { useLanguage } from '@/lib/language-context';

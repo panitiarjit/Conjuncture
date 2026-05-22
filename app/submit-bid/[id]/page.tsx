@@ -15,7 +15,7 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
-import { getProjectById } from '@/lib/data-service';
+import { getProjectById } from '@/lib/data-service-client';
 import { getDaysRemaining, computeProjectStatus } from '@/lib/deadline';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

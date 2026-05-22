@@ -13,7 +13,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
 import ProjectCard from '@/components/ui/ProjectCard';
-import { getTenders, getProjects } from '@/lib/data-service';
+import { getTenders, getProjects } from '@/lib/data-service-client';
 import type { Tender, Project } from '@/lib/types';
 import { useLanguage } from '@/lib/language-context';
 

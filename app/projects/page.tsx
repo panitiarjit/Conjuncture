@@ -7,7 +7,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProjectCard from '@/components/ui/ProjectCard';
 import ProjectFiltersPanel from '@/components/ui/ProjectFiltersPanel';
-import { getProjects } from '@/lib/data-service';
+import { getProjects } from '@/lib/data-service-client';
 import type { Project } from '@/lib/types';
 import { filterAndSortProjects } from '@/lib/filters';
 import { useLanguage } from '@/lib/language-context';

@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { getTenderById } from '@/lib/data-service';
 import { useAuth } from '@/lib/auth-context';
 import { getProcurementMethod, requiresBidBond } from '@/lib/procurement';
 import { useProtectedRoute } from '@/lib/use-protected-route';
@@ -158,7 +157,9 @@ export default function AssistedSubmissionPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? '';
   const [tender, setTender] = useState<import('@/lib/types').Tender | undefined>(undefined);
-  useEffect(() => { getTenderById(id).then(setTender); }, [id]);
+  useEffect(() => {
+    fetch(`/api/tenders/${id}`).then((r) => r.ok ? r.json() : undefined).then(setTender);
+  }, [id]);
   const { user } = useAuth();
   const { t } = useLanguage();
 

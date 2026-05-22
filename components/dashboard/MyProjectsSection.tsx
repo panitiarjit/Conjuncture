@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import StatusPill from '@/components/ui/StatusPill';
-import { getProjects } from '@/lib/data-service';
+import { getProjects } from '@/lib/data-service-client';
 import { getDaysRemaining } from '@/lib/deadline';
 
 export default function MyProjectsSection() {

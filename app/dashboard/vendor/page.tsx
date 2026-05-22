@@ -18,7 +18,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
 import ProjectCard from '@/components/ui/ProjectCard';
-import { getTenders, getProjects } from '@/lib/data-service';
+import { getTenders, getProjects } from '@/lib/data-service-client';
 import { computeTenderStatus } from '@/lib/deadline';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
