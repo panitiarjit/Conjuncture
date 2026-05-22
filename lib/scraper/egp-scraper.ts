@@ -34,11 +34,17 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   try {
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
     await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await sleep(config.angularInitMs);
 
-    const csrfToken = await page.evaluate(() => sessionStorage.getItem('csrf') ?? '');
+    // Poll for CSRF token — Angular sets it async; give up to angularInitMs
+    let csrfToken = '';
+    const deadline = Date.now() + config.angularInitMs;
+    while (Date.now() < deadline) {
+      csrfToken = await page.evaluate(() => sessionStorage.getItem('csrf') ?? '');
+      if (csrfToken) break;
+      await sleep(1000);
+    }
     if (!csrfToken) {
-      throw new Error('Angular CSRF token not found in sessionStorage — page may not have loaded correctly');
+      throw new Error('Angular CSRF token not found in sessionStorage after waiting — page may not have loaded correctly');
     }
     console.log('[egp-scraper] CSRF token obtained');
 
