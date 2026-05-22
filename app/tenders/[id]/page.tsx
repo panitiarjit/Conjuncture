@@ -285,40 +285,42 @@ export default async function TenderDetailPage({
                   </div>
 
                   {/* Lock overlay */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm px-6 py-8">
-                    <div className="w-12 h-12 rounded-full bg-[#111111] flex items-center justify-center mb-4">
-                      <Lock size={20} className="text-white" aria-hidden="true" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm px-10 py-10">
+                    <div className="w-full max-w-sm flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-[#111111] flex items-center justify-center mb-4">
+                        <Lock size={20} className="text-white" aria-hidden="true" />
+                      </div>
+                      <h2 id="report-heading" className="text-base font-semibold text-[#111111] mb-1 text-center">
+                        Full Tender Report
+                      </h2>
+                      <p className="text-sm text-[#717171] text-center mb-5">
+                        Unlock the complete details for this procurement — everything you need to evaluate and bid.
+                      </p>
+                      <ul className="flex flex-col gap-2 mb-6 w-full">
+                        {[
+                          'Procurement method & legal basis',
+                          'Evaluation criteria & scoring weights',
+                          'Submission officer & contact info',
+                          'Bid bond amount & accepted forms',
+                          'TOR summary & scope of work',
+                          'Direct link to official portal listing',
+                        ].map((item) => (
+                          <li key={item} className="flex items-center gap-2.5 text-sm text-[#111111]">
+                            <CheckSquare size={14} className="flex-shrink-0 text-[#2D6A4F]" aria-hidden="true" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                      <Link
+                        href={`/assisted-submission/${tender.id}`}
+                        className="btn-primary w-full justify-center"
+                      >
+                        Unlock Full Report — ฿299
+                      </Link>
+                      <p className="text-xs text-[#717171] mt-3 text-center">
+                        One-time access. Instantly available after payment.
+                      </p>
                     </div>
-                    <h2 id="report-heading" className="text-base font-semibold text-[#111111] mb-1 text-center">
-                      Full Tender Report
-                    </h2>
-                    <p className="text-sm text-[#717171] text-center mb-5 max-w-xs">
-                      Unlock the complete details for this procurement — everything you need to evaluate and bid.
-                    </p>
-                    <ul className="flex flex-col gap-2 mb-6 w-full max-w-xs">
-                      {[
-                        'Procurement method & legal basis',
-                        'Evaluation criteria & scoring weights',
-                        'Submission officer & contact info',
-                        'Bid bond amount & accepted forms',
-                        'TOR summary & scope of work',
-                        'Direct link to official portal listing',
-                      ].map((item) => (
-                        <li key={item} className="flex items-center gap-2 text-sm text-[#111111]">
-                          <CheckSquare size={14} className="flex-shrink-0 text-[#2D6A4F]" aria-hidden="true" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                    <Link
-                      href={`/assisted-submission/${tender.id}`}
-                      className="btn-primary w-full max-w-xs justify-center"
-                    >
-                      Unlock Full Report — ฿299
-                    </Link>
-                    <p className="text-xs text-[#717171] mt-3 text-center">
-                      One-time access. Instantly available after payment.
-                    </p>
                   </div>
                 </div>
               </section>
