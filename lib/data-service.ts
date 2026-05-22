@@ -43,5 +43,13 @@ export async function getVendorById(id: string): Promise<Vendor | undefined> {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  return CATEGORIES;
+  if (!hasFirestoreCredentials()) return CATEGORIES;
+  const { getTendersFromFirestore } = await import('./firestore-admin');
+  const tenders = await getTendersFromFirestore();
+  // Count open tenders per category from real data
+  const counts: Partial<Record<string, number>> = {};
+  for (const t of tenders) {
+    if (t.status !== 'closed') counts[t.category] = (counts[t.category] ?? 0) + 1;
+  }
+  return CATEGORIES.map((c) => ({ ...c, count: counts[c.id] ?? 0 }));
 }

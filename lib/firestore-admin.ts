@@ -39,7 +39,7 @@ export async function upsertTender(tender: Tender): Promise<{ wasNew: boolean }>
   return { wasNew: !snap.exists };
 }
 
-export async function getTendersFromFirestore(limit = 200): Promise<Tender[]> {
+export async function getTendersFromFirestore(limit = 500): Promise<Tender[]> {
   const snap = await getDb()
     .collection(COLLECTION)
     .orderBy('deadline', 'desc')
@@ -48,7 +48,6 @@ export async function getTendersFromFirestore(limit = 200): Promise<Tender[]> {
 
   return snap.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
     const data = doc.data();
-    // Strip server-side fields before returning domain type
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { updatedAt: _u, ...tender } = data;
     return tender as Tender;
