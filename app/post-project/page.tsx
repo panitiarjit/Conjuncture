@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import {
   Hammer, Monitor, Truck, Leaf, Sparkles, Building2, Briefcase,
   MoreHorizontal, Shield, Upload, X, CheckCircle2, Check,
+  Stethoscope, GraduationCap, UtensilsCrossed,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -109,13 +110,17 @@ function Step1({ formData, onChange, onNext }: {
   const { t } = useLanguage();
 
   const categories = [
-    { id: 'renovation', icon: <Hammer size={32} aria-hidden="true" />, label: t('post.cat.renovation'), desc: t('post.cat.renovation.d') },
-    { id: 'technology', icon: <Monitor size={32} aria-hidden="true" />, label: t('post.cat.technology'), desc: t('post.cat.technology.d') },
-    { id: 'logistics', icon: <Truck size={32} aria-hidden="true" />, label: t('post.cat.logistics'), desc: t('post.cat.logistics.d') },
-    { id: 'agriculture', icon: <Leaf size={32} aria-hidden="true" />, label: t('post.cat.agriculture'), desc: t('post.cat.agriculture.d') },
-    { id: 'cleaning', icon: <Sparkles size={32} aria-hidden="true" />, label: t('post.cat.cleaning'), desc: t('post.cat.cleaning.d') },
     { id: 'construction', icon: <Building2 size={32} aria-hidden="true" />, label: t('post.cat.construction'), desc: t('post.cat.construction.d') },
+    { id: 'medical', icon: <Stethoscope size={32} aria-hidden="true" />, label: t('post.cat.medical'), desc: t('post.cat.medical.d') },
+    { id: 'technology', icon: <Monitor size={32} aria-hidden="true" />, label: t('post.cat.technology'), desc: t('post.cat.technology.d') },
+    { id: 'renovation', icon: <Hammer size={32} aria-hidden="true" />, label: t('post.cat.renovation'), desc: t('post.cat.renovation.d') },
+    { id: 'education', icon: <GraduationCap size={32} aria-hidden="true" />, label: t('post.cat.education'), desc: t('post.cat.education.d') },
+    { id: 'food', icon: <UtensilsCrossed size={32} aria-hidden="true" />, label: t('post.cat.food'), desc: t('post.cat.food.d') },
+    { id: 'logistics', icon: <Truck size={32} aria-hidden="true" />, label: t('post.cat.logistics'), desc: t('post.cat.logistics.d') },
+    { id: 'security', icon: <Shield size={32} aria-hidden="true" />, label: t('post.cat.security'), desc: t('post.cat.security.d') },
+    { id: 'cleaning', icon: <Sparkles size={32} aria-hidden="true" />, label: t('post.cat.cleaning'), desc: t('post.cat.cleaning.d') },
     { id: 'consulting', icon: <Briefcase size={32} aria-hidden="true" />, label: t('post.cat.consulting'), desc: t('post.cat.consulting.d') },
+    { id: 'agriculture', icon: <Leaf size={32} aria-hidden="true" />, label: t('post.cat.agriculture'), desc: t('post.cat.agriculture.d') },
     { id: 'other', icon: <MoreHorizontal size={32} aria-hidden="true" />, label: t('post.cat.other'), desc: t('post.cat.other.d') },
   ];
 

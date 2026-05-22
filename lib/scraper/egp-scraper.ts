@@ -1,6 +1,6 @@
 import { getTurnstileToken, validateTurnstileToken, searchAnnouncements } from './egp-client';
 import { mapToTender } from './egp-mapper';
-import { upsertTender } from '../firestore-admin';
+import { upsertTender, pruneExpiredTenders } from '../firestore-admin';
 import type { ScrapeConfig, ScrapeResult } from './types';
 import { DEFAULT_CONFIG } from './types';
 
@@ -55,6 +55,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     console.log('[egp-scraper] announcement token obtained');
 
     let pageNum = 1;
+    let consecutiveKnownPages = 0;
+
     while (pageNum <= config.maxPages) {
       const resp = await searchAnnouncements(page, config, {
         announceSDate,
@@ -70,19 +72,20 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       }
 
       const rows = resp.data?.data ?? [];
-      console.log(`[egp-scraper] page ${pageNum}: rows=${rows.length}`);
       if (rows.length === 0) break;
 
+      let pageNewCount = 0;
       for (const raw of rows) {
         result.scraped++;
         try {
           const tender = mapToTender(raw);
           if (process.env.DRY_RUN === 'true') {
+            pageNewCount++;
             result.inserted++;
             console.log(`[egp-scraper] [DRY] would upsert: ${tender.id} — ${tender.title.slice(0, 60)}`);
           } else {
             const { wasNew } = await upsertTender(tender);
-            if (wasNew) result.inserted++;
+            if (wasNew) { result.inserted++; pageNewCount++; }
             else result.updated++;
           }
         } catch (err) {
@@ -91,13 +94,32 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         }
       }
 
-      // API does not return a reliable totalPages — paginate until we get an empty page
+      console.log(`[egp-scraper] page ${pageNum}: rows=${rows.length} new=${pageNewCount}`);
+
       if (rows.length < 10) break;
+
+      // Stop when 2 consecutive pages are entirely known records — we've reached
+      // the overlap with the previous run; everything deeper is already in Firestore
+      if (pageNewCount === 0) {
+        consecutiveKnownPages++;
+        if (consecutiveKnownPages >= 2) {
+          console.log('[egp-scraper] 2 consecutive all-known pages — reached overlap, stopping early');
+          break;
+        }
+      } else {
+        consecutiveKnownPages = 0;
+      }
+
       pageNum++;
       await sleep(config.rateLimitMs);
     }
   } finally {
     await browser.close();
+  }
+
+  if (process.env.DRY_RUN !== 'true') {
+    const pruned = await pruneExpiredTenders();
+    if (pruned > 0) console.log(`[egp-scraper] pruned ${pruned} expired tenders`);
   }
 
   result.durationMs = Date.now() - start;

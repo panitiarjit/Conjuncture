@@ -7,6 +7,10 @@ const categories = {
     'cat.cleaning': 'Cleaning',
     'cat.consulting': 'Consulting',
     'cat.renovation': 'Renovation',
+    'cat.medical': 'Medical & Health',
+    'cat.education': 'Education',
+    'cat.food': 'Food & Catering',
+    'cat.security': 'Security',
     'cat.other': 'Other',
   },
   th: {
@@ -17,6 +21,10 @@ const categories = {
     'cat.cleaning': 'ทำความสะอาด',
     'cat.consulting': 'ที่ปรึกษา',
     'cat.renovation': 'ปรับปรุง',
+    'cat.medical': 'การแพทย์ & สาธารณสุข',
+    'cat.education': 'การศึกษา',
+    'cat.food': 'อาหาร & โภชนาการ',
+    'cat.security': 'รักษาความปลอดภัย',
     'cat.other': 'อื่นๆ',
   },
 };

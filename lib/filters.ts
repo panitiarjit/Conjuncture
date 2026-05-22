@@ -1,5 +1,5 @@
 import type { Tender, Project } from './types';
-import { computeTenderStatus, getDaysRemaining } from './deadline';
+import { getDisplayStatus, getDaysRemaining } from './deadline';
 
 export interface TenderFilters {
   search: string;
@@ -27,7 +27,7 @@ export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters):
     }
     if (selectedCategories.length > 0 && !selectedCategories.includes(tender.category)) return false;
     if (location !== '' && tender.region !== location) return false;
-    if (statusFilter !== 'all' && computeTenderStatus(tender.deadline) !== statusFilter) return false;
+    if (statusFilter !== 'all' && getDisplayStatus(tender) !== statusFilter) return false;
     if (budgetMin !== '') {
       const min = Number(budgetMin);
       if (!isNaN(min) && tender.budget < min) return false;

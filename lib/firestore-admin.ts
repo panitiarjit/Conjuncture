@@ -40,9 +40,11 @@ export async function upsertTender(tender: Tender): Promise<{ wasNew: boolean }>
 }
 
 export async function getTendersFromFirestore(limit = 500): Promise<Tender[]> {
+  // Filter by status=='open' — flowName from the e-GP portal is the source of truth
+  // for whether a project is still accepting bids, not an estimated deadline.
   const snap = await getDb()
     .collection(COLLECTION)
-    .orderBy('deadline', 'desc')
+    .where('status', '==', 'open')
     .limit(limit)
     .get();
 
@@ -52,6 +54,27 @@ export async function getTendersFromFirestore(limit = 500): Promise<Tender[]> {
     const { updatedAt: _u, ...tender } = data;
     return tender as Tender;
   });
+}
+
+export async function pruneExpiredTenders(): Promise<number> {
+  // Remove records the e-GP portal has moved to a closed stage.
+  // Daily scrape updates status; this prune cleans up what was closed since last run.
+  const snap = await getDb()
+    .collection(COLLECTION)
+    .where('status', '==', 'closed')
+    .get();
+
+  if (snap.empty) return 0;
+
+  let deleted = 0;
+  const BATCH_LIMIT = 499;
+  for (let i = 0; i < snap.docs.length; i += BATCH_LIMIT) {
+    const batch = getDb().batch();
+    snap.docs.slice(i, i + BATCH_LIMIT).forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    deleted += Math.min(BATCH_LIMIT, snap.docs.length - i);
+  }
+  return deleted;
 }
 
 export async function getTenderByIdFromFirestore(id: string): Promise<Tender | undefined> {

@@ -12,6 +12,10 @@ export type ProjectCategory =
   | 'cleaning'
   | 'construction'
   | 'consulting'
+  | 'medical'
+  | 'education'
+  | 'food'
+  | 'security'
   | 'other';
 
 export interface Tender {
@@ -24,8 +28,8 @@ export interface Tender {
   region: string;
   description: string;
   requirements: string[];
-  // Server hint only. Display and filter always use computeTenderStatus(deadline);
-  // this field is reserved for admin-set states (e.g. 'cancelled') not expressible by deadline.
+  // Source of truth for open/closed — derived from e-GP flowName during scrape.
+  // Display layer adds 'closing_soon' when status==='open' and deadline < 7 days out.
   status: TenderStatus;
 }
 

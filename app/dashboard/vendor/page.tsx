@@ -19,7 +19,7 @@ import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
 import ProjectCard from '@/components/ui/ProjectCard';
 import { getTenders, getProjects } from '@/lib/data-service-client';
-import { computeTenderStatus } from '@/lib/deadline';
+import { getDisplayStatus } from '@/lib/deadline';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -229,7 +229,7 @@ function GovTendersSection() {
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <StatusPill status={computeTenderStatus(tender.deadline)} />
+              <StatusPill status={getDisplayStatus(tender)} />
               <button className="btn-outline text-xs py-1.5 px-3">Apply</button>
             </div>
           </div>

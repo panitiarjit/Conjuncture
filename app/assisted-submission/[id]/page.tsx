@@ -19,7 +19,7 @@ import { useAuth } from '@/lib/auth-context';
 import { getProcurementMethod, requiresBidBond } from '@/lib/procurement';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 import { useLanguage } from '@/lib/language-context';
-import { computeTenderStatus } from '@/lib/deadline';
+import { getDisplayStatus } from '@/lib/deadline';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -281,7 +281,7 @@ export default function AssistedSubmissionPage() {
         <CalendarDays size={14} className="text-[#717171] flex-shrink-0" aria-hidden="true" />
         <span className="text-[#717171]">Deadline:</span>
         <span
-          className={`font-medium ${computeTenderStatus(tender.deadline) === 'closing_soon' ? 'text-[#B45309]' : 'text-[#111111]'}`}
+          className={`font-medium ${getDisplayStatus(tender) === 'closing_soon' ? 'text-[#B45309]' : 'text-[#111111]'}`}
         >
           {formatDate(tender.deadline)}
         </span>

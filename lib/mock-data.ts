@@ -605,11 +605,15 @@ export const VENDORS: Vendor[] = [
 
 export const CATEGORIES: Category[] = [
   { id: 'construction', name: 'ก่อสร้าง', icon: 'HardHat', count: 142 },
+  { id: 'medical', name: 'การแพทย์ & สาธารณสุข', icon: 'Stethoscope', count: 110 },
   { id: 'technology', name: 'เทคโนโลยี & IT', icon: 'Monitor', count: 98 },
-  { id: 'renovation', name: 'ปรับปรุง & ตกแต่ง', icon: 'Hammer', count: 76 },
-  { id: 'logistics', name: 'โลจิสติกส์', icon: 'Truck', count: 64 },
+  { id: 'renovation', name: 'ปรับปรุง & ซ่อมแซม', icon: 'Hammer', count: 76 },
+  { id: 'education', name: 'การศึกษา & ฝึกอบรม', icon: 'GraduationCap', count: 65 },
+  { id: 'food', name: 'อาหาร & โภชนาการ', icon: 'UtensilsCrossed', count: 58 },
+  { id: 'logistics', name: 'โลจิสติกส์ & ขนส่ง', icon: 'Truck', count: 64 },
+  { id: 'security', name: 'รักษาความปลอดภัย', icon: 'Shield', count: 42 },
   { id: 'cleaning', name: 'ทำความสะอาด', icon: 'Sparkles', count: 53 },
-  { id: 'consulting', name: 'ที่ปรึกษา', icon: 'Briefcase', count: 47 },
-  { id: 'agriculture', name: 'เกษตรกรรม', icon: 'Sprout', count: 39 },
+  { id: 'consulting', name: 'ที่ปรึกษา & ออกแบบ', icon: 'Briefcase', count: 47 },
+  { id: 'agriculture', name: 'เกษตรกรรม & สิ่งแวดล้อม', icon: 'Sprout', count: 39 },
   { id: 'other', name: 'อื่นๆ', icon: 'MoreHorizontal', count: 88 },
 ];

@@ -55,10 +55,19 @@ export function useListingFilters<TItem, S extends string>(
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    fetchData().then((d) => {
-      setData(d);
-      setIsLoading(false);
-    });
+    let mounted = true;
+    const load = () =>
+      fetchData().then((d) => {
+        if (!mounted) return;
+        setData(d);
+        setIsLoading(false);
+      });
+    load();
+    const id = setInterval(load, 60_000);
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
     // fetchData is always a stable module-level function reference
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

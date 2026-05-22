@@ -41,6 +41,10 @@ function categoryLabel(cat: string): string {
     cleaning: 'Cleaning',
     consulting: 'Consulting',
     renovation: 'Renovation',
+    medical: 'Medical & Health',
+    education: 'Education',
+    food: 'Food & Catering',
+    security: 'Security',
     other: 'General',
   };
   return map[cat] ?? cat;

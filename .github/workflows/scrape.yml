@@ -2,23 +2,20 @@ name: e-GP Tender Scrape
 
 on:
   schedule:
-    # Run at 07:00 and 15:00 Bangkok time (UTC+7 = 00:00 and 08:00 UTC).
-    - cron: '0 0,8 * * 1-5'
+    - cron: '0 1 * * *'   # 01:00 UTC = 08:00 Bangkok (UTC+7)
   workflow_dispatch:
     inputs:
       days:
-        description: 'Days of history to pull (default 1)'
+        description: 'Days of history to pull (overrides default of 3)'
         required: false
-        default: '1'
       pages:
-        description: 'Max result pages per run (default 50)'
+        description: 'Max pages safety ceiling (overrides default of 500)'
         required: false
-        default: '50'
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - uses: actions/checkout@v4
@@ -40,8 +37,8 @@ jobs:
           FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
           FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
           CAPSOLVER_API_KEY: ${{ secrets.CAPSOLVER_API_KEY }}
-          SCRAPE_SECRET: ${{ secrets.SCRAPE_SECRET }}
         run: |
-          npx ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts \
-            --days ${{ github.event.inputs.days || '1' }} \
-            --pages ${{ github.event.inputs.pages || '50' }}
+          ARGS=""
+          [ -n "${{ github.event.inputs.days }}" ] && ARGS="$ARGS --days ${{ github.event.inputs.days }}"
+          [ -n "${{ github.event.inputs.pages }}" ] && ARGS="$ARGS --pages ${{ github.event.inputs.pages }}"
+          npx ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts $ARGS

@@ -42,5 +42,9 @@ export const CATEGORY_KEYS: Record<ProjectCategory, TranslationKey> = {
   cleaning: 'cat.cleaning',
   consulting: 'cat.consulting',
   renovation: 'cat.renovation',
+  medical: 'cat.medical',
+  education: 'cat.education',
+  food: 'cat.food',
+  security: 'cat.security',
   other: 'cat.other',
 };

@@ -18,7 +18,7 @@ import Footer from '@/components/layout/Footer';
 import StatusPill from '@/components/ui/StatusPill';
 import ProtectedShell from '@/components/layout/ProtectedShell';
 import { getTenderById } from '@/lib/data-service';
-import { computeTenderStatus } from '@/lib/deadline';
+import { getDisplayStatus } from '@/lib/deadline';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,6 +43,10 @@ function categoryLabel(cat: string): string {
     cleaning: 'Cleaning',
     consulting: 'Consulting',
     renovation: 'Renovation',
+    medical: 'Medical & Health',
+    education: 'Education',
+    food: 'Food & Catering',
+    security: 'Security',
     other: 'General',
   };
   return map[cat] ?? cat;
@@ -81,7 +85,7 @@ export default async function TenderDetailPage({
 }) {
   const { id } = await params;
   const tender = await getTenderById(id);
-  const tenderStatus = tender ? computeTenderStatus(tender.deadline) : 'open';
+  const tenderStatus = tender ? getDisplayStatus(tender) : 'open';
 
   if (!tender) {
     return (

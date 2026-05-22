@@ -67,8 +67,8 @@ export const DEFAULT_CONFIG: ScrapeConfig = {
   baseUrl: 'https://process5.gprocurement.go.th',
   searchPath: '/egp-atpj27-service/pb/a-egp-allt-project/announcement',
   rateLimitMs: 1200,
-  maxPages: 50,
-  dateFromDaysAgo: 1,
+  maxPages: 500,   // safety ceiling only — overlap detection stops early in practice
+  dateFromDaysAgo: 3,  // 1 day new + 2 day buffer if a run is missed
   cfTurnstileSiteKey: '0x4AAAAAABuINxkTjFy-_hpH',
   cfPageUrl: 'https://process5.gprocurement.go.th/egp-agpc01-web/announcement',
   angularInitMs: 18000,
