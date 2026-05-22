@@ -6,7 +6,9 @@ import { Search } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProjectCard from '@/components/ui/ProjectCard';
+import ProjectCardSkeleton from '@/components/ui/ProjectCardSkeleton';
 import ProjectFiltersPanel from '@/components/ui/ProjectFiltersPanel';
+import Pagination from '@/components/ui/Pagination';
 import { getProjects } from '@/lib/data-service-client';
 import type { Project } from '@/lib/types';
 import { filterAndSortProjects } from '@/lib/filters';
@@ -41,9 +43,15 @@ export default function ProjectsPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
                 <p className="text-sm text-[#717171]">
-                  {t('pp.showing')}{' '}
-                  <span className="font-semibold text-[#111111]">{filterState.results.length}</span>{' '}
-                  {filterState.results.length !== 1 ? t('pp.projects') : t('pp.project')}
+                  {filterState.isLoading ? (
+                    <span className="inline-block h-4 w-32 bg-[#E0E0E0] rounded animate-pulse" />
+                  ) : (
+                    <>
+                      {t('pp.showing')}{' '}
+                      <span className="font-semibold text-[#111111]">{filterState.results.length}</span>{' '}
+                      {filterState.results.length !== 1 ? t('pp.projects') : t('pp.project')}
+                    </>
+                  )}
                 </p>
                 <div className="flex items-center gap-2">
                   <label htmlFor="sort-projects" className="text-sm text-[#717171] whitespace-nowrap">{t('common.sortBy')}</label>
@@ -60,12 +68,23 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
-              {filterState.results.length > 0 ? (
+              {filterState.isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {filterState.results.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
-                  ))}
+                  {[...Array(6)].map((_, i) => <ProjectCardSkeleton key={i} />)}
                 </div>
+              ) : filterState.results.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {filterState.paginatedResults.map((project) => (
+                      <ProjectCard key={project.id} project={project} />
+                    ))}
+                  </div>
+                  <Pagination
+                    page={filterState.page}
+                    totalPages={filterState.totalPages}
+                    onPageChange={filterState.setPage}
+                  />
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                   <div className="w-14 h-14 rounded-full bg-[#F7F7F7] flex items-center justify-center">

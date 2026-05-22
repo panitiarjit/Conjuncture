@@ -4,6 +4,8 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 
 export type SortOption = 'deadline' | 'budget' | 'recent';
 
+export const PAGE_SIZE = 20;
+
 export interface FilterParams<S extends string> {
   search: string;
   selectedCategories: string[];
@@ -30,6 +32,9 @@ export interface ListingFilterState<S extends string> {
   sort: SortOption;
   setSort: (v: SortOption) => void;
   clearFilters: () => void;
+  page: number;
+  setPage: (p: number) => void;
+  totalPages: number;
 }
 
 export function useListingFilters<TItem, S extends string>(
@@ -37,7 +42,7 @@ export function useListingFilters<TItem, S extends string>(
   filterFn: (items: TItem[], params: FilterParams<S>) => TItem[],
   defaultStatus: S,
   defaultSort: SortOption,
-): ListingFilterState<S> & { results: TItem[]; isLoading: boolean } {
+): ListingFilterState<S> & { results: TItem[]; paginatedResults: TItem[]; isLoading: boolean } {
   const [data, setData] = useState<TItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -47,6 +52,7 @@ export function useListingFilters<TItem, S extends string>(
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [sort, setSort] = useState<SortOption>(defaultSort);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetchData().then((d) => {
@@ -63,6 +69,20 @@ export function useListingFilters<TItem, S extends string>(
     );
   }, []);
 
+  // Reset to page 1 whenever filters change
+  const setSearchAndReset = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
+  const toggleCategoryAndReset = useCallback((id: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
+    setPage(1);
+  }, []);
+  const setLocationAndReset = useCallback((v: string) => { setLocation(v); setPage(1); }, []);
+  const setStatusFilterAndReset = useCallback((v: S) => { setStatusFilter(v); setPage(1); }, []);
+  const setBudgetMinAndReset = useCallback((v: string) => { setBudgetMin(v); setPage(1); }, []);
+  const setBudgetMaxAndReset = useCallback((v: string) => { setBudgetMax(v); setPage(1); }, []);
+  const setSortAndReset = useCallback((v: SortOption) => { setSort(v); setPage(1); }, []);
+
   const clearFilters = useCallback(() => {
     setSearch('');
     setSelectedCategories([]);
@@ -71,6 +91,7 @@ export function useListingFilters<TItem, S extends string>(
     setBudgetMin('');
     setBudgetMax('');
     setSort(defaultSort);
+    setPage(1);
   }, [defaultStatus, defaultSort]);
 
   const results = useMemo(
@@ -87,16 +108,26 @@ export function useListingFilters<TItem, S extends string>(
     [filterFn, data, search, selectedCategories, location, statusFilter, budgetMin, budgetMax, sort],
   );
 
+  const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedResults = useMemo(
+    () => results.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [results, safePage],
+  );
+
   return {
-    search, setSearch,
-    selectedCategories, toggleCategory,
-    location, setLocation,
-    statusFilter, setStatusFilter,
-    budgetMin, setBudgetMin,
-    budgetMax, setBudgetMax,
-    sort, setSort,
+    search, setSearch: setSearchAndReset,
+    selectedCategories, toggleCategory: toggleCategoryAndReset,
+    location, setLocation: setLocationAndReset,
+    statusFilter, setStatusFilter: setStatusFilterAndReset,
+    budgetMin, setBudgetMin: setBudgetMinAndReset,
+    budgetMax, setBudgetMax: setBudgetMaxAndReset,
+    sort, setSort: setSortAndReset,
     clearFilters,
+    page: safePage, setPage,
+    totalPages,
     results,
+    paginatedResults,
     isLoading,
   };
 }

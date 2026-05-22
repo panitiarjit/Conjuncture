@@ -6,7 +6,9 @@ import { Search, Info } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TenderCard from '@/components/ui/TenderCard';
+import TenderCardSkeleton from '@/components/ui/TenderCardSkeleton';
 import TenderFiltersPanel from '@/components/ui/TenderFiltersPanel';
+import Pagination from '@/components/ui/Pagination';
 import { getTenders } from '@/lib/data-service-client';
 import type { Tender } from '@/lib/types';
 import { filterAndSortTenders } from '@/lib/filters';
@@ -50,9 +52,15 @@ export default function TendersPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
                 <p className="text-sm text-[#717171]">
-                  {t('tp.showing')}{' '}
-                  <span className="font-semibold text-[#111111]">{filterState.results.length}</span>{' '}
-                  {filterState.results.length !== 1 ? t('tp.tenders') : t('tp.tender')}
+                  {filterState.isLoading ? (
+                    <span className="inline-block h-4 w-32 bg-[#E0E0E0] rounded animate-pulse" />
+                  ) : (
+                    <>
+                      {t('tp.showing')}{' '}
+                      <span className="font-semibold text-[#111111]">{filterState.results.length}</span>{' '}
+                      {filterState.results.length !== 1 ? t('tp.tenders') : t('tp.tender')}
+                    </>
+                  )}
                 </p>
                 <div className="flex items-center gap-2">
                   <label htmlFor="sort-tenders" className="text-sm text-[#717171] whitespace-nowrap">{t('common.sortBy')}</label>
@@ -69,12 +77,23 @@ export default function TendersPage() {
                 </div>
               </div>
 
-              {filterState.results.length > 0 ? (
+              {filterState.isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {filterState.results.map((tender) => (
-                    <TenderCard key={tender.id} tender={tender} />
-                  ))}
+                  {[...Array(6)].map((_, i) => <TenderCardSkeleton key={i} />)}
                 </div>
+              ) : filterState.results.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {filterState.paginatedResults.map((tender) => (
+                      <TenderCard key={tender.id} tender={tender} />
+                    ))}
+                  </div>
+                  <Pagination
+                    page={filterState.page}
+                    totalPages={filterState.totalPages}
+                    onPageChange={filterState.setPage}
+                  />
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                   <div className="w-14 h-14 rounded-full bg-[#F7F7F7] flex items-center justify-center">
