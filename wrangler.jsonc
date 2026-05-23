@@ -22,5 +22,12 @@
   },
   "observability": {
     "enabled": true
+  },
+  "alias": {
+    "playwright": "./.cf-stubs/empty.js",
+    "playwright-core": "./.cf-stubs/empty.js",
+    "chromium-bidi/lib/cjs/bidiMapper/BidiMapper": "./.cf-stubs/empty.js",
+    "chromium-bidi/lib/cjs/cdp/CdpConnection": "./.cf-stubs/empty.js",
+    "fsevents": "./.cf-stubs/empty.js"
   }
 }
