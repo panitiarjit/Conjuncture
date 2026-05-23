@@ -29,6 +29,11 @@ export const metadata: Metadata = {
   description:
     'Conjuncture connects Thai businesses and government agencies with verified vendors through transparent, competitive procurement. Sealed bids, escrow payments, government tenders.',
   keywords: [
+    'Conjuncture',
+    'ConjunctureTH',
+    'Conjuncture.work',
+    'conjunctureth',
+    'conjuncturework',
     'Thailand procurement',
     'Thai government tenders',
     'B2B marketplace Thailand',
