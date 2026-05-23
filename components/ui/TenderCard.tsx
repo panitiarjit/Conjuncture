@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Building2, CalendarDays, MapPin } from 'lucide-react';
+import { Building2, MapPin } from 'lucide-react';
 import type { Tender } from '@/lib/types';
 import { getTenderPresentation } from '@/lib/tender-presentation';
 import StatusPill from './StatusPill';
@@ -46,16 +46,6 @@ export default function TenderCard({ tender }: TenderCardProps) {
           </span>
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${p.methodBadgeClass}`}>
             {t(`pm.${p.procurementMethod}`)}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs text-[#717171]">
-            <CalendarDays size={13} className="flex-shrink-0" aria-hidden="true" />
-            <span>{t('card.deadline')}</span>
-          </div>
-          <span className={`text-sm font-medium ${p.isClosingSoon ? 'text-[#B45309]' : 'text-[#111111]'}`}>
-            {p.formattedDeadline}
           </span>
         </div>
 

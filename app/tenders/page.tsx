@@ -17,7 +17,7 @@ import { useListingFilters } from '@/lib/use-listing-filters';
 
 export default function TendersPage() {
   const { t } = useLanguage();
-  const filterState = useListingFilters<Tender, 'all' | 'open' | 'closing_soon'>(getTenders, filterAndSortTenders, 'all', 'deadline');
+  const filterState = useListingFilters<Tender, 'all' | 'open' | 'closed'>(getTenders, filterAndSortTenders, 'all', 'recent');
 
   return (
     <div className="min-h-screen flex flex-col">

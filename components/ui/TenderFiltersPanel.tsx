@@ -11,7 +11,7 @@ import { useLanguage } from '@/lib/language-context';
 import type { ListingFilterState } from '@/lib/use-listing-filters';
 
 interface Props {
-  state: ListingFilterState<'all' | 'open' | 'closing_soon'>;
+  state: ListingFilterState<'all' | 'open' | 'closed'>;
 }
 
 export default function TenderFiltersPanel({ state }: Props) {
@@ -35,7 +35,7 @@ export default function TenderFiltersPanel({ state }: Props) {
   const statusOptions = [
     { value: 'all' as const, label: t('common.all') },
     { value: 'open' as const, label: t('common.open') },
-    { value: 'closing_soon' as const, label: t('tp.closingSoon') },
+    { value: 'closed' as const, label: t('status.closed') },
   ];
 
   return (

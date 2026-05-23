@@ -48,7 +48,7 @@ export function mapCategory(typeId: string | null | undefined, flowName: string 
 // BE year 25YY → CE year = 25YY - 543.
 // e.g. 6905... → BE 2569, month 05 → CE 2026-05
 
-function dateFromProjectId(projectId: string): string | null {
+export function dateFromProjectId(projectId: string): string | null {
   const match = projectId.match(/^(\d{2})(\d{2})/);
   if (!match) return null;
   const beYear = 2500 + parseInt(match[1], 10);
@@ -68,6 +68,7 @@ const OPEN_FLOW_KEYWORDS = [
   'ยื่นเสนอราคา',    // price submission
   'ประกาศราคากลาง',  // price announcement
   'จัดทำร่าง',       // draft TOR
+  'จัดทำ TOR',       // TOR preparation — confirmed live 2026-05-24
 ];
 
 // flowName values that indicate completed/closed
@@ -85,11 +86,12 @@ const CLOSED_FLOW_KEYWORDS = [
 
 // Status is derived solely from the procurement stage (flowName), not estimated dates.
 // The e-GP flowName reliably tells us whether a project is still accepting bids.
-function statusFromFlow(flowName: string = ''): TenderStatus {
+function statusFromFlow(flowName: string = '', projectId?: string): TenderStatus {
   if (CLOSED_FLOW_KEYWORDS.some((k) => flowName.includes(k))) return 'closed';
   if (OPEN_FLOW_KEYWORDS.some((k) => flowName.includes(k))) return 'open';
-  // Unknown stage — assume open; daily scrape will update once flowName changes
-  return 'open';
+  // Unrecognised stage: log so new e-GP stages get added to the keyword lists promptly.
+  console.warn(`[egp-mapper] unknown flowName "${flowName}" on project ${projectId ?? '?'} — marking as unknown`);
+  return 'unknown';
 }
 
 // ── Deadline estimation ─────────────────────────────────────────────────────
@@ -131,7 +133,8 @@ export function mapToTender(raw: RawAnnouncement): Tender {
 
   const flowName = raw.flowName ?? '';
   const deadline = estimateDeadline(projectDate, flowName, raw.projectName ?? '');
-  const status = statusFromFlow(flowName);
+  // announceWinnerDate being set means a winner has been announced — definitively closed.
+  const status = raw.announceWinnerDate ? 'closed' : statusFromFlow(flowName, raw.projectId);
 
   return {
     id: raw.projectId,
@@ -144,5 +147,6 @@ export function mapToTender(raw: RawAnnouncement): Tender {
     description: flowName,
     requirements: [],
     status,
+    methodId: raw.methodId ?? undefined,
   };
 }

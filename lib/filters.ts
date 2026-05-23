@@ -1,11 +1,13 @@
 import type { Tender, Project } from './types';
 import { getDisplayStatus, getDaysRemaining } from './deadline';
 
+const STATUS_SORT_ORDER: Record<string, number> = { open: 0, unknown: 1, closed: 2 };
+
 export interface TenderFilters {
   search: string;
   selectedCategories: string[];
   location: string;
-  statusFilter: 'all' | 'open' | 'closing_soon';
+  statusFilter: 'all' | 'open' | 'closed';
   budgetMin: string;
   budgetMax: string;
   sort: 'deadline' | 'budget' | 'recent';
@@ -40,6 +42,10 @@ export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters):
   });
 
   return [...result].sort((a, b) => {
+    // Open/unknown always before closed regardless of sort mode
+    const statusDiff = (STATUS_SORT_ORDER[a.status] ?? 1) - (STATUS_SORT_ORDER[b.status] ?? 1);
+    if (statusDiff !== 0) return statusDiff;
+    // Within same status group, apply user-selected sort
     if (sort === 'deadline') return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
     if (sort === 'budget') return b.budget - a.budget;
     return b.id.localeCompare(a.id);

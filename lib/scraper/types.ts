@@ -14,8 +14,11 @@ export interface RawAnnouncement {
   projectStatus?: string;       // e.g. "A"
   stepId?: string;              // e.g. "X01"
   flowName?: string;            // description of current step
-  announceType?: string;        // e.g. "W0", "B0"
+  announceType?: string;        // e.g. "W0", "B0", "IM"
   validateConfidential?: boolean;
+  modifiedDate?: string | null;
+  announceDateStr?: string | null;
+  announceWinnerDate?: string | null; // date winner was announced — non-null means awarded
 }
 
 export interface EgpDataEnvelope {
@@ -53,6 +56,12 @@ export interface ScrapeConfig {
   cfPageUrl: string;
   /** Milliseconds to wait for Angular app to initialize */
   angularInitMs: number;
+  /**
+   * When set, only upsert tenders whose project ID is in this set.
+   * Tenders found in the API that are NOT in the set are silently skipped.
+   * Used by the status-refresh job to avoid inserting new records mid-refresh.
+   */
+  idFilter?: Set<string>;
 }
 
 export interface ScrapeResult {

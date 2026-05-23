@@ -5,7 +5,7 @@ import type { Tender } from './types';
 import type { TenderStatus } from './types';
 import type { ProcurementMethod } from './procurement';
 import { getDisplayStatus, getDaysRemaining } from './deadline';
-import { getProcurementMethod } from './procurement';
+import { getProcurementMethod, getMethodFromId } from './procurement';
 import { formatBudget, formatDate } from './format';
 import { METHOD_COLORS, STATUS_COLORS } from './theme';
 import { CATEGORY_KEYS } from './translation-keys';
@@ -30,7 +30,7 @@ export function getTenderPresentation(
 ): TenderPresentation {
   const status = getDisplayStatus(tender);
   const daysRemaining = getDaysRemaining(tender.deadline);
-  const procurementMethod = getProcurementMethod(tender.budget);
+  const procurementMethod = getMethodFromId(tender.methodId) ?? getProcurementMethod(tender.budget);
   const categoryLabel = t(CATEGORY_KEYS[tender.category]);
 
   return {

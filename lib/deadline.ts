@@ -7,12 +7,10 @@ export function computeTenderStatus(deadline: string): TenderStatus {
   return 'open';
 }
 
-// Use this instead of computeTenderStatus for real tenders — respects the stored
-// flowName-based status while still surfacing 'closing_soon' for the 7-day window.
-export function getDisplayStatus(tender: Pick<Tender, 'status' | 'deadline'>): TenderStatus {
-  if (tender.status === 'closed') return 'closed';
-  if (getDaysRemaining(tender.deadline) <= 7) return 'closing_soon';
-  return 'open';
+// Status comes entirely from e-GP flowName/announceWinnerDate set during scrape.
+// Deadline is not used for display — it is an estimate only.
+export function getDisplayStatus(tender: Pick<Tender, 'status'>): TenderStatus {
+  return tender.status;
 }
 
 export function getDaysRemaining(deadline: string): number {

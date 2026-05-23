@@ -1,8 +1,8 @@
 const status = {
   en: {
     'status.open': 'Open',
-    'status.closingSoon': 'Closing Soon',
     'status.closed': 'Closed',
+    'status.unknown': 'Status Unknown',
     'status.inProgress': 'In Progress',
     'status.completed': 'Completed',
     'status.escrowHeld': 'Escrow Held',
@@ -10,8 +10,8 @@ const status = {
   },
   th: {
     'status.open': 'เปิดรับ',
-    'status.closingSoon': 'ใกล้ปิดรับ',
     'status.closed': 'ปิดแล้ว',
+    'status.unknown': 'ไม่ทราบสถานะ',
     'status.inProgress': 'กำลังดำเนินการ',
     'status.completed': 'เสร็จแล้ว',
     'status.escrowHeld': 'รอ Escrow',

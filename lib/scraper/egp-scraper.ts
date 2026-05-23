@@ -1,6 +1,7 @@
 import { getTurnstileToken, validateTurnstileToken, searchAnnouncements } from './egp-client';
-import { mapToTender } from './egp-mapper';
-import { upsertTender, pruneExpiredTenders } from '../firestore-admin';
+import { mapToTender, dateFromProjectId } from './egp-mapper';
+import { getTendersFromFirestore, upsertTender, recordUnknownMethodId } from '../firestore-admin';
+import { getMethodFromId } from '../procurement';
 import type { ScrapeConfig, ScrapeResult } from './types';
 import { DEFAULT_CONFIG } from './types';
 
@@ -20,6 +21,12 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const today = new Date();
   const from = new Date(today);
   from.setDate(today.getDate() - config.dateFromDaysAgo);
+  const isDryRun = process.env.DRY_RUN === 'true';
+  // Collected during dry runs to build the methodId → ProcurementMethod mapping
+  const methodIdsSeen = new Map<string, number>(); // methodId → count
+  // Track unknown methodIds written to Firestore this run (avoid N writes for same ID)
+  const unknownMethodIdsRecorded = new Set<string>();
+  let rawSampleLogged = false;
 
   const announceSDate = isoDate(from);
   const announceEDate = isoDate(today);
@@ -77,16 +84,36 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       let pageNewCount = 0;
       for (const raw of rows) {
         result.scraped++;
+        // Collect methodId frequency and dump full raw fields once per dry run
+        if (isDryRun) {
+          if (raw.methodId) methodIdsSeen.set(raw.methodId, (methodIdsSeen.get(raw.methodId) ?? 0) + 1);
+          if (!rawSampleLogged) {
+            console.log('[egp-scraper] [DRY] Full raw fields of first record (check for deadline/method fields):');
+            console.log(JSON.stringify(raw, null, 2));
+            rawSampleLogged = true;
+          }
+        }
         try {
           const tender = mapToTender(raw);
-          if (process.env.DRY_RUN === 'true') {
+          if (isDryRun) {
             pageNewCount++;
             result.inserted++;
             console.log(`[egp-scraper] [DRY] would upsert: ${tender.id} — ${tender.title.slice(0, 60)}`);
           } else {
+            // In refresh mode, skip tenders not in the filter set (don't insert new records)
+            if (config.idFilter && !config.idFilter.has(tender.id)) {
+              continue;
+            }
             const { wasNew } = await upsertTender(tender);
             if (wasNew) { result.inserted++; pageNewCount++; }
             else result.updated++;
+            // Record methodIds not yet in METHOD_ID_MAP so they can be classified later
+            if (tender.methodId && getMethodFromId(tender.methodId) === null
+                && !unknownMethodIdsRecorded.has(tender.methodId)) {
+              unknownMethodIdsRecorded.add(tender.methodId);
+              recordUnknownMethodId(tender.methodId, tender.title, raw.flowName ?? undefined)
+                .catch((err) => console.warn(`[egp-scraper] recordUnknownMethodId failed: ${err}`));
+            }
           }
         } catch (err) {
           result.errors++;
@@ -117,12 +144,43 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     await browser.close();
   }
 
-  if (process.env.DRY_RUN !== 'true') {
-    const pruned = await pruneExpiredTenders();
-    if (pruned > 0) console.log(`[egp-scraper] pruned ${pruned} expired tenders`);
+  if (isDryRun && methodIdsSeen.size > 0) {
+    console.log('\n[egp-scraper] [DRY] methodId values seen (copy these to build the mapping):');
+    console.table([...methodIdsSeen.entries()].sort((a, b) => b[1] - a[1]).map(([id, count]) => ({ methodId: id, count })));
   }
 
   result.durationMs = Date.now() - start;
   console.log('[egp-scraper] done:', result);
   return result;
+}
+
+/**
+ * Re-check the status of all currently open/unknown tenders already in Firestore.
+ * Reads their project IDs, derives the announcement date range they span,
+ * re-scrapes only that window, and updates only tenders already in the set.
+ * New tenders discovered along the way are skipped.
+ */
+export async function runStatusRefresh(overrides: Partial<ScrapeConfig> = {}): Promise<ScrapeResult> {
+  const allTenders = await getTendersFromFirestore(2000);
+  const toRefresh = allTenders.filter((t) => t.status === 'open' || t.status === 'unknown');
+
+  if (toRefresh.length === 0) {
+    console.log('[egp-scraper] runStatusRefresh: no open/unknown tenders to refresh');
+    return { scraped: 0, inserted: 0, updated: 0, errors: 0, durationMs: 0 };
+  }
+
+  const idFilter = new Set(toRefresh.map((t) => t.id));
+
+  const dates = toRefresh
+    .map((t) => dateFromProjectId(t.id))
+    .filter((d): d is string => d !== null)
+    .sort();
+
+  const daysAgo =
+    dates.length > 0
+      ? Math.ceil((Date.now() - new Date(dates[0]).getTime()) / 86_400_000) + 2
+      : 90;
+
+  console.log(`[egp-scraper] runStatusRefresh: ${toRefresh.length} tenders, ${daysAgo} days back`);
+  return runScrape({ ...overrides, dateFromDaysAgo: daysAgo, idFilter });
 }

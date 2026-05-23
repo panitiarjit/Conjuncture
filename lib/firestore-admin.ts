@@ -31,6 +31,8 @@ function getDb(): Firestore {
 
 /** Collection name for scraped tenders. */
 const COLLECTION = 'tenders';
+/** Collection for e-GP methodId codes not yet in METHOD_ID_MAP. */
+const UNKNOWN_METHODS_COLLECTION = 'unknown_method_ids';
 
 export async function upsertTender(tender: Tender): Promise<{ wasNew: boolean }> {
   const ref = getDb().collection(COLLECTION).doc(tender.id);
@@ -39,12 +41,9 @@ export async function upsertTender(tender: Tender): Promise<{ wasNew: boolean }>
   return { wasNew: !snap.exists };
 }
 
-export async function getTendersFromFirestore(limit = 500): Promise<Tender[]> {
-  // Filter by status=='open' — flowName from the e-GP portal is the source of truth
-  // for whether a project is still accepting bids, not an estimated deadline.
+export async function getTendersFromFirestore(limit = 1000): Promise<Tender[]> {
   const snap = await getDb()
     .collection(COLLECTION)
-    .where('status', '==', 'open')
     .limit(limit)
     .get();
 
@@ -82,4 +81,40 @@ export async function getTenderByIdFromFirestore(id: string): Promise<Tender | u
   if (!snap.exists) return undefined;
   const { updatedAt: _u, ...tender } = snap.data()!;
   return tender as Tender;
+}
+
+export async function recordUnknownMethodId(
+  methodId: string,
+  sampleTitle: string,
+  sampleFlowName?: string,
+): Promise<void> {
+  const ref = getDb().collection(UNKNOWN_METHODS_COLLECTION).doc(methodId);
+  const snap = await ref.get();
+  if (snap.exists) {
+    await ref.update({ count: (snap.data()!.count ?? 0) + 1, lastSeen: new Date().toISOString() });
+  } else {
+    await ref.set({
+      methodId,
+      sampleTitle,
+      sampleFlowName: sampleFlowName ?? null,
+      count: 1,
+      firstSeen: new Date().toISOString(),
+      lastSeen: new Date().toISOString(),
+    });
+  }
+}
+
+export async function getUnknownMethodIds(): Promise<
+  Array<{ methodId: string; sampleTitle: string; sampleFlowName: string | null; count: number }>
+> {
+  const snap = await getDb().collection(UNKNOWN_METHODS_COLLECTION).get();
+  return snap.docs.map(
+    (doc) =>
+      doc.data() as {
+        methodId: string;
+        sampleTitle: string;
+        sampleFlowName: string | null;
+        count: number;
+      },
+  );
 }

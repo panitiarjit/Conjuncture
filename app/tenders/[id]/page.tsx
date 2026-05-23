@@ -156,19 +156,6 @@ export default async function TenderDetailPage({
                   </span>
                 </div>
 
-                {/* Deadline */}
-                <div className="flex items-center gap-2 text-sm">
-                  <CalendarDays size={15} className="flex-shrink-0 text-[#717171]" aria-hidden="true" />
-                  <span className="text-[#717171] w-[85px] flex-shrink-0">Deadline</span>
-                  <span
-                    className={`font-medium ${
-                      tenderStatus === 'closing_soon' ? 'text-[#B45309]' : 'text-[#111111]'
-                    }`}
-                  >
-                    {formatDate(tender.deadline)}
-                  </span>
-                </div>
-
                 {/* Region */}
                 <div className="flex items-center gap-2 text-sm">
                   <MapPin size={15} className="flex-shrink-0 text-[#717171]" aria-hidden="true" />
@@ -366,16 +353,6 @@ export default async function TenderDetailPage({
                   <div className="flex justify-between text-sm">
                     <span className="text-[#717171]">Posted</span>
                     <span className="text-[#111111] font-medium">{postedDate(tender.deadline)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-[#717171]">Deadline</span>
-                    <span
-                      className={`font-medium ${
-                        tenderStatus === 'closing_soon' ? 'text-[#B45309]' : 'text-[#111111]'
-                      }`}
-                    >
-                      {formatDate(tender.deadline)}
-                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#717171]">Decision expected</span>

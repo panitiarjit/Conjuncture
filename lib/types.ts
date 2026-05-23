@@ -1,7 +1,7 @@
 // Domain types for the Conjuncture procurement marketplace.
 // Data fixtures live in lib/mock-data.ts; real API shapes should match these interfaces.
 
-export type TenderStatus = 'open' | 'closing_soon' | 'closed';
+export type TenderStatus = 'open' | 'closed' | 'unknown';
 export type ProjectStatus = 'open' | 'in_progress' | 'completed';
 export type VendorVerified = 'new' | 'verified' | 'verified_pro';
 export type ProjectCategory =
@@ -31,6 +31,9 @@ export interface Tender {
   // Source of truth for open/closed — derived from e-GP flowName during scrape.
   // Display layer adds 'closing_soon' when status==='open' and deadline < 7 days out.
   status: TenderStatus;
+  // Raw e-GP method code (e.g. "16" = specific, "15" = e-bidding). Stored for future
+  // use; procurement method display currently falls back to budget-based inference.
+  methodId?: string;
 }
 
 export interface Project {

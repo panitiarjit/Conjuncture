@@ -280,9 +280,7 @@ export default function AssistedSubmissionPage() {
       <div className="flex items-center gap-2 text-sm">
         <CalendarDays size={14} className="text-[#717171] flex-shrink-0" aria-hidden="true" />
         <span className="text-[#717171]">Deadline:</span>
-        <span
-          className={`font-medium ${getDisplayStatus(tender) === 'closing_soon' ? 'text-[#B45309]' : 'text-[#111111]'}`}
-        >
+        <span className="font-medium text-[#111111]">
           {formatDate(tender.deadline)}
         </span>
       </div>

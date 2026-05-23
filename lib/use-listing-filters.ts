@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 
 export type SortOption = 'deadline' | 'budget' | 'recent';
 
-export const PAGE_SIZE = 20;
+export const PAGE_SIZE = 12;
 
 export interface FilterParams<S extends string> {
   search: string;
