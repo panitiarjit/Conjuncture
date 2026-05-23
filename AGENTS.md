@@ -30,7 +30,7 @@ This is more precise than a broad `--days 90` sweep: it only updates tenders alr
 
 ## Cron schedule (vercel.json)
 
-Both jobs run at 09:00 UTC (01:00 PST) — one hour after Firestore quota resets at midnight Pacific.
+Both jobs run at 08:00 UTC (15:00 BKK) — one hour after Firestore quota resets at midnight Pacific (07:00 UTC).
 
 | Endpoint                    | Frequency       | What it does                                  |
 |-----------------------------|-----------------|-----------------------------------------------|
