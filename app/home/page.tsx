@@ -66,23 +66,16 @@ export default function HomePage() {
 
       <main>
         {/* ── 1. HERO ─────────────────────────────────────────────────────── */}
-        <section className="section bg-white">
+        <section className="section bg-white py-24 md:py-32">
           <div className="container-app">
-            <div className="max-w-3xl mx-auto text-center flex flex-col items-center gap-6">
-              <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-[#111111] leading-[1.1]">
-                {t('hero.headline')}
+            <div className="max-w-lg mx-auto flex flex-col items-center text-center gap-6">
+              <span className="badge">{t('waitlist.badge')}</span>
+              <h1 className="text-5xl md:text-6xl font-semibold tracking-tight text-[#111111] leading-[1.35]">
+                {(() => { const parts = t('waitlist.headline').split('\n'); return <>{parts[0]}{parts[1] && <><br />{parts[1]}</>}</>; })()}
               </h1>
-              <p className="text-lg text-[#717171] max-w-xl leading-relaxed">
-                {t('hero.sub')}
+              <p className="text-base text-[#717171] leading-relaxed max-w-md">
+                {t('waitlist.sub')}
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <Link href="/post-project" className="btn-primary px-6 py-3 text-base">
-                  {t('hero.postProject')}
-                </Link>
-                <Link href="/projects" className="btn-outline px-6 py-3 text-base">
-                  {t('hero.findWork')}
-                </Link>
-              </div>
             </div>
           </div>
         </section>
