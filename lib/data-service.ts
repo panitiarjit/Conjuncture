@@ -10,10 +10,21 @@ function hasFirestoreCredentials(): boolean {
   );
 }
 
+// In-process cache so the listing stays visible when Firestore is temporarily
+// unavailable (quota errors during a scrape run, cold-start latency, etc.)
+let tenderCache: Tender[] | null = null;
+
 export async function getTenders(): Promise<Tender[]> {
   if (hasFirestoreCredentials()) {
-    const { getTendersFromFirestore } = await import('./firestore-admin');
-    return getTendersFromFirestore();
+    try {
+      const { getTendersFromFirestore } = await import('./firestore-admin');
+      const tenders = await getTendersFromFirestore();
+      tenderCache = tenders;
+      return tenders;
+    } catch (err) {
+      console.warn('[data-service] Firestore unavailable, serving cached tenders:', (err as Error).message);
+      return tenderCache ?? TENDERS;
+    }
   }
   return TENDERS;
 }
