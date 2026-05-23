@@ -9,6 +9,7 @@ import type { ProcurementMethod } from './procurement';
 
 export const STATUS_COLORS: Record<StatusValue, { pill: string; dot: string }> = {
   open:             { pill: 'bg-[#d8f3dc] text-[#2D6A4F] border border-[#b7e4c7]',   dot: 'bg-[#2D6A4F]' },
+  closing_soon:     { pill: 'bg-[#fef3c7] text-[#B45309] border border-[#fde68a]',   dot: 'bg-[#B45309]' },
   closed:           { pill: 'bg-[#F7F7F7] text-[#717171] border border-[#E0E0E0]',   dot: 'bg-[#717171]' },
   unknown:          { pill: 'bg-[#F3F0FF] text-[#6D28D9] border border-[#DDD6FE]',   dot: 'bg-[#6D28D9]' },
   in_progress:      { pill: 'bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]',   dot: 'bg-[#1D4ED8]' },

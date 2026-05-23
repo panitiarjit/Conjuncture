@@ -1,7 +1,7 @@
 // Domain types for the Conjuncture procurement marketplace.
 // Data fixtures live in lib/mock-data.ts; real API shapes should match these interfaces.
 
-export type TenderStatus = 'open' | 'closed' | 'unknown';
+export type TenderStatus = 'open' | 'closing_soon' | 'closed' | 'unknown';
 export type ProjectStatus = 'open' | 'in_progress' | 'completed';
 export type VendorVerified = 'new' | 'verified' | 'verified_pro';
 export type ProjectCategory =

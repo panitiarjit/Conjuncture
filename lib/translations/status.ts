@@ -1,6 +1,7 @@
 const status = {
   en: {
     'status.open': 'Open',
+    'status.closingSoon': 'Closing Soon',
     'status.closed': 'Closed',
     'status.unknown': 'Status Unknown',
     'status.inProgress': 'In Progress',
@@ -10,6 +11,7 @@ const status = {
   },
   th: {
     'status.open': 'เปิดรับ',
+    'status.closingSoon': 'ใกล้ปิดรับ',
     'status.closed': 'ปิดแล้ว',
     'status.unknown': 'ไม่ทราบสถานะ',
     'status.inProgress': 'กำลังดำเนินการ',
