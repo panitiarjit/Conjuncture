@@ -16,6 +16,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@opennextjs/cloudflare": "^1.19.11",
+    "chromium-bidi": "^16.0.1",
     "firebase": "^12.13.0",
     "firebase-admin": "^12.7.0",
     "lucide-react": "^1.16.0",
