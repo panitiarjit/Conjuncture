@@ -27,3 +27,14 @@ npx ts-node scripts/refresh-statuses.ts
 ```
 
 This is more precise than a broad `--days 90` sweep: it only updates tenders already in Firestore and only queries back as far as the oldest open tender. Run this if tenders on the site are showing `open` when the user suspects they should be closed.
+
+## Cron schedule (vercel.json)
+
+Both jobs run at 09:00 UTC (01:00 PST) — one hour after Firestore quota resets at midnight Pacific.
+
+| Endpoint                    | Frequency       | What it does                                  |
+|-----------------------------|-----------------|-----------------------------------------------|
+| `GET /api/refresh-statuses` | Daily           | Checks open/closed status of existing listings |
+| `GET /api/scrape`           | Every 3rd day   | Fetches new listings from e-GP                |
+
+Closed tenders are never deleted — they accumulate in Firestore as historical records.
