@@ -40,11 +40,11 @@ export default function TenderCard({ tender }: TenderCardProps) {
           <span className="text-sm font-semibold text-[#111111]">{p.formattedBudget}</span>
         </div>
 
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-xs text-[#717171] font-medium uppercase tracking-wide flex-shrink-0">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-[#717171] font-medium uppercase tracking-wide">
             {t('pm.method')}
           </span>
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-lg border whitespace-nowrap ${p.methodBadgeClass}`}>
+          <span className={`self-end text-xs font-medium px-2 py-0.5 rounded-lg border whitespace-nowrap ${p.methodBadgeClass}`}>
             {t(`pm.${p.procurementMethod}`)}
           </span>
         </div>
