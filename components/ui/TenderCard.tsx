@@ -44,7 +44,7 @@ export default function TenderCard({ tender }: TenderCardProps) {
           <span className="text-xs text-[#717171] font-medium uppercase tracking-wide flex-shrink-0">
             {t('pm.method')}
           </span>
-          <span className={`ml-auto max-w-[52%] text-xs font-medium px-1 py-1 rounded-lg border text-center ${p.methodBadgeClass}`}>
+          <span className={`ml-auto max-w-[52%] text-xs font-medium px-1.5 py-1 rounded-lg border text-center ${p.methodBadgeClass}`}>
             {t(`pm.${p.procurementMethod}`)}
           </span>
         </div>
