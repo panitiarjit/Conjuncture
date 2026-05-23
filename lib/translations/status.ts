@@ -1,7 +1,7 @@
 const status = {
   en: {
     'status.open': 'Open',
-    'status.closingSoon': 'Closing Soon',
+    'status.closingSoon': 'Warning',
     'status.closed': 'Closed',
     'status.unknown': 'Status Unknown',
     'status.inProgress': 'In Progress',

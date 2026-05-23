@@ -4,6 +4,24 @@ import { runScrape } from '../../../lib/scraper';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
+// Called every 3 days by Vercel Cron (GET with Authorization: Bearer <CRON_SECRET>).
+export async function GET(req: NextRequest) {
+  const auth = req.headers.get('authorization') ?? '';
+  const expected = `Bearer ${process.env.CRON_SECRET}`;
+  if (!process.env.CRON_SECRET || auth !== expected) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const result = await runScrape({});
+    return NextResponse.json({ ok: true, ...result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[scrape route] failed:', err);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   const auth = req.headers.get('authorization') ?? '';
   const expected = `Bearer ${process.env.SCRAPE_SECRET}`;
