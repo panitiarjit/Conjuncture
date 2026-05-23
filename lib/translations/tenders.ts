@@ -8,7 +8,7 @@ const tenders = {
     // Tenders page
     'tp.title': 'Government Tenders',
     'tp.desc': 'Aggregated procurement opportunities from Thai government agencies. Free to browse.',
-    'tp.banner': 'Browse tenders freely. Open/closed status is refreshed daily — may be up to 24 hours behind the official portal.',
+    'tp.banner': 'Browse tenders freely. Status is refreshed daily; new listings are added every 3 days — may be up to 24 hours behind the official portal.',
     'tp.search': 'Search tenders...',
     'tp.region': 'Region',
     'tp.closingSoon': 'Closing Soon',
@@ -26,7 +26,7 @@ const tenders = {
     // Tenders page
     'tp.title': 'ประกาศจัดซื้อจัดจ้างภาครัฐ',
     'tp.desc': 'รวมประกาศจากหน่วยงานรัฐบาลไทย ดูได้ฟรี',
-    'tp.banner': 'ดูประกาศได้ฟรี สถานะเปิด/ปิดอัปเดตทุกวัน — อาจช้ากว่าระบบ e-GP ได้สูงสุด 24 ชั่วโมง',
+    'tp.banner': 'ดูประกาศได้ฟรี สถานะอัปเดตทุกวัน ประกาศใหม่เพิ่มทุก 3 วัน — อาจช้ากว่าระบบ e-GP สูงสุด 24 ชั่วโมง',
     'tp.search': 'ค้นหาประกาศ...',
     'tp.region': 'จังหวัด/ภูมิภาค',
     'tp.closingSoon': 'ใกล้ปิดรับ',
