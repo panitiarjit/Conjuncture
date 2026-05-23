@@ -199,7 +199,7 @@ export default function AssistedSubmissionPage() {
               The tender you are looking for does not exist or has been removed.
             </p>
             <Link href="/tenders" className="btn-primary">
-              Browse Tenders
+              Browse Government Tenders
             </Link>
           </div>
         </main>

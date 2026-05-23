@@ -1,6 +1,6 @@
 const nav = {
   en: {
-    'nav.tenders': 'Browse Tenders',
+    'nav.tenders': 'Browse Government Tenders',
     'nav.projects': 'Browse Projects',
     'nav.post': 'Post a Project',
   },

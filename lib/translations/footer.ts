@@ -3,7 +3,7 @@ const footer = {
     'footer.tagline1': 'Transparent competition.',
     'footer.tagline2': 'Trusted procurement.',
     'footer.platform': 'Platform',
-    'footer.browseTenders': 'Browse Tenders',
+    'footer.browseTenders': 'Browse Government Tenders',
     'footer.browseProjects': 'Browse Projects',
     'footer.postProject': 'Post a Project',
     'footer.howItWorks': 'How It Works',

@@ -99,7 +99,7 @@ export default async function TenderDetailPage({
               The tender you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
             <Link href="/tenders" className="btn-primary">
-              Browse Tenders
+              Browse Government Tenders
             </Link>
           </div>
         </main>
