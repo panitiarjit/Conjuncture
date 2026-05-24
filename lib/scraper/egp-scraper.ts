@@ -1,6 +1,6 @@
 import { getTurnstileToken, validateTurnstileToken, searchAnnouncements } from './egp-client';
 import { mapToTender, dateFromProjectId } from './egp-mapper';
-import { getTendersFromFirestore, upsertTender, recordUnknownMethodId } from '../firestore-admin';
+import { getTendersFromFirestore, getOpenOrUnknownTenders, upsertTender, recordUnknownMethodId, forceCloseTenders } from '../firestore-admin';
 import { getMethodFromId } from '../procurement';
 import type { ScrapeConfig, ScrapeResult } from './types';
 import { DEFAULT_CONFIG } from './types';
@@ -104,7 +104,9 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
             if (config.idFilter && !config.idFilter.has(tender.id)) {
               continue;
             }
-            const { wasNew } = await upsertTender(tender);
+            // Pass pre-loaded status so upsertTender can skip its per-doc read
+            const currentStatus = config.currentStatusMap?.get(tender.id);
+            const { wasNew } = await upsertTender(tender, currentStatus);
             if (wasNew) { result.inserted++; pageNewCount++; }
             else result.updated++;
             // Record methodIds not yet in METHOD_ID_MAP so they can be classified later
@@ -125,16 +127,19 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
 
       if (rows.length < 10) break;
 
-      // Stop when 2 consecutive pages are entirely known records — we've reached
-      // the overlap with the previous run; everything deeper is already in Firestore
-      if (pageNewCount === 0) {
-        consecutiveKnownPages++;
-        if (consecutiveKnownPages >= 2) {
-          console.log('[egp-scraper] 2 consecutive all-known pages — reached overlap, stopping early');
-          break;
+      // In refresh mode (idFilter set) we must scan the full date range — the
+      // targets are scattered across pages so the consecutive-known-pages heuristic
+      // would exit far too early. Only apply it on full scrape runs.
+      if (!config.idFilter) {
+        if (pageNewCount === 0) {
+          consecutiveKnownPages++;
+          if (consecutiveKnownPages >= 2) {
+            console.log('[egp-scraper] 2 consecutive all-known pages — reached overlap, stopping early');
+            break;
+          }
+        } else {
+          consecutiveKnownPages = 0;
         }
-      } else {
-        consecutiveKnownPages = 0;
       }
 
       pageNum++;
@@ -154,33 +159,49 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   return result;
 }
 
-/**
- * Re-check the status of all currently open/unknown tenders already in Firestore.
- * Reads their project IDs, derives the announcement date range they span,
- * re-scrapes only that window, and updates only tenders already in the set.
- * New tenders discovered along the way are skipped.
- */
 export async function runStatusRefresh(overrides: Partial<ScrapeConfig> = {}): Promise<ScrapeResult> {
-  const allTenders = await getTendersFromFirestore(2000);
-  const toRefresh = allTenders.filter((t) => t.status === 'open' || t.status === 'unknown');
+  const toRefresh = await getOpenOrUnknownTenders();
 
   if (toRefresh.length === 0) {
     console.log('[egp-scraper] runStatusRefresh: no open/unknown tenders to refresh');
     return { scraped: 0, inserted: 0, updated: 0, errors: 0, durationMs: 0 };
   }
 
-  const idFilter = new Set(toRefresh.map((t) => t.id));
+  const now = Date.now();
+  // Thai government tenders don't stay open for more than ~6 months.
+  // Anything older than 180 days is force-closed without scanning the API.
+  const STALE_DAYS = 180;
+  // The e-GP portal has thousands of records/month nationally — scanning more than
+  // ~45 days back takes too long (thousands of pages) and hits rate limits.
+  const SCAN_DAYS = 45;
 
-  const dates = toRefresh
-    .map((t) => dateFromProjectId(t.id))
-    .filter((d): d is string => d !== null)
-    .sort();
+  const recentIds = new Set<string>();
+  const staleIds: string[] = [];
 
-  const daysAgo =
-    dates.length > 0
-      ? Math.ceil((Date.now() - new Date(dates[0]).getTime()) / 86_400_000) + 2
-      : 90;
+  for (const t of toRefresh) {
+    const date = dateFromProjectId(t.id);
+    const ageMs = date ? now - new Date(date).getTime() : Infinity;
+    if (ageMs > STALE_DAYS * 86_400_000) {
+      staleIds.push(t.id);
+    } else {
+      recentIds.add(t.id);
+    }
+  }
 
-  console.log(`[egp-scraper] runStatusRefresh: ${toRefresh.length} tenders, ${daysAgo} days back`);
-  return runScrape({ ...overrides, dateFromDaysAgo: daysAgo, idFilter });
+  if (staleIds.length > 0) {
+    console.log(`[egp-scraper] runStatusRefresh: force-closing ${staleIds.length} stale tenders (>${STALE_DAYS}d old)`);
+    await forceCloseTenders(staleIds);
+  }
+
+  if (recentIds.size === 0) {
+    console.log('[egp-scraper] runStatusRefresh: no recent tenders to scan');
+    return { scraped: 0, inserted: 0, updated: staleIds.length, errors: 0, durationMs: 0 };
+  }
+
+  const currentStatusMap = new Map(
+    toRefresh.filter((t) => recentIds.has(t.id)).map((t) => [t.id, t.status] as const)
+  );
+
+  console.log(`[egp-scraper] runStatusRefresh: ${recentIds.size} recent tenders, scanning ${SCAN_DAYS} days back (${staleIds.length} force-closed)`);
+  return runScrape({ ...overrides, dateFromDaysAgo: SCAN_DAYS, idFilter: recentIds, currentStatusMap });
 }

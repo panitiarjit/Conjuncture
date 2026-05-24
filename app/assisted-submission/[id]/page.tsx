@@ -16,7 +16,7 @@ import {
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/lib/auth-context';
-import { getProcurementMethod, requiresBidBond } from '@/lib/procurement';
+import { resolveMethod, requiresBidBond } from '@/lib/procurement';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 import { useLanguage } from '@/lib/language-context';
 import { getDisplayStatus } from '@/lib/deadline';
@@ -209,8 +209,8 @@ export default function AssistedSubmissionPage() {
   }
 
   // ── Procurement method ──
-  const method = getProcurementMethod(tender.budget);
-  const needsBidBond = requiresBidBond(tender.budget);
+  const method = resolveMethod(tender.title, tender.methodId, tender.budget);
+  const needsBidBond = requiresBidBond(tender.budget, method);
   const REQUIRED_DOCUMENTS = needsBidBond
     ? [...BASE_DOCUMENTS, BID_BOND_DOCUMENT]
     : BASE_DOCUMENTS;

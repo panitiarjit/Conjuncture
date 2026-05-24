@@ -29,6 +29,8 @@ export default function TenderFiltersPanel({ state }: Props) {
     statusFilter, setStatusFilter,
     budgetMin, setBudgetMin,
     budgetMax, setBudgetMax,
+    selectedProcurementTypes, toggleProcurementType,
+    selectedProcurementMethods, toggleProcurementMethod,
     clearFilters,
   } = state;
 
@@ -81,6 +83,34 @@ export default function TenderFiltersPanel({ state }: Props) {
           <label key={value} className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors">
             <input type="radio" name="tender-status" value={value} checked={statusFilter === value} onChange={() => setStatusFilter(value)} className="border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0" />
             {label}
+          </label>
+        ))}
+      </FilterSection>
+
+      <FilterSection title={t('tf.procurementType')}>
+        {(['purchase', 'construction', 'services', 'rent', 'consulting', 'design', 'supervision', 'design_supervision'] as const).map((pt) => (
+          <label key={pt} className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors">
+            <input
+              type="checkbox"
+              checked={selectedProcurementTypes.includes(pt)}
+              onChange={() => toggleProcurementType(pt)}
+              className="rounded border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0"
+            />
+            <span className="flex-1">{t(`pt.${pt}`)}</span>
+          </label>
+        ))}
+      </FilterSection>
+
+      <FilterSection title={t('tf.procurementMethod')}>
+        {(['specific_simple', 'specific_compare', 'e_bidding'] as const).map((pm) => (
+          <label key={pm} className="flex items-center gap-2.5 text-sm text-[#111111] cursor-pointer hover:text-[#717171] transition-colors">
+            <input
+              type="checkbox"
+              checked={selectedProcurementMethods.includes(pm)}
+              onChange={() => toggleProcurementMethod(pm)}
+              className="rounded border-[#E0E0E0] accent-[#111111] w-4 h-4 flex-shrink-0"
+            />
+            <span className="flex-1">{t(`pm.${pm}`)}</span>
           </label>
         ))}
       </FilterSection>

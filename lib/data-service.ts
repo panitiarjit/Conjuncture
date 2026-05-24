@@ -1,4 +1,7 @@
 import 'server-only';
+import { unstable_cache } from 'next/cache';
+import fs from 'fs';
+import path from 'path';
 import { TENDERS, PROJECTS, VENDORS, CATEGORIES } from './mock-data';
 import type { Tender, Project, Vendor, Category } from './types';
 
@@ -10,31 +13,54 @@ function hasFirestoreCredentials(): boolean {
   );
 }
 
-// In-process cache so the listing stays visible when Firestore is temporarily
-// unavailable (quota errors during a scrape run, cold-start latency, etc.)
-let tenderCache: Tender[] | null = null;
+// Disk cache — last-resort fallback when Firestore is down and Next.js cache has expired
+const DISK_CACHE_PATH = path.join(process.cwd(), '.tender-cache.json');
 
-export async function getTenders(): Promise<Tender[]> {
-  if (hasFirestoreCredentials()) {
-    try {
-      const { getTendersFromFirestore } = await import('./firestore-admin');
-      const tenders = await getTendersFromFirestore();
-      tenderCache = tenders;
-      return tenders;
-    } catch (err) {
-      console.warn('[data-service] Firestore unavailable, serving cached tenders:', (err as Error).message);
-      return tenderCache ?? TENDERS;
-    }
+function saveToDisk(tenders: Tender[]): void {
+  try {
+    fs.writeFileSync(DISK_CACHE_PATH, JSON.stringify(tenders));
+  } catch {
+    // non-critical
   }
-  return TENDERS;
 }
 
-export async function getTenderById(id: string): Promise<Tender | undefined> {
-  if (hasFirestoreCredentials()) {
-    const { getTenderByIdFromFirestore } = await import('./firestore-admin');
-    return getTenderByIdFromFirestore(id);
+function loadFromDisk(): Tender[] | null {
+  try {
+    const raw = fs.readFileSync(DISK_CACHE_PATH, 'utf-8');
+    return JSON.parse(raw) as Tender[];
+  } catch {
+    return null;
   }
-  return TENDERS.find((t) => t.id === id);
+}
+
+// Next.js data cache — shared across all serverless invocations, revalidates every 5 min.
+// This is the proper fix for Firestore quota: one read per 5-min window, not one per request.
+// Call revalidateTag('tenders') after a scrape to bust the cache immediately.
+const fetchTendersFromFirestore = unstable_cache(
+  async (): Promise<Tender[]> => {
+    const { getTendersFromFirestore } = await import('./firestore-admin');
+    const tenders = await getTendersFromFirestore();
+    saveToDisk(tenders);
+    return tenders;
+  },
+  ['tenders'],
+  { revalidate: 3600, tags: ['tenders'] },
+);
+
+export async function getTenders(): Promise<Tender[]> {
+  if (!hasFirestoreCredentials()) return TENDERS;
+  try {
+    return await fetchTendersFromFirestore();
+  } catch (err) {
+    console.warn('[data-service] Firestore unavailable, serving disk/mock fallback:', (err as Error).message);
+    return loadFromDisk() ?? TENDERS;
+  }
+}
+
+// Reuses the cached tender list — no per-document Firestore read per detail page
+export async function getTenderById(id: string): Promise<Tender | undefined> {
+  const tenders = await getTenders();
+  return tenders.find((t) => t.id === id);
 }
 
 export async function getProjects(): Promise<Project[]> {
@@ -54,10 +80,8 @@ export async function getVendorById(id: string): Promise<Vendor | undefined> {
 }
 
 export async function getCategories(): Promise<Category[]> {
-  if (!hasFirestoreCredentials()) return CATEGORIES;
-  const { getTendersFromFirestore } = await import('./firestore-admin');
-  const tenders = await getTendersFromFirestore();
-  // Count open tenders per category from real data
+  // Reuses getTenders() cache — no separate Firestore read
+  const tenders = await getTenders();
   const counts: Partial<Record<string, number>> = {};
   for (const t of tenders) {
     if (t.status !== 'closed') counts[t.category] = (counts[t.category] ?? 0) + 1;

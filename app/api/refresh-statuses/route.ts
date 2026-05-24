@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { runStatusRefresh } from '../../../lib/scraper';
 
 export const dynamic = 'force-dynamic';
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await runStatusRefresh();
+    revalidateTag('tenders');
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -32,6 +34,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await runStatusRefresh();
+    revalidateTag('tenders');
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

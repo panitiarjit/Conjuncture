@@ -1,5 +1,6 @@
 import type { Tender, Project } from './types';
 import { getDisplayStatus, getDaysRemaining } from './deadline';
+import { resolveProcurementType, resolveMethod } from './procurement';
 
 const STATUS_SORT_ORDER: Record<string, number> = { open: 0, unknown: 1, closed: 2 };
 
@@ -11,10 +12,12 @@ export interface TenderFilters {
   budgetMin: string;
   budgetMax: string;
   sort: 'deadline' | 'budget' | 'recent';
+  selectedProcurementTypes: string[];
+  selectedProcurementMethods: string[];
 }
 
 export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters): Tender[] {
-  const { search, selectedCategories, location, statusFilter, budgetMin, budgetMax, sort } =
+  const { search, selectedCategories, location, statusFilter, budgetMin, budgetMax, sort, selectedProcurementTypes, selectedProcurementMethods } =
     filters;
 
   const result = tenders.filter((tender) => {
@@ -37,6 +40,14 @@ export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters):
     if (budgetMax !== '') {
       const max = Number(budgetMax);
       if (!isNaN(max) && tender.budget > max) return false;
+    }
+    if (selectedProcurementTypes.length > 0) {
+      const pt = tender.procurementType ?? resolveProcurementType(tender.title);
+      if (!selectedProcurementTypes.includes(pt)) return false;
+    }
+    if (selectedProcurementMethods.length > 0) {
+      const pm = resolveMethod(tender.title, tender.methodId, tender.budget);
+      if (!selectedProcurementMethods.includes(pm)) return false;
     }
     return true;
   });

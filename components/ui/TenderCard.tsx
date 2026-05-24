@@ -18,9 +18,17 @@ export default function TenderCard({ tender }: TenderCardProps) {
 
   return (
     <article className="card-hover flex flex-col gap-4">
+      {/* Top row: category + type badges left, status right */}
       <div className="flex items-start justify-between gap-2">
-        <span className="badge">{p.categoryLabel}</span>
-        <StatusPill status={p.status} />
+        <div className="flex flex-wrap gap-1.5 items-center min-w-0">
+          <span className="badge">{p.categoryLabel}</span>
+          <span className="inline-flex items-center text-xs font-medium px-2.5 py-[3px] rounded-full border border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB] whitespace-nowrap">
+            {p.typeBadgeLabel}
+          </span>
+        </div>
+        <div className="flex-shrink-0">
+          <StatusPill status={p.status} />
+        </div>
       </div>
 
       <h3 className="font-semibold text-[#111111] text-base leading-snug line-clamp-2">
@@ -41,10 +49,10 @@ export default function TenderCard({ tender }: TenderCardProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#717171] font-medium uppercase tracking-wide flex-shrink-0">
-            {t('pm.method')}
+          <span className="text-xs text-[#717171] font-medium flex-shrink-0">
+            {t('pm.method.short')}
           </span>
-          <span className={`ml-auto max-w-[52%] text-xs font-medium px-1.5 py-1 rounded-lg border text-center ${p.methodBadgeClass}`}>
+          <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${p.methodBadgeClass}`}>
             {t(`pm.${p.procurementMethod}`)}
           </span>
         </div>

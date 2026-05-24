@@ -14,6 +14,8 @@ export interface FilterParams<S extends string> {
   budgetMin: string;
   budgetMax: string;
   sort: SortOption;
+  selectedProcurementTypes: string[];
+  selectedProcurementMethods: string[];
 }
 
 export interface ListingFilterState<S extends string> {
@@ -31,6 +33,10 @@ export interface ListingFilterState<S extends string> {
   setBudgetMax: (v: string) => void;
   sort: SortOption;
   setSort: (v: SortOption) => void;
+  selectedProcurementTypes: string[];
+  toggleProcurementType: (id: string) => void;
+  selectedProcurementMethods: string[];
+  toggleProcurementMethod: (id: string) => void;
   clearFilters: () => void;
   page: number;
   setPage: (p: number) => void;
@@ -52,6 +58,8 @@ export function useListingFilters<TItem, S extends string>(
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [sort, setSort] = useState<SortOption>(defaultSort);
+  const [selectedProcurementTypes, setSelectedProcurementTypes] = useState<string[]>([]);
+  const [selectedProcurementMethods, setSelectedProcurementMethods] = useState<string[]>([]);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -63,7 +71,7 @@ export function useListingFilters<TItem, S extends string>(
         setIsLoading(false);
       });
     load();
-    const id = setInterval(load, 60_000);
+    const id = setInterval(load, 300_000); // 5 min — 60s was exhausting Firestore free-tier quota
     return () => {
       mounted = false;
       clearInterval(id);
@@ -91,6 +99,18 @@ export function useListingFilters<TItem, S extends string>(
   const setBudgetMinAndReset = useCallback((v: string) => { setBudgetMin(v); setPage(1); }, []);
   const setBudgetMaxAndReset = useCallback((v: string) => { setBudgetMax(v); setPage(1); }, []);
   const setSortAndReset = useCallback((v: SortOption) => { setSort(v); setPage(1); }, []);
+  const toggleProcurementType = useCallback((id: string) => {
+    setSelectedProcurementTypes((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+    setPage(1);
+  }, []);
+  const toggleProcurementMethod = useCallback((id: string) => {
+    setSelectedProcurementMethods((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+    setPage(1);
+  }, []);
 
   const clearFilters = useCallback(() => {
     setSearch('');
@@ -100,6 +120,8 @@ export function useListingFilters<TItem, S extends string>(
     setBudgetMin('');
     setBudgetMax('');
     setSort(defaultSort);
+    setSelectedProcurementTypes([]);
+    setSelectedProcurementMethods([]);
     setPage(1);
   }, [defaultStatus, defaultSort]);
 
@@ -113,8 +135,10 @@ export function useListingFilters<TItem, S extends string>(
         budgetMin,
         budgetMax,
         sort,
+        selectedProcurementTypes,
+        selectedProcurementMethods,
       }),
-    [filterFn, data, search, selectedCategories, location, statusFilter, budgetMin, budgetMax, sort],
+    [filterFn, data, search, selectedCategories, location, statusFilter, budgetMin, budgetMax, sort, selectedProcurementTypes, selectedProcurementMethods],
   );
 
   const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
@@ -132,6 +156,8 @@ export function useListingFilters<TItem, S extends string>(
     budgetMin, setBudgetMin: setBudgetMinAndReset,
     budgetMax, setBudgetMax: setBudgetMaxAndReset,
     sort, setSort: setSortAndReset,
+    selectedProcurementTypes, toggleProcurementType,
+    selectedProcurementMethods, toggleProcurementMethod,
     clearFilters,
     page: safePage, setPage,
     totalPages,

@@ -62,6 +62,12 @@ export interface ScrapeConfig {
    * Used by the status-refresh job to avoid inserting new records mid-refresh.
    */
   idFilter?: Set<string>;
+  /**
+   * Pre-loaded status map from the initial Firestore read in runStatusRefresh.
+   * Passed to upsertTender so it can skip the per-document read-before-write.
+   * Key = projectId, value = current TenderStatus in Firestore.
+   */
+  currentStatusMap?: Map<string, import('../types').TenderStatus>;
 }
 
 export interface ScrapeResult {

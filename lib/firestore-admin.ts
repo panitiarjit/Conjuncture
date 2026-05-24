@@ -1,6 +1,6 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
-import type { Tender } from './types';
+import type { Tender, TenderStatus } from './types';
 
 let app: App;
 let db: Firestore;
@@ -34,25 +34,69 @@ const COLLECTION = 'tenders';
 /** Collection for e-GP methodId codes not yet in METHOD_ID_MAP. */
 const UNKNOWN_METHODS_COLLECTION = 'unknown_method_ids';
 
-export async function upsertTender(tender: Tender): Promise<{ wasNew: boolean }> {
+/**
+ * @param currentStatus  If the caller already knows the Firestore status (e.g. from a
+ *   bulk read at the start of a refresh run), pass it here to skip the per-document
+ *   read-before-write — saves 1 Firestore read per tender in refresh mode.
+ */
+export async function upsertTender(
+  tender: Tender,
+  currentStatus?: TenderStatus,
+): Promise<{ wasNew: boolean }> {
   const ref = getDb().collection(COLLECTION).doc(tender.id);
+
+  if (currentStatus !== undefined) {
+    // Caller already has the current status — no per-doc read needed.
+    // Downgrade protection still applies: never re-open a closed tender.
+    const status =
+      currentStatus === 'closed' && tender.status !== 'closed' ? 'closed' : tender.status;
+    await ref.set({ ...tender, status, updatedAt: new Date().toISOString() }, { merge: true });
+    return { wasNew: false }; // refresh mode only processes existing docs
+  }
+
+  // Normal path (new scrape): read to check existence and current status.
+  // Never downgrade a closed tender back to open — B0 and W0 announcements share the
+  // same projectId; whichever is processed last would otherwise overwrite the status.
   const snap = await ref.get();
-  await ref.set({ ...tender, updatedAt: new Date().toISOString() }, { merge: true });
+  const existing = snap.exists ? snap.data() : null;
+  const status =
+    existing?.status === 'closed' && tender.status !== 'closed' ? 'closed' : tender.status;
+  await ref.set({ ...tender, status, updatedAt: new Date().toISOString() }, { merge: true });
   return { wasNew: !snap.exists };
 }
 
-export async function getTendersFromFirestore(limit = 1000): Promise<Tender[]> {
+/** Targeted query — only returns tenders still open or unresolved.
+ *  Use this in status-refresh to avoid reading the entire collection. */
+export async function getOpenOrUnknownTenders(): Promise<Tender[]> {
   const snap = await getDb()
     .collection(COLLECTION)
-    .limit(limit)
+    .where('status', 'in', ['open', 'unknown'])
     .get();
-
-  return snap.docs.map((doc: FirebaseFirestore.QueryDocumentSnapshot) => {
-    const data = doc.data();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { updatedAt: _u, ...tender } = data;
+  return snap.docs.map((doc) => {
+    const { updatedAt: _u, ...tender } = doc.data();
     return tender as Tender;
   });
+}
+
+export async function getTendersFromFirestore(): Promise<Tender[]> {
+  const PAGE = 500;
+  const results: Tender[] = [];
+  let lastDoc: FirebaseFirestore.QueryDocumentSnapshot | undefined;
+
+  while (true) {
+    let query = getDb().collection(COLLECTION).orderBy('__name__').limit(PAGE);
+    if (lastDoc) query = query.startAfter(lastDoc);
+
+    const snap = await query.get();
+    for (const doc of snap.docs) {
+      const { updatedAt: _u, ...tender } = doc.data();
+      results.push(tender as Tender);
+    }
+    if (snap.docs.length < PAGE) break;
+    lastDoc = snap.docs[snap.docs.length - 1];
+  }
+
+  return results;
 }
 
 export async function pruneExpiredTenders(): Promise<number> {
@@ -74,6 +118,19 @@ export async function pruneExpiredTenders(): Promise<number> {
     deleted += Math.min(BATCH_LIMIT, snap.docs.length - i);
   }
   return deleted;
+}
+
+export async function forceCloseTenders(ids: string[]): Promise<void> {
+  const BATCH_LIMIT = 499;
+  const db = getDb();
+  const now = new Date().toISOString();
+  for (let i = 0; i < ids.length; i += BATCH_LIMIT) {
+    const batch = db.batch();
+    ids.slice(i, i + BATCH_LIMIT).forEach((id) => {
+      batch.update(db.collection(COLLECTION).doc(id), { status: 'closed', updatedAt: now });
+    });
+    await batch.commit();
+  }
 }
 
 export async function getTenderByIdFromFirestore(id: string): Promise<Tender | undefined> {

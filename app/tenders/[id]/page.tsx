@@ -20,6 +20,7 @@ import StatusPill from '@/components/ui/StatusPill';
 import ProtectedShell from '@/components/layout/ProtectedShell';
 import { getTenderById } from '@/lib/data-service';
 import { getDisplayStatus } from '@/lib/deadline';
+import { resolveProcurementType } from '@/lib/procurement';
 
 const SITE_URL = 'https://conjuncture.work';
 
@@ -97,6 +98,21 @@ function postedDate(deadlineStr: string): string {
   const d = new Date(deadlineStr);
   d.setDate(d.getDate() - 60);
   return d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function typeLabel(title: string): string {
+  const type = resolveProcurementType(title);
+  const map: Record<string, string> = {
+    purchase: 'Purchase',
+    construction: 'Construction',
+    services: 'Services/Outsourcing',
+    rent: 'Lease/Rent',
+    consulting: 'Consulting',
+    design: 'Design',
+    supervision: 'Supervision',
+    design_supervision: 'Design & Supervision',
+  };
+  return map[type] ?? type;
 }
 
 // ─── Required documents ───────────────────────────────────────────────────────
@@ -180,10 +196,13 @@ export default async function TenderDetailPage({
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* LEFT: main content */}
             <div className="flex-1 min-w-0">
-              {/* Status + category badges */}
+              {/* Status + category + type badges */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <StatusPill status={tenderStatus} />
                 <span className="badge">{categoryLabel(tender.category)}</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded text-[#1D4ED8]">
+                  {typeLabel(tender.title)}
+                </span>
               </div>
 
               {/* Title */}

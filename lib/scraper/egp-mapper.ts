@@ -1,6 +1,7 @@
 import type { Tender, ProjectCategory, TenderStatus } from '../types';
 import { ALL_THAI_PROVINCES } from '../data-utils';
 import type { RawAnnouncement } from './types';
+import { resolveProcurementType } from '../procurement';
 
 // ── Category mapping ────────────────────────────────────────────────────────
 
@@ -60,15 +61,18 @@ export function dateFromProjectId(projectId: string): string | null {
 
 // ── Status from procurement stage ───────────────────────────────────────────
 
-// flowName values that indicate the procurement is still open for bidding
+// flowName values that indicate the procurement is still open for bidding.
+// Matches the 6 สถานะโครงการ values from the e-GP search dropdown (confirmed 2026-05-24).
 const OPEN_FLOW_KEYWORDS = [
-  'ประกาศเชิญชวน',   // invitation to bid
-  'เผยแพร่เอกสาร',   // document publication
-  'รับซอง',           // receive bids
-  'ยื่นเสนอราคา',    // price submission
-  'ประกาศราคากลาง',  // price announcement
-  'จัดทำร่าง',       // draft TOR
-  'จัดทำ TOR',       // TOR preparation — confirmed live 2026-05-24
+  'จัดทำ TOR',               // TOR preparation
+  'รายงานขอซื้อขอจ้าง',     // purchase/hire request report
+  'หนังสือเชิญชวน',          // invitation letter
+  'ประกาศเชิญชวน',           // invitation announcement
+  'เผยแพร่เอกสาร',           // document publication (sub-step)
+  'รับซอง',                   // receive bids (sub-step)
+  'ยื่นเสนอราคา',            // price submission (sub-step)
+  'ประกาศราคากลาง',          // market price announcement (sub-step)
+  'จัดทำร่าง',               // draft preparation (sub-step)
 ];
 
 // flowName values that indicate completed/closed
@@ -133,8 +137,14 @@ export function mapToTender(raw: RawAnnouncement): Tender {
 
   const flowName = raw.flowName ?? '';
   const deadline = estimateDeadline(projectDate, flowName, raw.projectName ?? '');
-  // announceWinnerDate being set means a winner has been announced — definitively closed.
-  const status = raw.announceWinnerDate ? 'closed' : statusFromFlow(flowName, raw.projectId);
+  // announceType is the most reliable signal — it's set by e-GP, not derived from flowName keywords.
+  // B0 = invitation to bid (open), W0 = winner announced (closed), IM = direct (use flowName).
+  const status: TenderStatus =
+    raw.announceWinnerDate || raw.announceType === 'W0'
+      ? 'closed'
+      : raw.announceType === 'B0'
+      ? 'open'
+      : statusFromFlow(flowName, raw.projectId);
 
   return {
     id: raw.projectId,
@@ -148,5 +158,7 @@ export function mapToTender(raw: RawAnnouncement): Tender {
     requirements: [],
     status,
     methodId: raw.methodId ?? undefined,
+    procurementType: resolveProcurementType(raw.projectName),
+    announceType: raw.announceType ?? undefined,
   };
 }

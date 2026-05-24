@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { runScrape } from '../../../lib/scraper';
 
 export const dynamic = 'force-dynamic';
@@ -14,6 +15,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await runScrape({});
+    revalidateTag('tenders');
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
@@ -38,6 +40,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await runScrape(overrides);
+    revalidateTag('tenders');
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

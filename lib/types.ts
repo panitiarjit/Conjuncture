@@ -18,6 +18,16 @@ export type ProjectCategory =
   | 'security'
   | 'other';
 
+export type ProcurementType =
+  | 'purchase'
+  | 'construction'
+  | 'services'
+  | 'rent'
+  | 'consulting'
+  | 'design'
+  | 'supervision'
+  | 'design_supervision';
+
 export interface Tender {
   id: string;
   title: string;
@@ -34,6 +44,8 @@ export interface Tender {
   // Raw e-GP method code (e.g. "16" = specific, "15" = e-bidding). Stored for future
   // use; procurement method display currently falls back to budget-based inference.
   methodId?: string;
+  procurementType?: ProcurementType;
+  announceType?: string;
 }
 
 export interface Project {
