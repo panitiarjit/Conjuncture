@@ -10,7 +10,6 @@ import {
   FileText,
   Info,
   ArrowLeft,
-  Lock,
   ExternalLink,
   Hash,
 } from 'lucide-react';
@@ -315,76 +314,6 @@ export default async function TenderDetailPage({
                 </p>
               </section>
 
-              {/* Full Report Paywall */}
-              <section aria-labelledby="report-heading">
-                <div className="relative border border-[#E0E0E0] rounded-2xl overflow-hidden min-h-[520px]">
-                  {/* Blurred preview */}
-                  <div className="p-6 select-none" aria-hidden="true">
-                    <div className="flex flex-col gap-4 blur-sm opacity-60 pointer-events-none">
-                      <div>
-                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Procurement Method</p>
-                        <div className="h-3 bg-[#E0E0E0] rounded w-3/4 mb-1.5" />
-                        <div className="h-3 bg-[#E0E0E0] rounded w-1/2" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Evaluation Criteria</p>
-                        <div className="h-3 bg-[#E0E0E0] rounded w-full mb-1.5" />
-                        <div className="h-3 bg-[#E0E0E0] rounded w-4/5 mb-1.5" />
-                        <div className="h-3 bg-[#E0E0E0] rounded w-2/3" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Contact Officer</p>
-                        <div className="h-3 bg-[#E0E0E0] rounded w-2/5 mb-1.5" />
-                        <div className="h-3 bg-[#E0E0E0] rounded w-1/3" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-[#717171] uppercase tracking-wider mb-2">Submission Address</p>
-                        <div className="h-3 bg-[#E0E0E0] rounded w-full mb-1.5" />
-                        <div className="h-3 bg-[#E0E0E0] rounded w-3/5" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Lock overlay */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm px-10 py-10">
-                    <div className="w-full max-w-sm flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-[#111111] flex items-center justify-center mb-4">
-                        <Lock size={20} className="text-white" aria-hidden="true" />
-                      </div>
-                      <h2 id="report-heading" className="text-base font-semibold text-[#111111] mb-1 text-center">
-                        Full Tender Report
-                      </h2>
-                      <p className="text-sm text-[#717171] text-center mb-5">
-                        Unlock the complete details for this procurement — everything you need to evaluate and bid.
-                      </p>
-                      <ul className="flex flex-col gap-2 mb-6 w-full">
-                        {[
-                          'Procurement method & legal basis',
-                          'Evaluation criteria & scoring weights',
-                          'Submission officer & contact info',
-                          'Bid bond amount & accepted forms',
-                          'TOR summary & scope of work',
-                          'Direct link to official portal listing',
-                        ].map((item) => (
-                          <li key={item} className="flex items-center gap-2.5 text-sm text-[#111111]">
-                            <CheckSquare size={14} className="flex-shrink-0 text-[#2D6A4F]" aria-hidden="true" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href={`/assisted-submission/${tender.id}`}
-                        className="btn-primary w-full justify-center"
-                      >
-                        Unlock Full Report — ฿299
-                      </Link>
-                      <p className="text-xs text-[#717171] mt-3 text-center">
-                        One-time access. Instantly available after payment.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
             </div>
 
             {/* RIGHT: sticky sidebar */}

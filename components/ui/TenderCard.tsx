@@ -66,7 +66,7 @@ export default function TenderCard({ tender }: TenderCardProps) {
         </div>
       </div>
 
-      <div className="h-px bg-[#E0E0E0]" />
+      <div className="mt-auto h-px bg-[#E0E0E0]" />
 
       <div className="flex items-center justify-between gap-3">
         <Link

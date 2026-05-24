@@ -33,13 +33,14 @@ function loadFromDisk(): Tender[] | null {
   }
 }
 
-// Next.js data cache — shared across all serverless invocations, revalidates every 5 min.
-// This is the proper fix for Firestore quota: one read per 5-min window, not one per request.
+// Next.js data cache — shared across all serverless invocations, revalidates every hour.
 // Call revalidateTag('tenders') after a scrape to bust the cache immediately.
 const fetchTendersFromFirestore = unstable_cache(
   async (): Promise<Tender[]> => {
-    const { getTendersFromFirestore } = await import('./firestore-admin');
-    const tenders = await getTendersFromFirestore();
+    // firebase-admin uses eval() which is blocked in Cloudflare Workers.
+    // Use the REST client (Web Crypto + fetch) instead — works everywhere.
+    const { restGetCollection } = await import('./firestore-rest');
+    const tenders = await restGetCollection<Tender>('tenders');
     saveToDisk(tenders);
     return tenders;
   },
@@ -57,7 +58,6 @@ export async function getTenders(): Promise<Tender[]> {
   }
 }
 
-// Reuses the cached tender list — no per-document Firestore read per detail page
 export async function getTenderById(id: string): Promise<Tender | undefined> {
   const tenders = await getTenders();
   return tenders.find((t) => t.id === id);
