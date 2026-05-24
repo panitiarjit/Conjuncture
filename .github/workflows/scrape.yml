@@ -2,20 +2,67 @@ name: e-GP Tender Scrape
 
 on:
   schedule:
-    - cron: '0 1 * * *'   # 01:00 UTC = 08:00 Bangkok (UTC+7)
+    # Daily at 08:00 Bangkok (01:00 UTC) — status refresh
+    - cron: '0 1 * * *'
+    # Every 3rd day at 08:30 Bangkok (01:30 UTC) — fetch new listings
+    - cron: '30 1 */3 * *'
   workflow_dispatch:
     inputs:
+      job:
+        description: 'Which job to run: "refresh", "scrape", or "both"'
+        required: false
+        default: 'refresh'
       days:
-        description: 'Days of history to pull (overrides default of 3)'
+        description: 'Days of history to pull (scrape job only)'
         required: false
       pages:
-        description: 'Max pages safety ceiling (overrides default of 500)'
+        description: 'Max pages safety ceiling (scrape job only)'
         required: false
 
+env:
+  FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+  FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+  FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+  CAPSOLVER_API_KEY: ${{ secrets.CAPSOLVER_API_KEY }}
+
 jobs:
-  scrape:
+  # ── Status refresh (runs every day) ──────────────────────────────────────
+  # Reads all open/unknown tenders from Firestore, force-closes any older than
+  # 180 days, and re-scrapes the last 45 days to get real open/closed status
+  # from e-GP. This is what eliminates estimated statuses.
+  refresh-statuses:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: |
+      (github.event_name == 'schedule' && github.event.schedule == '0 1 * * *') ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'refresh' || github.event.inputs.job == 'both'))
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run status refresh
+        run: npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
+
+  # ── Fetch new listings (runs every 3rd day) ───────────────────────────────
+  # Fetches new procurement announcements from e-GP for the last 3 days and
+  # upserts them into Firestore.
+  scrape-new:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    if: |
+      (github.event_name == 'schedule' && github.event.schedule == '30 1 */3 * *') ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'scrape' || github.event.inputs.job == 'both'))
 
     steps:
       - uses: actions/checkout@v4
@@ -32,11 +79,6 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run scraper
-        env:
-          FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
-          FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
-          FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
-          CAPSOLVER_API_KEY: ${{ secrets.CAPSOLVER_API_KEY }}
         run: |
           ARGS=""
           [ -n "${{ github.event.inputs.days }}" ] && ARGS="$ARGS --days ${{ github.event.inputs.days }}"
