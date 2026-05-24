@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import DatePickerInput from '@/components/ui/DatePickerInput';
 import { useProtectedRoute } from '@/lib/use-protected-route';
 import { useLanguage } from '@/lib/language-context';
 import { ALL_THAI_PROVINCES, getProvinceName } from '@/lib/data-utils';
@@ -214,26 +215,22 @@ function Step2({ formData, onChange, onBack, onNext }: {
           <label htmlFor="proj-start" className="label">
             {t('post.s2.startTimeline')} <span className="text-[#C0392B]" aria-hidden="true">*</span>
           </label>
-          <input
+          <DatePickerInput
             id="proj-start"
-            type="date"
-            className="input"
             value={formData.startTimeline}
             min={new Date().toISOString().split('T')[0]}
-            onChange={(e) => onChange('startTimeline', e.target.value)}
+            onChange={(v) => onChange('startTimeline', v)}
           />
         </div>
         <div>
           <label htmlFor="proj-duration" className="label">
             {t('post.s2.duration')} <span className="text-[#C0392B]" aria-hidden="true">*</span>
           </label>
-          <input
+          <DatePickerInput
             id="proj-duration"
-            type="date"
-            className="input"
             value={formData.projectDuration}
             min={formData.startTimeline || new Date().toISOString().split('T')[0]}
-            onChange={(e) => onChange('projectDuration', e.target.value)}
+            onChange={(v) => onChange('projectDuration', v)}
           />
         </div>
       </div>
