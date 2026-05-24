@@ -84,7 +84,7 @@ export default function Footer() {
         <div className="container-app py-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-[#717171]">
-              &copy; 2025 Conjuncture Co., Ltd. &nbsp;|&nbsp; Bangkok, Thailand
+              {t('footer.copyright')}
             </p>
             <p className="text-xs text-[#717171]">
               {t('footer.regulated')}

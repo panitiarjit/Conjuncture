@@ -18,6 +18,7 @@ const footer = {
     'footer.terms': 'Terms',
     'footer.privacy': 'Privacy',
     'footer.regulated': 'Regulated under Thai Civil and Commercial Code',
+    'footer.copyright': '© 2026 Conjuncture Co., Ltd. | Bangkok, Thailand',
   },
   th: {
     'footer.tagline1': 'แข่งขันโปร่งใส',
@@ -38,6 +39,7 @@ const footer = {
     'footer.terms': 'ข้อกำหนดการใช้งาน',
     'footer.privacy': 'นโยบายความเป็นส่วนตัว',
     'footer.regulated': 'ควบคุมภายใต้ประมวลกฎหมายแพ่งและพาณิชย์ของไทย',
+    'footer.copyright': '© 2026 บริษัท คอนจังเจอร์ จำกัด | กรุงเทพมหานคร ประเทศไทย',
   },
 };
 export default footer;
