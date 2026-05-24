@@ -51,8 +51,7 @@ const post = {
     'post.s2.1to3m': '1–3 months',
     'post.s2.3to6m': '3–6 months',
     'post.s2.flexible': 'Flexible',
-    'post.s2.duration': 'Project Duration',
-    'post.s2.durationDefault': 'Select duration',
+    'post.s2.duration': 'Project Deadline',
     // Step 3
     'post.s3.title': 'What is your budget range?',
     'post.s3.desc': 'Setting a realistic budget attracts more qualified vendors.',
@@ -147,8 +146,7 @@ const post = {
     'post.s2.1to3m': '1–3 เดือน',
     'post.s2.3to6m': '3–6 เดือน',
     'post.s2.flexible': 'ยืดหยุ่นได้',
-    'post.s2.duration': 'ระยะเวลาทั้งหมด',
-    'post.s2.durationDefault': 'เลือกระยะเวลา',
+    'post.s2.duration': 'วันสิ้นสุดโครงการ',
     // Step 3
     'post.s3.title': 'งบของคุณอยู่ที่เท่าไหร่?',
     'post.s3.desc': 'ตั้งงบให้ใกล้เคียงความจริง จะได้ผู้ขายที่เหมาะกว่า',

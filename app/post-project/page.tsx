@@ -227,14 +227,14 @@ function Step2({ formData, onChange, onBack, onNext }: {
           <label htmlFor="proj-duration" className="label">
             {t('post.s2.duration')} <span className="text-[#C0392B]" aria-hidden="true">*</span>
           </label>
-          <select id="proj-duration" className="input" value={formData.projectDuration} onChange={(e) => onChange('projectDuration', e.target.value)}>
-            <option value="">{t('post.s2.durationDefault')}</option>
-            <option value="lt-1-week">{t('post.dur.lt1w')}</option>
-            <option value="1-4-weeks">{t('post.dur.1to4w')}</option>
-            <option value="1-3-months">{t('post.dur.1to3m')}</option>
-            <option value="3-6-months">{t('post.dur.3to6m')}</option>
-            <option value="gt-6-months">{t('post.dur.gt6m')}</option>
-          </select>
+          <input
+            id="proj-duration"
+            type="date"
+            className="input"
+            value={formData.projectDuration}
+            min={formData.startTimeline || new Date().toISOString().split('T')[0]}
+            onChange={(e) => onChange('projectDuration', e.target.value)}
+          />
         </div>
       </div>
       <div className="flex justify-between mt-8">
@@ -381,18 +381,10 @@ function Step5({ formData, onBack, onPublish, published }: {
 }) {
   const { t } = useLanguage();
 
-  const formatStartDate = (dateStr: string) =>
+  const formatDate = (dateStr: string) =>
     dateStr
       ? new Date(dateStr).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
       : '—';
-
-  const durationLabel: Record<string, string> = {
-    'lt-1-week': t('post.dur.lt1w'),
-    '1-4-weeks': t('post.dur.1to4w'),
-    '1-3-months': t('post.dur.1to3m'),
-    '3-6-months': t('post.dur.3to6m'),
-    'gt-6-months': t('post.dur.gt6m'),
-  };
 
   const catLabel = (id: string) => t(`post.cat.${id}` as Parameters<typeof t>[0]);
 
@@ -433,11 +425,11 @@ function Step5({ formData, onBack, onPublish, published }: {
             </div>
             <div>
               <dt className="label mb-0.5">{t('post.s5.startTimeline')}</dt>
-              <dd className="text-sm text-[#111111]">{formatStartDate(formData.startTimeline)}</dd>
+              <dd className="text-sm text-[#111111]">{formatDate(formData.startTimeline)}</dd>
             </div>
             <div>
               <dt className="label mb-0.5">{t('post.s5.duration')}</dt>
-              <dd className="text-sm text-[#111111]">{durationLabel[formData.projectDuration] ?? '—'}</dd>
+              <dd className="text-sm text-[#111111]">{formatDate(formData.projectDuration)}</dd>
             </div>
           </div>
           <div className="divider" />

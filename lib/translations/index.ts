@@ -14,6 +14,7 @@ import categories from './categories';
 import footer from './footer';
 import procurement from './procurement';
 import waitlist from './waitlist';
+import tenderDetail from './tenderDetail';
 
 type NS = { en: Record<string, string>; th: Record<string, string> };
 
@@ -41,4 +42,5 @@ export default merge(
   footer,
   procurement,
   waitlist,
+  tenderDetail,
 );
