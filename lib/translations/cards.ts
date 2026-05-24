@@ -13,7 +13,7 @@ const cards = {
     'card.dLeft': 'd left',
   },
   th: {
-    'card.budget': 'งบ',
+    'card.budget': 'งบประมาณ',
     'card.deadline': 'ปิดรับ',
     'card.region': 'พื้นที่',
     'card.viewDetails': 'ดูรายละเอียด',
