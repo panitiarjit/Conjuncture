@@ -54,6 +54,16 @@ jobs:
       - name: Run status refresh
         run: npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
 
+      - name: Revalidate site cache
+        if: success() && env.SCRAPE_SECRET != ''
+        env:
+          SCRAPE_SECRET: ${{ secrets.SCRAPE_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${SITE_URL}/api/refresh-statuses" \
+            -H "Authorization: Bearer ${SCRAPE_SECRET}" || true
+
   # ── Fetch new listings (runs every 3rd day) ───────────────────────────────
   # Fetches new procurement announcements from e-GP for the last 3 days and
   # upserts them into Firestore.
@@ -84,3 +94,13 @@ jobs:
           [ -n "${{ github.event.inputs.days }}" ] && ARGS="$ARGS --days ${{ github.event.inputs.days }}"
           [ -n "${{ github.event.inputs.pages }}" ] && ARGS="$ARGS --pages ${{ github.event.inputs.pages }}"
           npx ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts $ARGS
+
+      - name: Revalidate site cache
+        if: success() && env.SCRAPE_SECRET != ''
+        env:
+          SCRAPE_SECRET: ${{ secrets.SCRAPE_SECRET }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${SITE_URL}/api/scrape" \
+            -H "Authorization: Bearer ${SCRAPE_SECRET}" || true

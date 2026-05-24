@@ -1,27 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
-import { runScrape } from '../../../lib/scraper';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
 
-// Called every 3 days by Vercel Cron (GET with Authorization: Bearer <CRON_SECRET>).
-export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization') ?? '';
-  const expected = `Bearer ${process.env.CRON_SECRET}`;
-  if (!process.env.CRON_SECRET || auth !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  try {
-    const result = await runScrape({});
-    revalidateTag('tenders');
-    return NextResponse.json({ ok: true, ...result });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('[scrape route] failed:', err);
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+// Scraping runs in GitHub Actions (Playwright requires Node.js, not Cloudflare Workers).
+// POST with Authorization: Bearer <SCRAPE_SECRET> to bust the tenders cache after a scrape.
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Scraping is handled by GitHub Actions — call POST to revalidate cache after a scrape.' },
+    { status: 405 },
+  );
 }
 
 export async function POST(req: NextRequest) {
@@ -30,21 +18,6 @@ export async function POST(req: NextRequest) {
   if (!process.env.SCRAPE_SECRET || auth !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  let overrides: Record<string, unknown> = {};
-  try {
-    overrides = (await req.json().catch(() => ({}))) ?? {};
-  } catch {
-    // No body — use defaults.
-  }
-
-  try {
-    const result = await runScrape(overrides);
-    revalidateTag('tenders');
-    return NextResponse.json({ ok: true, ...result });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('[scrape route] failed:', err);
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
+  revalidateTag('tenders');
+  return NextResponse.json({ ok: true, revalidated: true });
 }
