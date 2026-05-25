@@ -34,8 +34,19 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
 
   // Playwright must be dynamically imported so it doesn't break Cloudflare Workers bundle
   const { chromium } = await import('playwright');
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ locale: 'th-TH' });
+  const browser = await chromium.launch({
+  headless: true,
+  args: [
+    '--disable-blink-features=AutomationControlled',
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+  ],
+});
+const context = await browser.newContext({
+  locale: 'th-TH',
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+});
   const page = await context.newPage();
 
   try {
