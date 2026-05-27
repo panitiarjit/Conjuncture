@@ -75,25 +75,10 @@ const context = await browser.newContext({
       await route.fulfill({ response });
     });
 
-    // Patch window.turnstile.render before any page scripts execute so we can
-    // capture Angular's Turnstile success callback and call it ourselves with a
-    // CapSolver-solved token, making Angular call validate from the browser IP.
-    await page.addInitScript(`
-      window.__egpTurnstileCallbacks = [];
-      const _patchTurnstile = () => {
-        if (!window.turnstile || window.turnstile.__patched) return;
-        window.turnstile.__patched = true;
-        const _orig = window.turnstile.render.bind(window.turnstile);
-        window.turnstile.render = function(container, params) {
-          if (params && typeof params.callback === 'function') {
-            window.__egpTurnstileCallbacks.push(params.callback);
-          }
-          return _orig(container, params);
-        };
-      };
-      const _patchIv = setInterval(_patchTurnstile, 50);
-      setTimeout(() => clearInterval(_patchIv), 120000);
-    `);
+    // No init script needed — Angular uses implicit Turnstile rendering via
+    // data-callback HTML attribute (not window.turnstile.render), so Cloudflare
+    // calls window[callbackName](token) directly. We read the attribute after
+    // Angular bootstraps and call that function with the CapSolver token.
 
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
     await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
@@ -144,33 +129,36 @@ const context = await browser.newContext({
       console.log('[egp-scraper] using pre-captured native announcement token');
       announcementToken = nativeAnnouncementToken;
     } else {
-      // Wait up to 10s for Angular to render the Turnstile widget and fire render()
-      let callbackCount = 0;
-      for (let i = 0; i < 10; i++) {
-        callbackCount = await page.evaluate(() => (window as any).__egpTurnstileCallbacks?.length ?? 0);
-        if (callbackCount > 0) break;
-        await sleep(1000);
-      }
-      console.log(`[egp-scraper] turnstile callbacks captured: ${callbackCount}`);
+      // Angular uses implicit Turnstile rendering — the widget is a <div class="cf-turnstile"
+      // data-sitekey="..." data-callback="functionName"> element. Cloudflare calls
+      // window.functionName(token) directly; window.turnstile.render is never invoked.
+      // Read the callback name from the DOM so we can trigger it ourselves with a CapSolver token.
+      const turnstileCallbackName = await page.evaluate(() => {
+        const el = document.querySelector('[data-sitekey], .cf-turnstile');
+        return el?.getAttribute('data-callback') ?? null;
+      });
+      console.log(`[egp-scraper] turnstile data-callback attribute: ${turnstileCallbackName}`);
 
       console.log('[egp-scraper] requesting CapSolver Turnstile token...');
       const rawTurnstileToken = await getTurnstileToken(config);
 
-      if (callbackCount > 0) {
-        // Inject CapSolver token into Angular's Turnstile success callback.
-        // Angular will synchronously call the e-GP validate endpoint from the browser.
-        console.log('[egp-scraper] injecting CapSolver token into Angular turnstile callbacks...');
-        await page.evaluate((token: string) => {
-          ((window as any).__egpTurnstileCallbacks as Array<(t: string) => void>).forEach((cb) => cb(token));
-        }, rawTurnstileToken);
+      if (turnstileCallbackName) {
+        console.log(`[egp-scraper] injecting CapSolver token via window.${turnstileCallbackName}()...`);
+        const injectResult = await page.evaluate(([name, token]: [string, string]) => {
+          const fn = (window as any)[name];
+          if (typeof fn !== 'function') return `window.${name} is not a function`;
+          fn(token);
+          return 'called';
+        }, [turnstileCallbackName, rawTurnstileToken] as [string, string]);
+        console.log(`[egp-scraper] data-callback inject result: ${injectResult}`);
 
-        // Give the route interceptor up to 30s to capture the announcement token
+        // Give Angular's validate call up to 30s to complete and be intercepted
         const tokenWait = Date.now() + 30_000;
         while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
         if (nativeAnnouncementToken) {
-          console.log('[egp-scraper] native token captured via callback injection');
+          console.log('[egp-scraper] native token captured via data-callback injection');
         } else {
-          console.log('[egp-scraper] callback injection fired but validate returned no token — direct validate fallback');
+          console.log('[egp-scraper] data-callback fired but validate returned no token — direct validate fallback');
         }
       }
 
