@@ -50,6 +50,20 @@ const context = await browser.newContext({
   const page = await context.newPage();
 
   try {
+    // Intercept Angular's own Turnstile validation call BEFORE navigating.
+    // Angular auto-validates Turnstile on page load from within the browser (GitHub Actions IP).
+    // If we capture that token instead of using CapSolver (which solves from CapSolver's IP),
+    // the announcement token will be bound to the same IP as the search requests.
+    let nativeAnnouncementToken: string | null = null;
+    await page.route(/cfturnstile\/validate/, async (route) => {
+      console.log('[egp-scraper] intercepted Angular native Turnstile validation call');
+      const response = await route.fetch();
+      const body = await response.json() as { data?: string };
+      console.log(`[egp-scraper] native validate response: data=${body.data ? body.data.slice(0, 30) + '...' : 'null'}`);
+      if (body.data) nativeAnnouncementToken = body.data;
+      await route.fulfill({ response });
+    });
+
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
     await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
     console.log(`[egp-scraper] page loaded: ${page.url()}`);
@@ -82,11 +96,19 @@ const context = await browser.newContext({
     }
     console.log('[egp-scraper] CSRF token obtained');
 
-    console.log('[egp-scraper] requesting Turnstile token from CapSolver...');
-    const rawTurnstileToken = await getTurnstileToken(config);
-    console.log('[egp-scraper] validating Turnstile token with e-GP server...');
-    const announcementToken = await validateTurnstileToken(page, rawTurnstileToken);
-    console.log(`[egp-scraper] announcement token obtained (length=${announcementToken.length}, preview=${announcementToken.slice(0, 30)})`);
+    // Use the native announcement token if Angular already validated Turnstile from the
+    // browser IP. Fall back to CapSolver only if Angular didn't auto-validate.
+    let announcementToken: string;
+    if (nativeAnnouncementToken) {
+      console.log('[egp-scraper] using native announcement token (from browser IP)');
+      announcementToken = nativeAnnouncementToken;
+    } else {
+      console.log('[egp-scraper] no native token captured, falling back to CapSolver...');
+      const rawTurnstileToken = await getTurnstileToken(config);
+      console.log('[egp-scraper] validating Turnstile token with e-GP server...');
+      announcementToken = await validateTurnstileToken(page, rawTurnstileToken);
+    }
+    console.log(`[egp-scraper] announcement token ready (length=${announcementToken.length})`);
 
     let pageNum = 1;
     let consecutiveKnownPages = 0;
