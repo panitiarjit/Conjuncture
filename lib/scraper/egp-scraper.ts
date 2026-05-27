@@ -32,10 +32,13 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const announceEDate = isoDate(today);
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
-  // Playwright must be dynamically imported so it doesn't break Cloudflare Workers bundle
-  const { chromium } = await import('playwright');
-  // Use headless:false when PLAYWRIGHT_HEADLESS=false (set by the workflow after starting Xvfb).
-  // Headed Chrome produces a valid Cloudflare Turnstile token; the headless shell returns null.
+  // Playwright must be dynamically imported so it doesn't break Cloudflare Workers bundle.
+  // playwright-extra + stealth plugin patches fingerprinting vectors (navigator.webdriver,
+  // window.chrome, WebGL, canvas, etc.) so Cloudflare auto-completes the Turnstile challenge
+  // from within the browser (GitHub Actions IP), bypassing the CapSolver IP-mismatch problem.
+  const { chromium } = await import('playwright-extra');
+  const StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default;
+  (chromium as any).use(StealthPlugin());
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
   const browser = await chromium.launch({
     headless,

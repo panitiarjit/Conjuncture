@@ -58,13 +58,6 @@ jobs:
           echo "$FIREBASE_SERVICE_ACCOUNT_B64" | base64 -d > /tmp/firebase-sa.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json" >> $GITHUB_ENV
 
-      - name: Start Xvfb virtual display
-        run: |
-          Xvfb :99 -screen 0 1280x1024x24 -ac +extension GLX &
-          sleep 2
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-          echo "PLAYWRIGHT_HEADLESS=false" >> $GITHUB_ENV
-
       - name: Run status refresh
         run: npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
 
@@ -108,13 +101,6 @@ jobs:
         run: |
           echo "$FIREBASE_SERVICE_ACCOUNT_B64" | base64 -d > /tmp/firebase-sa.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json" >> $GITHUB_ENV
-
-      - name: Start Xvfb virtual display
-        run: |
-          Xvfb :99 -screen 0 1280x1024x24 -ac +extension GLX &
-          sleep 2
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-          echo "PLAYWRIGHT_HEADLESS=false" >> $GITHUB_ENV
 
       - name: Run scraper
         run: |
