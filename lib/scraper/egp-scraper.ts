@@ -64,6 +64,7 @@ const context = await browser.newContext({
         const root = document.querySelector('app-root');
         return root !== null && root.children.length > 0;
       },
+      undefined,
       { timeout: 120_000 },
     );
     console.log('[egp-scraper] Angular bootstrapped, polling for CSRF token...');
