@@ -51,7 +51,9 @@ const context = await browser.newContext({
 
   try {
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
-    await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.goto(config.cfPageUrl, { waitUntil: 'load', timeout: 45_000 });
+    console.log(`[egp-scraper] page loaded: ${page.url()}`);
+    console.log(`[egp-scraper] page title: ${await page.title()}`);
 
     // Poll for CSRF token — Angular sets it async; give up to angularInitMs
     let csrfToken = '';
@@ -62,7 +64,11 @@ const context = await browser.newContext({
       await sleep(1000);
     }
     if (!csrfToken) {
-      throw new Error('Angular CSRF token not found in sessionStorage after waiting — page may not have loaded correctly');
+      const screenshotPath = '/tmp/egp-page-debug.png';
+      await page.screenshot({ path: screenshotPath, fullPage: false });
+      const pageContent = await page.evaluate(() => document.body?.innerHTML?.slice(0, 500) ?? '(empty)');
+      console.log(`[egp-scraper] debug - page HTML snippet: ${pageContent}`);
+      throw new Error(`Angular CSRF token not found in sessionStorage after waiting — URL: ${page.url()}, title: "${await page.title()}"`);
     }
     console.log('[egp-scraper] CSRF token obtained');
 
