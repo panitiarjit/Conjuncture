@@ -32,7 +32,7 @@ jobs:
   # from e-GP. This is what eliminates estimated statuses.
   refresh-statuses:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     if: |
       (github.event_name == 'schedule' && github.event.schedule == '0 1 * * *') ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'refresh' || github.event.inputs.job == 'both'))

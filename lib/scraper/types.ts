@@ -86,5 +86,5 @@ export const DEFAULT_CONFIG: ScrapeConfig = {
   dateFromDaysAgo: 3,  // 1 day new + 2 day buffer if a run is missed
   cfTurnstileSiteKey: '0x4AAAAAABuINxkTjFy-_hpH',
   cfPageUrl: 'https://process5.gprocurement.go.th/egp-agpc01-web/announcement',
-  angularInitMs: 45000,
+  angularInitMs: 30000,
 };
