@@ -86,7 +86,7 @@ const context = await browser.newContext({
     const rawTurnstileToken = await getTurnstileToken(config);
     console.log('[egp-scraper] validating Turnstile token with e-GP server...');
     const announcementToken = await validateTurnstileToken(page, rawTurnstileToken);
-    console.log('[egp-scraper] announcement token obtained');
+    console.log(`[egp-scraper] announcement token obtained (length=${announcementToken.length}, preview=${announcementToken.slice(0, 30)})`);
 
     let pageNum = 1;
     let consecutiveKnownPages = 0;
@@ -101,7 +101,7 @@ const context = await browser.newContext({
       });
 
       if (resp.validateCfTurnTile === false) {
-        console.error('[egp-scraper] server rejected announcement token — stopping');
+        console.error(`[egp-scraper] server rejected announcement token — full response: ${JSON.stringify(resp)}`);
         break;
       }
 

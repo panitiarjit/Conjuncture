@@ -67,8 +67,9 @@ export async function validateTurnstileToken(page: Page, rawToken: string): Prom
       `/egp-atpj27-service/pb/a-egp-allt-project/api/v1/cfturnstile/validate/${encodeURIComponent(token)}`,
       { headers: { 'Accept': 'application/json, text/plain, */*', 'content-type': 'application/json' } }
     );
-    const body = await r.json() as { data?: string };
-    return body.data ?? null;
+    const body = await r.json();
+    console.log('[egp-scraper] validate endpoint response:', JSON.stringify(body));
+    return (body as { data?: string }).data ?? null;
   }, rawToken);
 
   if (!result) throw new Error('validate endpoint returned no announcementToken');
