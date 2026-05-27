@@ -51,7 +51,7 @@ const context = await browser.newContext({
 
   try {
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
-    await page.goto(config.cfPageUrl, { waitUntil: 'load', timeout: 45_000 });
+    await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
     console.log(`[egp-scraper] page loaded: ${page.url()}`);
     console.log(`[egp-scraper] page title: ${await page.title()}`);
 
