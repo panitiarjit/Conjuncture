@@ -51,6 +51,15 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
+      - name: Fix private key newlines
+        run: |
+          printf '%s' "$FIREBASE_ADMIN_PRIVATE_KEY" \
+            | sed 's/\\n/\n/g' \
+            | sed 's/\\\\n/\n/g' \
+            > /tmp/pk_fixed.txt
+          echo "FIREBASE_ADMIN_PRIVATE_KEY=$(cat /tmp/pk_fixed.txt)" >> $GITHUB_ENV
+          rm /tmp/pk_fixed.txt
+
       - name: Run status refresh
         run: npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
 
@@ -87,6 +96,15 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
+
+      - name: Fix private key newlines
+        run: |
+          printf '%s' "$FIREBASE_ADMIN_PRIVATE_KEY" \
+            | sed 's/\\n/\n/g' \
+            | sed 's/\\\\n/\n/g' \
+            > /tmp/pk_fixed.txt
+          echo "FIREBASE_ADMIN_PRIVATE_KEY=$(cat /tmp/pk_fixed.txt)" >> $GITHUB_ENV
+          rm /tmp/pk_fixed.txt
 
       - name: Run scraper
         run: |
