@@ -7,13 +7,23 @@ let db: Firestore;
 
 function getAdminApp(): App {
   if (app) return app;
+  const existing = getApps().find((a: App) => a.name === 'admin');
 
+  // Prefer a pre-written credentials file (set by GitHub Actions via
+  // FIREBASE_SERVICE_ACCOUNT_B64 → decoded JSON file). This completely
+  // bypasses the private-key newline parsing issues.
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    app = existing ?? initializeApp(undefined, 'admin');
+    return app;
+  }
+
+  // Fall back to individual env vars (local dev).
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY ?? '')
-    .replace(/\\\\n/g, '\n') // double-escaped \\n → newline
-    .replace(/\\n/g, '\n')   // literal \n → newline
-    .replace(/\r\n/g, '\n')  // Windows line endings → Unix
+    .replace(/\\\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
     .trim() || undefined;
 
   if (!projectId || !clientEmail || !privateKey) {
@@ -22,7 +32,6 @@ function getAdminApp(): App {
     );
   }
 
-  const existing = getApps().find((a: App) => a.name === 'admin');
   app = existing ?? initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) }, 'admin');
   return app;
 }
