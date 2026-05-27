@@ -96,14 +96,54 @@ const context = await browser.newContext({
     }
     console.log('[egp-scraper] CSRF token obtained');
 
-    // Use the native announcement token if Angular already validated Turnstile from the
-    // browser IP. Fall back to CapSolver only if Angular didn't auto-validate.
+    // Angular requires user interaction to validate Turnstile (it doesn't auto-validate on load).
+    // Click the search button so Angular triggers its own Turnstile validation from the browser IP
+    // (GitHub Actions IP). The route interceptor above will capture that announcement token.
+    // If no search button is found or the click doesn't produce a token, fall back to CapSolver.
+    if (!nativeAnnouncementToken) {
+      const buttons = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('button, input[type="submit"], [role="button"]'))
+          .map((el) => ({
+            text: el.textContent?.trim().slice(0, 40) ?? '',
+            cls: el.className?.toString().slice(0, 80) ?? '',
+            tag: el.tagName,
+          }))
+      );
+      console.log(`[egp-scraper] buttons on page: ${JSON.stringify(buttons)}`);
+
+      // Try clicking the search / ค้นหา button
+      const searchBtn = buttons.find(
+        (b) => b.text.includes('ค้นหา') || b.text.toLowerCase().includes('search') || b.cls.includes('btn-search') || b.cls.includes('search')
+      );
+      if (searchBtn) {
+        console.log(`[egp-scraper] clicking search button: "${searchBtn.text}" [${searchBtn.cls}]`);
+        try {
+          const selector = searchBtn.text.includes('ค้นหา')
+            ? `button:has-text("ค้นหา")`
+            : `button:has-text("${searchBtn.text}")`;
+          await page.click(selector, { timeout: 10_000 });
+          // Wait up to 30s for the interceptor to fire
+          const tokenWait = Date.now() + 30_000;
+          while (!nativeAnnouncementToken && Date.now() < tokenWait) {
+            await sleep(500);
+          }
+          if (nativeAnnouncementToken) {
+            console.log('[egp-scraper] native token captured after search button click');
+          }
+        } catch (e) {
+          console.log(`[egp-scraper] search button click failed: ${(e as Error).message}`);
+        }
+      } else {
+        console.log('[egp-scraper] no search button found on page');
+      }
+    }
+
     let announcementToken: string;
     if (nativeAnnouncementToken) {
       console.log('[egp-scraper] using native announcement token (from browser IP)');
       announcementToken = nativeAnnouncementToken;
     } else {
-      console.log('[egp-scraper] no native token captured, falling back to CapSolver...');
+      console.log('[egp-scraper] no native token — falling back to CapSolver...');
       const rawTurnstileToken = await getTurnstileToken(config);
       console.log('[egp-scraper] validating Turnstile token with e-GP server...');
       announcementToken = await validateTurnstileToken(page, rawTurnstileToken);
