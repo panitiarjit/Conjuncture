@@ -32,12 +32,16 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const announceEDate = isoDate(today);
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
-  // Playwright must be dynamically imported so it doesn't break Cloudflare Workers bundle.
   // playwright-extra + stealth plugin patches fingerprinting vectors (navigator.webdriver,
   // window.chrome, WebGL, canvas, etc.) so Cloudflare auto-completes the Turnstile challenge
   // from within the browser (GitHub Actions IP), bypassing the CapSolver IP-mismatch problem.
-  const { chromium } = await import('playwright-extra');
-  const StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default;
+  // require() is used instead of dynamic import because playwright-extra's "typings" field
+  // is not resolved by ts-node under moduleResolution:node. The scraper only runs in GitHub
+  // Actions (never in Cloudflare Workers), so require() here doesn't affect the CF bundle.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { chromium } = require('playwright-extra') as typeof import('playwright');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const StealthPlugin = require('puppeteer-extra-plugin-stealth') as () => unknown;
   (chromium as any).use(StealthPlugin());
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
   const browser = await chromium.launch({
@@ -62,7 +66,7 @@ const context = await browser.newContext({
     // If we capture that token instead of using CapSolver (which solves from CapSolver's IP),
     // the announcement token will be bound to the same IP as the search requests.
     let nativeAnnouncementToken: string | null = null;
-    await page.route(/cfturnstile\/validate/, async (route) => {
+    await page.route(/cfturnstile\/validate/, async (route: import('playwright').Route) => {
       console.log('[egp-scraper] intercepted Angular native Turnstile validation call');
       const response = await route.fetch();
       const body = await response.json() as { data?: string };
@@ -156,7 +160,7 @@ const context = await browser.newContext({
         // Inject CapSolver token into Angular's Turnstile success callback.
         // Angular will synchronously call the e-GP validate endpoint from the browser.
         console.log('[egp-scraper] injecting CapSolver token into Angular turnstile callbacks...');
-        await page.evaluate((token) => {
+        await page.evaluate((token: string) => {
           ((window as any).__egpTurnstileCallbacks as Array<(t: string) => void>).forEach((cb) => cb(token));
         }, rawTurnstileToken);
 
