@@ -64,6 +64,26 @@ const context = await browser.newContext({
       await route.fulfill({ response });
     });
 
+    // Patch window.turnstile.render before any page scripts execute so we can
+    // capture Angular's Turnstile success callback and call it ourselves with a
+    // CapSolver-solved token, making Angular call validate from the browser IP.
+    await page.addInitScript(`
+      window.__egpTurnstileCallbacks = [];
+      const _patchTurnstile = () => {
+        if (!window.turnstile || window.turnstile.__patched) return;
+        window.turnstile.__patched = true;
+        const _orig = window.turnstile.render.bind(window.turnstile);
+        window.turnstile.render = function(container, params) {
+          if (params && typeof params.callback === 'function') {
+            window.__egpTurnstileCallbacks.push(params.callback);
+          }
+          return _orig(container, params);
+        };
+      };
+      const _patchIv = setInterval(_patchTurnstile, 50);
+      setTimeout(() => clearInterval(_patchIv), 120000);
+    `);
+
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
     await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
     console.log(`[egp-scraper] page loaded: ${page.url()}`);
@@ -96,57 +116,59 @@ const context = await browser.newContext({
     }
     console.log('[egp-scraper] CSRF token obtained');
 
-    // Angular requires user interaction to validate Turnstile (it doesn't auto-validate on load).
-    // Click the search button so Angular triggers its own Turnstile validation from the browser IP
-    // (GitHub Actions IP). The route interceptor above will capture that announcement token.
-    // If no search button is found or the click doesn't produce a token, fall back to CapSolver.
-    if (!nativeAnnouncementToken) {
-      const buttons = await page.evaluate(() =>
-        Array.from(document.querySelectorAll('button, input[type="submit"], [role="button"]'))
-          .map((el) => ({
-            text: el.textContent?.trim().slice(0, 40) ?? '',
-            cls: el.className?.toString().slice(0, 80) ?? '',
-            tag: el.tagName,
-          }))
-      );
-      console.log(`[egp-scraper] buttons on page: ${JSON.stringify(buttons)}`);
-
-      // Try clicking the search / ค้นหา button
-      const searchBtn = buttons.find(
-        (b) => b.text.includes('ค้นหา') || b.text.toLowerCase().includes('search') || b.cls.includes('btn-search') || b.cls.includes('search')
-      );
-      if (searchBtn) {
-        console.log(`[egp-scraper] clicking search button: "${searchBtn.text}" [${searchBtn.cls}]`);
-        try {
-          const selector = searchBtn.text.includes('ค้นหา')
-            ? `button:has-text("ค้นหา")`
-            : `button:has-text("${searchBtn.text}")`;
-          await page.click(selector, { timeout: 10_000 });
-          // Wait up to 30s for the interceptor to fire
-          const tokenWait = Date.now() + 30_000;
-          while (!nativeAnnouncementToken && Date.now() < tokenWait) {
-            await sleep(500);
-          }
-          if (nativeAnnouncementToken) {
-            console.log('[egp-scraper] native token captured after search button click');
-          }
-        } catch (e) {
-          console.log(`[egp-scraper] search button click failed: ${(e as Error).message}`);
-        }
-      } else {
-        console.log('[egp-scraper] no search button found on page');
-      }
-    }
-
+    // ── Turnstile strategy ────────────────────────────────────────────────────
+    // The headless browser can't pass Cloudflare Turnstile natively, so CapSolver
+    // solves it. The IP problem: e-GP binds the announcement token to the IP that
+    // calls the validate endpoint. We need both the validate call AND the search
+    // calls to come from the same IP (GitHub Actions).
+    //
+    // Solution: inject the CapSolver token into Angular's own Turnstile callback.
+    // Angular then calls validate FROM WITHIN the browser (GitHub Actions IP),
+    // and our route interceptor captures the announcement token it receives.
+    // This keeps all e-GP requests on one IP.
     let announcementToken: string;
+
     if (nativeAnnouncementToken) {
-      console.log('[egp-scraper] using native announcement token (from browser IP)');
+      // Angular auto-validated on page load (non-headless env)
+      console.log('[egp-scraper] using pre-captured native announcement token');
       announcementToken = nativeAnnouncementToken;
     } else {
-      console.log('[egp-scraper] no native token — falling back to CapSolver...');
+      // Wait up to 10s for Angular to render the Turnstile widget and fire render()
+      let callbackCount = 0;
+      for (let i = 0; i < 10; i++) {
+        callbackCount = await page.evaluate(() => (window as any).__egpTurnstileCallbacks?.length ?? 0);
+        if (callbackCount > 0) break;
+        await sleep(1000);
+      }
+      console.log(`[egp-scraper] turnstile callbacks captured: ${callbackCount}`);
+
+      console.log('[egp-scraper] requesting CapSolver Turnstile token...');
       const rawTurnstileToken = await getTurnstileToken(config);
-      console.log('[egp-scraper] validating Turnstile token with e-GP server...');
-      announcementToken = await validateTurnstileToken(page, rawTurnstileToken);
+
+      if (callbackCount > 0) {
+        // Inject CapSolver token into Angular's Turnstile success callback.
+        // Angular will synchronously call the e-GP validate endpoint from the browser.
+        console.log('[egp-scraper] injecting CapSolver token into Angular turnstile callbacks...');
+        await page.evaluate((token) => {
+          ((window as any).__egpTurnstileCallbacks as Array<(t: string) => void>).forEach((cb) => cb(token));
+        }, rawTurnstileToken);
+
+        // Give the route interceptor up to 30s to capture the announcement token
+        const tokenWait = Date.now() + 30_000;
+        while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
+        if (nativeAnnouncementToken) {
+          console.log('[egp-scraper] native token captured via callback injection');
+        } else {
+          console.log('[egp-scraper] callback injection fired but validate returned no token — direct validate fallback');
+        }
+      }
+
+      if (nativeAnnouncementToken) {
+        announcementToken = nativeAnnouncementToken;
+      } else {
+        console.log('[egp-scraper] falling back to direct validate (CapSolver IP — may be rejected by search)...');
+        announcementToken = await validateTurnstileToken(page, rawTurnstileToken, csrfToken);
+      }
     }
     console.log(`[egp-scraper] announcement token ready (length=${announcementToken.length})`);
 

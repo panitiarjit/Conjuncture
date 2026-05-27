@@ -61,16 +61,23 @@ export async function getTurnstileToken(config: ScrapeConfig): Promise<string> {
  * Exchange a raw CapSolver Turnstile token for the server's signed announcementToken.
  * Must be called from within a browser page that has already navigated to cfPageUrl.
  */
-export async function validateTurnstileToken(page: Page, rawToken: string): Promise<string> {
-  const result = await page.evaluate(async (token: string) => {
-    const r = await fetch(
-      `/egp-atpj27-service/pb/a-egp-allt-project/api/v1/cfturnstile/validate/${encodeURIComponent(token)}`,
-      { headers: { 'Accept': 'application/json, text/plain, */*', 'content-type': 'application/json' } }
-    );
-    const body = await r.json();
-    console.log('[egp-scraper] validate endpoint response:', JSON.stringify(body));
-    return (body as { data?: string }).data ?? null;
-  }, rawToken);
+export async function validateTurnstileToken(page: Page, rawToken: string, csrfToken?: string): Promise<string> {
+  const result = await page.evaluate(
+    async ({ token, csrf }: { token: string; csrf: string }) => {
+      const headers: Record<string, string> = {
+        'Accept': 'application/json, text/plain, */*',
+        'content-type': 'application/json',
+      };
+      if (csrf) headers['X-Xsrf-Token'] = csrf;
+      const r = await fetch(
+        `/egp-atpj27-service/pb/a-egp-allt-project/api/v1/cfturnstile/validate/${encodeURIComponent(token)}`,
+        { headers }
+      );
+      const body = await r.json();
+      return (body as { data?: string }).data ?? null;
+    },
+    { token: rawToken, csrf: csrfToken ?? '' }
+  );
 
   if (!result) throw new Error('validate endpoint returned no announcementToken');
   return result;
