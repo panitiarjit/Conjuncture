@@ -54,10 +54,24 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       ...(headless ? [] : ['--disable-gpu-sandbox', '--use-gl=swiftshader']),
     ],
   });
-const context = await browser.newContext({
-  locale: 'th-TH',
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-});
+  const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
+  let proxyConfig: { server: string; username?: string; password?: string } | undefined;
+  if (proxyUrl) {
+    const u = new URL(proxyUrl);
+    proxyConfig = {
+      server: `${u.protocol}//${u.host}`,
+      ...(u.username ? { username: decodeURIComponent(u.username) } : {}),
+      ...(u.password ? { password: decodeURIComponent(u.password) } : {}),
+    };
+    console.log(`[egp-scraper] using residential proxy: ${u.host}`);
+  } else {
+    console.log('[egp-scraper] no RESIDENTIAL_PROXY_URL set — Cloudflare may block on datacenter IP');
+  }
+  const context = await browser.newContext({
+    locale: 'th-TH',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    ...(proxyConfig ? { proxy: proxyConfig } : {}),
+  });
   const page = await context.newPage();
 
   try {
