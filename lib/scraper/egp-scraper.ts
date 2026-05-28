@@ -32,15 +32,23 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const announceEDate = isoDate(today);
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
-  // playwright-extra + stealth plugin patches fingerprinting vectors (navigator.webdriver,
-  // Use WebKit (Safari engine) instead of Chromium. On macOS, Playwright's WebKit uses the
-  // actual system Safari rendering engine with a genuine Apple TLS fingerprint. Cloudflare's
-  // bot detection targets Chromium automation artifacts (CDP port, navigator.webdriver, etc.)
-  // and does not suppress the Turnstile iframe for WebKit-based browsers.
+  // Use real Chrome (channel: 'chrome') with automation-disabling flags.
+  // WebKit has no equivalent of --disable-blink-features=AutomationControlled, so
+  // Cloudflare's turnstile.js detects navigator.webdriver=true and suppresses the iframe.
+  // Real Chrome + AutomationControlled flag + init script patching navigator.webdriver
+  // removes the signals Cloudflare checks, causing the iframe to appear and auto-solve.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { webkit } = require('playwright') as typeof import('playwright');
+  const { chromium } = require('playwright') as typeof import('playwright');
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
-  const browser = await webkit.launch({ headless });
+  const browser = await chromium.launch({
+    headless,
+    channel: 'chrome',
+    args: [
+      '--disable-blink-features=AutomationControlled',
+      '--no-first-run',
+      '--no-default-browser-check',
+    ],
+  });
   const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
   let proxyConfig: { server: string; username?: string; password?: string } | undefined;
   if (proxyUrl) {
@@ -56,7 +64,6 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   }
   const context = await browser.newContext({
     locale: 'th-TH',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
   });
   const page = await context.newPage();
@@ -78,10 +85,13 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       await route.fulfill({ response });
     });
 
-    // No init script needed — Angular uses implicit Turnstile rendering via
-    // data-callback HTML attribute (not window.turnstile.render), so Cloudflare
-    // calls window[callbackName](token) directly. We read the attribute after
-    // Angular bootstraps and call that function with the CapSolver token.
+    // Patch navigator.webdriver before any page script runs. Cloudflare's turnstile.js
+    // checks this property to detect automation — if it's truthy the iframe is suppressed.
+    // --disable-blink-features=AutomationControlled removes the Chrome-level signal;
+    // this init script removes the JS-level one for all frames including the widget iframe.
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+    });
 
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
     await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
