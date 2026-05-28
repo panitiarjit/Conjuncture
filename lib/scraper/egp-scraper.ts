@@ -149,21 +149,32 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       type TurnstileAttrs = { callback: string | null; action: string | null; cdata: string | null; outerHtml: string };
       let turnstileAttrs: TurnstileAttrs | null = null;
 
-      console.log('[egp-scraper] polling for Turnstile widget and native auto-solve (up to 30s)...');
-      const widgetDeadline = Date.now() + 30_000;
-      while (Date.now() < widgetDeadline && !nativeAnnouncementToken) {
-        const found = await page.evaluate((): TurnstileAttrs | null => {
-          const el = document.querySelector('[data-sitekey], .cf-turnstile');
-          if (!el) return null;
-          return {
-            callback: el.getAttribute('data-callback'),
-            action:   el.getAttribute('data-action'),
-            cdata:    el.getAttribute('data-cdata'),
-            outerHtml: el.outerHTML.slice(0, 400),
-          };
-        });
-        if (found) { turnstileAttrs = found; break; }
-        await sleep(2000);
+      // Step 1: wait up to 45s for the Turnstile iframe to appear inside the widget.
+      // The widget div is added by Angular immediately, but Cloudflare's turnstile.js
+      // creates the <iframe> asynchronously. We must NOT break early just because the
+      // outer div exists — we need to wait for the iframe (which triggers auto-solve).
+      console.log('[egp-scraper] waiting up to 45s for Turnstile iframe and native auto-solve...');
+      const iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 45_000 })
+        .catch(() => null);
+      console.log(iframeHandle ? '[egp-scraper] Turnstile iframe appeared' : '[egp-scraper] Turnstile iframe did NOT appear after 45s (Cloudflare suppressed it)');
+
+      // Record widget attrs regardless (needed for CapSolver action/cdata)
+      turnstileAttrs = await page.evaluate((): TurnstileAttrs | null => {
+        const el = document.querySelector('[data-sitekey], .cf-turnstile');
+        if (!el) return null;
+        return {
+          callback: el.getAttribute('data-callback'),
+          action:   el.getAttribute('data-action'),
+          cdata:    el.getAttribute('data-cdata'),
+          outerHtml: el.outerHTML.slice(0, 400),
+        };
+      });
+
+      // Step 2: if the iframe appeared, wait an extra 15s for Angular's validate call
+      if (iframeHandle && !nativeAnnouncementToken) {
+        console.log('[egp-scraper] iframe present — waiting 15s for Angular to auto-call validate...');
+        const nativeWait = Date.now() + 15_000;
+        while (!nativeAnnouncementToken && Date.now() < nativeWait) await sleep(500);
       }
 
       if (nativeAnnouncementToken) {
@@ -192,25 +203,43 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
           turnstileAttrs?.cdata ?? undefined,
         );
 
-        if (turnstileAttrs?.callback) {
-          // Inject into Angular's Turnstile success callback → Angular calls validate
-          // from the browser (same IP as the subsequent search requests)
-          console.log(`[egp-scraper] injecting via window.${turnstileAttrs.callback}()...`);
-          const injectResult = await page.evaluate(([name, token]: [string, string]) => {
+        // Try injecting token into hidden input to trigger Angular's native validate call.
+        // Angular watches the cf-turnstile-response input; filling it + dispatching events
+        // should cause Angular to call validate from the browser (same IP as search).
+        console.log('[egp-scraper] injecting CapSolver token into hidden input...');
+        const injectResult = await page.evaluate((token: string) => {
+          const input = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+          if (!input) return 'input not found';
+          // Fill the hidden input
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+          nativeInputValueSetter?.call(input, token);
+          // Dispatch events Angular may be listening for
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          // Also try calling window.turnstile callbacks if registered
+          const turnstile = (window as any).turnstile;
+          if (turnstile?.getResponse) return `filled + turnstile present`;
+          return 'filled';
+        }, rawTurnstileToken);
+        console.log(`[egp-scraper] inject result: ${injectResult}`);
+
+        // Wait up to 10s for Angular to react and call validate
+        const tokenWait = Date.now() + 10_000;
+        while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
+        if (nativeAnnouncementToken) {
+          console.log('[egp-scraper] token captured via hidden input injection');
+        } else if (turnstileAttrs?.callback) {
+          // Fallback: try the named window callback if it exists
+          console.log(`[egp-scraper] trying window.${turnstileAttrs.callback}()...`);
+          const cbResult = await page.evaluate(([name, token]: [string, string]) => {
             const fn = (window as any)[name];
             if (typeof fn !== 'function') return `window.${name} is not a function`;
             fn(token);
             return 'called';
           }, [turnstileAttrs.callback, rawTurnstileToken] as [string, string]);
-          console.log(`[egp-scraper] inject result: ${injectResult}`);
-
-          const tokenWait = Date.now() + 30_000;
-          while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
-          if (nativeAnnouncementToken) {
-            console.log('[egp-scraper] token captured via callback injection');
-          } else {
-            console.log('[egp-scraper] callback fired but no token returned — direct validate fallback');
-          }
+          console.log(`[egp-scraper] callback result: ${cbResult}`);
+          const cbWait = Date.now() + 10_000;
+          while (!nativeAnnouncementToken && Date.now() < cbWait) await sleep(500);
         }
 
         if (nativeAnnouncementToken) {
