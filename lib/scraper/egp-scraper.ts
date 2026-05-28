@@ -112,6 +112,15 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     );
     console.log('[egp-scraper] Angular bootstrapped, polling for CSRF token...');
 
+    // Diagnose automation signals that Cloudflare's turnstile.js checks
+    const autoSignals = await page.evaluate(() => ({
+      webdriver: (navigator as Navigator & { webdriver?: boolean }).webdriver,
+      hasFocus: document.hasFocus(),
+      visibility: document.visibilityState,
+      hidden: document.hidden,
+    }));
+    console.log(`[egp-scraper] automation signals: ${JSON.stringify(autoSignals)}`);
+
     // Poll for CSRF token — Angular sets it async after bootstrap; give up to angularInitMs
     let csrfToken = '';
     const deadline = Date.now() + config.angularInitMs;
@@ -247,7 +256,11 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         }
       }
     }
-    console.log(`[egp-scraper] announcement token ready (length=${announcementToken.length})`);
+    // The validate endpoint returns the token base64-encoded. Angular decodes it with atob()
+    // before passing it as the announcementToken query param. Without the decode, the search
+    // endpoint receives a raw base64 string and rejects it with validateCfTurnTile:false.
+    const decodedToken = Buffer.from(announcementToken, 'base64').toString('utf8');
+    console.log(`[egp-scraper] announcement token ready (raw length=${announcementToken.length}, decoded: ${decodedToken.slice(0, 40)}...)`);
 
     let pageNum = 1;
     let consecutiveKnownPages = 0;
@@ -257,7 +270,7 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         announceSDate,
         announceEDate,
         page: pageNum,
-        announcementToken,
+        announcementToken: decodedToken,
         csrfToken,
       });
 
