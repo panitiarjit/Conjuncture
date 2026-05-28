@@ -67,11 +67,13 @@ const context = await browser.newContext({
     // the announcement token will be bound to the same IP as the search requests.
     let nativeAnnouncementToken: string | null = null;
     await page.route(/cfturnstile\/validate/, async (route: import('playwright').Route) => {
-      console.log('[egp-scraper] intercepted Angular native Turnstile validation call');
+      console.log('[egp-scraper] intercepted validate call');
       const response = await route.fetch();
-      const body = await response.json() as { data?: string };
-      console.log(`[egp-scraper] native validate response: data=${body.data ? body.data.slice(0, 30) + '...' : 'null'}`);
-      if (body.data) nativeAnnouncementToken = body.data;
+      const body = await response.json() as Record<string, unknown>;
+      // Log full response structure so we can see every field, not just .data
+      console.log(`[egp-scraper] validate response body: ${JSON.stringify(body)}`);
+      const data = typeof body.data === 'string' ? body.data : null;
+      if (data) nativeAnnouncementToken = data;
       await route.fulfill({ response });
     });
 
@@ -112,61 +114,97 @@ const context = await browser.newContext({
     }
     console.log('[egp-scraper] CSRF token obtained');
 
+    // Dump cookies so we can see what Cloudflare has set (__cf_bm, cf_clearance, etc.)
+    const cookieNames = await page.evaluate(() =>
+      document.cookie.split(';').map(c => c.trim().split('=')[0]).filter(Boolean)
+    );
+    console.log(`[egp-scraper] browser cookies at CSRF: [${cookieNames.join(', ')}]`);
+
     // ── Turnstile strategy ────────────────────────────────────────────────────
-    // The headless browser can't pass Cloudflare Turnstile natively, so CapSolver
-    // solves it. The IP problem: e-GP binds the announcement token to the IP that
-    // calls the validate endpoint. We need both the validate call AND the search
-    // calls to come from the same IP (GitHub Actions).
-    //
-    // Solution: inject the CapSolver token into Angular's own Turnstile callback.
-    // Angular then calls validate FROM WITHIN the browser (GitHub Actions IP),
-    // and our route interceptor captures the announcement token it receives.
-    // This keeps all e-GP requests on one IP.
+    // After CSRF is set, Angular may still be rendering the Turnstile widget.
+    // Poll for up to 30s for either: (a) native Cloudflare auto-solve, or
+    // (b) the widget element appearing so we can read its data-callback/action/cdata.
+    // Cloudflare may also auto-solve during this window if the stealth plugin
+    // makes the browser look legitimate enough.
     let announcementToken: string;
 
     if (nativeAnnouncementToken) {
-      // Angular auto-validated on page load (non-headless env)
       console.log('[egp-scraper] using pre-captured native announcement token');
       announcementToken = nativeAnnouncementToken;
     } else {
-      // Angular uses implicit Turnstile rendering — the widget is a <div class="cf-turnstile"
-      // data-sitekey="..." data-callback="functionName"> element. Cloudflare calls
-      // window.functionName(token) directly; window.turnstile.render is never invoked.
-      // Read the callback name from the DOM so we can trigger it ourselves with a CapSolver token.
-      const turnstileCallbackName = await page.evaluate(() => {
-        const el = document.querySelector('[data-sitekey], .cf-turnstile');
-        return el?.getAttribute('data-callback') ?? null;
-      });
-      console.log(`[egp-scraper] turnstile data-callback attribute: ${turnstileCallbackName}`);
+      type TurnstileAttrs = { callback: string | null; action: string | null; cdata: string | null; outerHtml: string };
+      let turnstileAttrs: TurnstileAttrs | null = null;
 
-      console.log('[egp-scraper] requesting CapSolver Turnstile token...');
-      const rawTurnstileToken = await getTurnstileToken(config);
-
-      if (turnstileCallbackName) {
-        console.log(`[egp-scraper] injecting CapSolver token via window.${turnstileCallbackName}()...`);
-        const injectResult = await page.evaluate(([name, token]: [string, string]) => {
-          const fn = (window as any)[name];
-          if (typeof fn !== 'function') return `window.${name} is not a function`;
-          fn(token);
-          return 'called';
-        }, [turnstileCallbackName, rawTurnstileToken] as [string, string]);
-        console.log(`[egp-scraper] data-callback inject result: ${injectResult}`);
-
-        // Give Angular's validate call up to 30s to complete and be intercepted
-        const tokenWait = Date.now() + 30_000;
-        while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
-        if (nativeAnnouncementToken) {
-          console.log('[egp-scraper] native token captured via data-callback injection');
-        } else {
-          console.log('[egp-scraper] data-callback fired but validate returned no token — direct validate fallback');
-        }
+      console.log('[egp-scraper] polling for Turnstile widget and native auto-solve (up to 30s)...');
+      const widgetDeadline = Date.now() + 30_000;
+      while (Date.now() < widgetDeadline && !nativeAnnouncementToken) {
+        const found = await page.evaluate((): TurnstileAttrs | null => {
+          const el = document.querySelector('[data-sitekey], .cf-turnstile');
+          if (!el) return null;
+          return {
+            callback: el.getAttribute('data-callback'),
+            action:   el.getAttribute('data-action'),
+            cdata:    el.getAttribute('data-cdata'),
+            outerHtml: el.outerHTML.slice(0, 400),
+          };
+        });
+        if (found) { turnstileAttrs = found; break; }
+        await sleep(2000);
       }
 
       if (nativeAnnouncementToken) {
+        console.log('[egp-scraper] native token captured during widget poll');
         announcementToken = nativeAnnouncementToken;
       } else {
-        console.log('[egp-scraper] falling back to direct validate (CapSolver IP — may be rejected by search)...');
-        announcementToken = await validateTurnstileToken(page, rawTurnstileToken, csrfToken);
+        if (turnstileAttrs) {
+          console.log(`[egp-scraper] Turnstile element: callback=${turnstileAttrs.callback} action=${turnstileAttrs.action} cdata=${turnstileAttrs.cdata}`);
+          console.log(`[egp-scraper] Turnstile outerHTML: ${turnstileAttrs.outerHtml}`);
+        } else {
+          // Broader scan for any turnstile-related elements — helps diagnose wrong selector
+          const scan = await page.evaluate(() =>
+            Array.from(document.querySelectorAll('*'))
+              .filter(e => /turnstile/i.test(e.className + ' ' + (e.getAttribute('id') ?? '') + ' ' + (e.getAttribute('data-sitekey') ?? '')))
+              .map(e => e.outerHTML.slice(0, 200))
+          );
+          console.log(`[egp-scraper] Turnstile element NOT found after 30s. Broad scan hits: ${scan.length}`);
+          if (scan.length > 0) console.log('[egp-scraper] broad scan samples:', JSON.stringify(scan.slice(0, 3)));
+        }
+
+        // Request CapSolver token, forwarding action/cdata if found on the widget
+        console.log('[egp-scraper] requesting CapSolver token...');
+        const rawTurnstileToken = await getTurnstileToken(
+          config,
+          turnstileAttrs?.action ?? undefined,
+          turnstileAttrs?.cdata ?? undefined,
+        );
+
+        if (turnstileAttrs?.callback) {
+          // Inject into Angular's Turnstile success callback → Angular calls validate
+          // from the browser (same IP as the subsequent search requests)
+          console.log(`[egp-scraper] injecting via window.${turnstileAttrs.callback}()...`);
+          const injectResult = await page.evaluate(([name, token]: [string, string]) => {
+            const fn = (window as any)[name];
+            if (typeof fn !== 'function') return `window.${name} is not a function`;
+            fn(token);
+            return 'called';
+          }, [turnstileAttrs.callback, rawTurnstileToken] as [string, string]);
+          console.log(`[egp-scraper] inject result: ${injectResult}`);
+
+          const tokenWait = Date.now() + 30_000;
+          while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
+          if (nativeAnnouncementToken) {
+            console.log('[egp-scraper] token captured via callback injection');
+          } else {
+            console.log('[egp-scraper] callback fired but no token returned — direct validate fallback');
+          }
+        }
+
+        if (nativeAnnouncementToken) {
+          announcementToken = nativeAnnouncementToken;
+        } else {
+          console.log('[egp-scraper] direct validate (CapSolver token sent from browser IP)...');
+          announcementToken = await validateTurnstileToken(page, rawTurnstileToken, csrfToken);
+        }
       }
     }
     console.log(`[egp-scraper] announcement token ready (length=${announcementToken.length})`);

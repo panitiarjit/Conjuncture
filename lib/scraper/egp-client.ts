@@ -19,21 +19,22 @@ function sleep(ms: number) {
 }
 
 /** Resolve a Cloudflare Turnstile challenge via the CapSolver service. */
-export async function getTurnstileToken(config: ScrapeConfig): Promise<string> {
+export async function getTurnstileToken(config: ScrapeConfig, action?: string, cdata?: string): Promise<string> {
   const apiKey = config.capsolverApiKey ?? process.env.CAPSOLVER_API_KEY;
   if (!apiKey) throw new Error('CAPSOLVER_API_KEY env var not set');
+
+  const task: Record<string, string> = {
+    type: 'AntiTurnstileTaskProxyLess',
+    websiteURL: config.cfPageUrl,
+    websiteKey: config.cfTurnstileSiteKey,
+  };
+  if (action !== undefined) task['action'] = action;
+  if (cdata !== undefined) task['cdata'] = cdata;
 
   const createRes = await fetch('https://api.capsolver.com/createTask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      clientKey: apiKey,
-      task: {
-        type: 'AntiTurnstileTaskProxyLess',
-        websiteURL: config.cfPageUrl,
-        websiteKey: config.cfTurnstileSiteKey,
-      },
-    }),
+    body: JSON.stringify({ clientKey: apiKey, task }),
   });
   const createData = (await createRes.json()) as { taskId?: string; errorCode?: string; errorDescription?: string };
   if (createData.errorCode) {
