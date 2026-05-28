@@ -33,27 +33,14 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
   // playwright-extra + stealth plugin patches fingerprinting vectors (navigator.webdriver,
-  // window.chrome, WebGL, canvas, etc.) so Cloudflare auto-completes the Turnstile challenge
-  // from within the browser (GitHub Actions IP), bypassing the CapSolver IP-mismatch problem.
-  // require() is used instead of dynamic import because playwright-extra's "typings" field
-  // is not resolved by ts-node under moduleResolution:node. The scraper only runs in GitHub
-  // Actions (never in Cloudflare Workers), so require() here doesn't affect the CF bundle.
+  // Use WebKit (Safari engine) instead of Chromium. On macOS, Playwright's WebKit uses the
+  // actual system Safari rendering engine with a genuine Apple TLS fingerprint. Cloudflare's
+  // bot detection targets Chromium automation artifacts (CDP port, navigator.webdriver, etc.)
+  // and does not suppress the Turnstile iframe for WebKit-based browsers.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { chromium } = require('playwright-extra') as typeof import('playwright');
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const StealthPlugin = require('puppeteer-extra-plugin-stealth') as () => unknown;
-  (chromium as any).use(StealthPlugin());
+  const { webkit } = require('playwright') as typeof import('playwright');
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
-  const browser = await chromium.launch({
-    headless,
-    args: [
-      '--disable-blink-features=AutomationControlled',
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      ...(headless ? [] : ['--disable-gpu-sandbox', '--use-gl=swiftshader']),
-    ],
-  });
+  const browser = await webkit.launch({ headless });
   const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
   let proxyConfig: { server: string; username?: string; password?: string } | undefined;
   if (proxyUrl) {
