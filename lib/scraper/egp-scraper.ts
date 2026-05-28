@@ -1,3 +1,6 @@
+import * as os from 'os';
+import * as fs from 'fs';
+import * as path from 'path';
 import { getTurnstileToken, validateTurnstileToken, searchAnnouncements } from './egp-client';
 import { mapToTender, dateFromProjectId } from './egp-mapper';
 import { getTendersFromFirestore, getOpenOrUnknownTenders, upsertTender, recordUnknownMethodId, forceCloseTenders } from '../firestore-admin';
@@ -32,23 +35,13 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const announceEDate = isoDate(today);
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
-  // Use real Chrome (channel: 'chrome') with automation-disabling flags.
-  // WebKit has no equivalent of --disable-blink-features=AutomationControlled, so
-  // Cloudflare's turnstile.js detects navigator.webdriver=true and suppresses the iframe.
-  // Real Chrome + AutomationControlled flag + init script patching navigator.webdriver
-  // removes the signals Cloudflare checks, causing the iframe to appear and auto-solve.
+  // Use real Chrome with a PERSISTENT profile so cf_clearance / __cf_bm cookies
+  // accumulate trust across runs — fresh profiles score as "new browser" every time.
+  // launchPersistentContext merges launch + context options.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { chromium } = require('playwright') as typeof import('playwright');
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
-  const browser = await chromium.launch({
-    headless,
-    channel: 'chrome',
-    args: [
-      '--disable-blink-features=AutomationControlled',
-      '--no-first-run',
-      '--no-default-browser-check',
-    ],
-  });
+
   const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
   let proxyConfig: { server: string; username?: string; password?: string } | undefined;
   if (proxyUrl) {
@@ -60,13 +53,25 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     };
     console.log(`[egp-scraper] using residential proxy: ${u.host}`);
   } else {
-    console.log('[egp-scraper] no RESIDENTIAL_PROXY_URL set — Cloudflare may block on datacenter IP');
+    console.log('[egp-scraper] no RESIDENTIAL_PROXY_URL set — using persistent profile for Cloudflare trust');
   }
-  const context = await browser.newContext({
+
+  const profileDir = process.env.CHROME_PROFILE_DIR ?? path.join(os.homedir(), '.egp-chrome-profile');
+  fs.mkdirSync(profileDir, { recursive: true });
+  console.log(`[egp-scraper] Chrome profile: ${profileDir}`);
+
+  const context = await chromium.launchPersistentContext(profileDir, {
+    headless,
+    channel: 'chrome',
+    args: [
+      '--disable-blink-features=AutomationControlled',
+      '--no-first-run',
+      '--no-default-browser-check',
+    ],
     locale: 'th-TH',
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
   });
-  const page = await context.newPage();
+  const page = context.pages()[0] ?? await context.newPage();
 
   try {
     // Intercept Angular's own Turnstile validation call BEFORE navigating.
@@ -85,16 +90,37 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       await route.fulfill({ response });
     });
 
-    // Patch navigator.webdriver before any page script runs. Cloudflare's turnstile.js
-    // checks this property to detect automation — if it's truthy the iframe is suppressed.
-    // --disable-blink-features=AutomationControlled removes the Chrome-level signal;
-    // this init script removes the JS-level one for all frames including the widget iframe.
+    // Stealth patches applied before any page script runs — covers all frames including
+    // the Turnstile iframe. AutomationControlled flag removes Chrome-level webdriver signal;
+    // this covers JS-level signals that turnstile.js fingerprints.
     await page.addInitScript(() => {
+      // webdriver
       Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+      // plugins — empty plugins list is a known bot signal
+      try {
+        const fakePlugins = [
+          { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format', version: '' },
+          { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '', version: '' },
+          { name: 'Native Client', filename: 'internal-nacl-plugin', description: '', version: '' },
+        ];
+        Object.defineProperty(navigator, 'plugins', { get: () => Object.assign(fakePlugins, { item: (i: number) => fakePlugins[i] ?? null, namedItem: (n: string) => fakePlugins.find(p => p.name === n) ?? null, refresh: () => {} }) });
+      } catch (_) {}
+      // languages — match locale so header and JS agree
+      try { Object.defineProperty(navigator, 'languages', { get: () => ['th-TH', 'th', 'en-US', 'en'] }); } catch (_) {}
+      // permissions — default (not denied) for notifications; denied is a bot signal
+      try {
+        const origQuery = navigator.permissions.query.bind(navigator.permissions);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (navigator.permissions as any).query = (p: PermissionDescriptor) =>
+          p.name === 'notifications'
+            ? Promise.resolve({ state: 'default', onchange: null } as unknown as PermissionStatus)
+            : origQuery(p);
+      } catch (_) {}
     });
 
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
     await page.goto(config.cfPageUrl, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+    await page.bringToFront();
     console.log(`[egp-scraper] page loaded: ${page.url()}`);
 
     // Wait for Angular to bootstrap — JS bundles are hosted in Thailand and can take
@@ -118,8 +144,33 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       hasFocus: document.hasFocus(),
       visibility: document.visibilityState,
       hidden: document.hidden,
+      pluginsLen: navigator.plugins?.length,
+      languages: (navigator as Navigator & { languages?: string[] }).languages,
+      chromeExists: !!(window as Window & { chrome?: unknown }).chrome,
     }));
     console.log(`[egp-scraper] automation signals: ${JSON.stringify(autoSignals)}`);
+
+    // Simulate human-like mouse movement so Cloudflare's behavioural check sees activity.
+    // Without any mouse events, even a clean fingerprint can score as "bot" on first visit.
+    const viewport = page.viewportSize();
+    const vw = viewport?.width ?? 1280;
+    const vh = viewport?.height ?? 720;
+    await page.mouse.move(vw * 0.2, vh * 0.2, { steps: 6 });
+    await sleep(180);
+    await page.mouse.move(vw * 0.5, vh * 0.35, { steps: 10 });
+    await sleep(200);
+    await page.mouse.move(vw * 0.45, vh * 0.55, { steps: 8 });
+    await sleep(150);
+    // Move towards the cf-turnstile element if already rendered
+    const tsBox = await page.$eval('.cf-turnstile', (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+    }).catch(() => null);
+    if (tsBox) {
+      await page.mouse.move(tsBox.x, tsBox.y, { steps: 14 });
+      await sleep(250);
+      console.log(`[egp-scraper] hovered over cf-turnstile at (${Math.round(tsBox.x)}, ${Math.round(tsBox.y)})`);
+    }
 
     // Poll for CSRF token — Angular sets it async after bootstrap; give up to angularInitMs
     let csrfToken = '';
@@ -347,7 +398,7 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       await sleep(config.rateLimitMs);
     }
   } finally {
-    await browser.close();
+    await context.close();
   }
 
   if (isDryRun && methodIdsSeen.size > 0) {
