@@ -35,11 +35,12 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const announceEDate = isoDate(today);
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
-  // Use real Chrome with a PERSISTENT profile so cf_clearance / __cf_bm cookies
-  // accumulate trust across runs — fresh profiles score as "new browser" every time.
-  // launchPersistentContext merges launch + context options.
+  // rebrowser-playwright is a drop-in replacement that patches out the CDP Runtime.enable
+  // detection vector — standard Playwright's isolated JS context is detectable by Cloudflare
+  // Turnstile even when navigator.webdriver and all JS-level signals are clean.
+  // launchPersistentContext merges launch + context options and preserves cf cookies.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { chromium } = require('playwright') as typeof import('playwright');
+  const { chromium } = require('rebrowser-playwright') as typeof import('playwright');
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
 
   const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
