@@ -91,8 +91,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         searchInterceptCount++;
         console.log(`[egp-scraper] search req #${searchInterceptCount}: ${req.method()} ${req.url().slice(0, 500)}`);
         const hdrs = req.headers();
-        // Log a subset of headers most relevant to session/auth — full cookie is too long
-        const relevant = ['referer', 'origin', 'x-xsrf-token', 'accept-language', 'x-requested-with', 'authorization'];
+        const relevant = ['referer', 'origin', 'x-xsrf-token', 'accept-language', 'x-requested-with',
+                          'authorization', 'content-type', 'accept', 'sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest'];
         const subset = Object.fromEntries(Object.entries(hdrs).filter(([k]) => relevant.includes(k) || k.startsWith('cookie')));
         console.log(`[egp-scraper] search headers (relevant): ${JSON.stringify(subset)}`);
       }
@@ -100,6 +100,17 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       const bodyText = await response.text();
       if (searchInterceptCount <= 2 && bodyText.includes('validateCfTurnTile')) {
         console.log(`[egp-scraper] search response (${response.status()}): ${bodyText.slice(0, 300)}`);
+        // Log response headers that might hint at why the token was rejected
+        const respHdrs = response.headers();
+        const interestingRespHdrs = Object.fromEntries(
+          Object.entries(respHdrs).filter(([k]) =>
+            ['set-cookie', 'www-authenticate', 'x-auth-required', 'location',
+             'x-error', 'x-frame-options', 'content-type'].includes(k.toLowerCase())
+          )
+        );
+        if (Object.keys(interestingRespHdrs).length > 0) {
+          console.log(`[egp-scraper] search response headers: ${JSON.stringify(interestingRespHdrs)}`);
+        }
       }
       await route.fulfill({ response, body: bodyText });
     });
@@ -228,19 +239,22 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     const allCookies = await context.cookies(config.cfPageUrl);
     console.log(`[egp-scraper] all cookies at CSRF (${allCookies.length}): [${allCookies.map(c => c.name).join(', ')}]`);
 
-    // NOW hover over the cf-turnstile element — it's rendered by Angular after bootstrap,
-    // so the element should be in the DOM by the time the CSRF poll finishes (~40s later).
-    // Scroll it into view first so Cloudflare doesn't suppress due to off-screen widget.
-    await page.locator('.cf-turnstile').scrollIntoViewIfNeeded().catch(() => null);
-    const tsBox = await page.locator('.cf-turnstile').boundingBox().catch(() => null);
-    if (tsBox) {
-      await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y - 30, { steps: 8 });
-      await sleep(200);
-      await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y + tsBox.height / 2, { steps: 10 });
-      await sleep(300);
-      console.log(`[egp-scraper] scrolled + hovered cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
+    // Wait briefly for the cf-turnstile outer div to appear (Angular renders it async).
+    // Use a short timeout so we don't block if it hasn't appeared yet.
+    const tsEl = await page.waitForSelector('.cf-turnstile', { timeout: 5_000 }).catch(() => null);
+    if (tsEl) {
+      // Scroll into view and hover to signal human activity before Turnstile evaluates.
+      await tsEl.scrollIntoViewIfNeeded().catch(() => null);
+      const tsBox = await tsEl.boundingBox().catch(() => null);
+      if (tsBox) {
+        await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y - 30, { steps: 8 });
+        await sleep(200);
+        await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y + tsBox.height / 2, { steps: 10 });
+        await sleep(300);
+        console.log(`[egp-scraper] scrolled + hovered cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
+      }
     } else {
-      console.log('[egp-scraper] cf-turnstile not in DOM yet after CSRF poll');
+      console.log('[egp-scraper] cf-turnstile not in DOM after 5s');
     }
 
     // ── Turnstile strategy ────────────────────────────────────────────────────
@@ -286,6 +300,60 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
           console.log('[egp-scraper] waiting 30s for iframe after reset...');
           iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 30_000 }).catch(() => null);
           console.log(iframeHandle ? '[egp-scraper] Turnstile iframe appeared after reset!' : '[egp-scraper] Turnstile iframe still absent after reset');
+
+          if (!iframeHandle) {
+            // Log every method/prop on window.turnstile to understand what API is initialised
+            const turnstileMethods = await page.evaluate(() => {
+              const t = (window as any).turnstile;
+              if (!t) return 'window.turnstile is undefined';
+              const names = new Set<string>();
+              let obj: object | null = t;
+              while (obj && obj !== Object.prototype) {
+                Object.getOwnPropertyNames(obj).forEach(n => names.add(n));
+                obj = Object.getPrototypeOf(obj);
+              }
+              const methods = [...names].filter(n => n !== 'constructor').map(n => {
+                try { return `${n}:${typeof (t as any)[n]}`; } catch { return `${n}:?`; }
+              });
+              return methods.join(', ');
+            });
+            console.log(`[egp-scraper] window.turnstile API: ${turnstileMethods}`);
+
+            // Try execute() — for explicit render mode it triggers the challenge
+            const execResult = await page.evaluate((id: string) => {
+              const t = (window as any).turnstile;
+              if (!t?.execute) return 'turnstile.execute not available';
+              try { t.execute(id); return `execute called for ${id}`; } catch (e: any) { return `execute error: ${e.message}`; }
+            }, widgetId);
+            console.log(`[egp-scraper] turnstile.execute: ${execResult}`);
+            if (execResult.startsWith('execute called')) {
+              await sleep(20_000);
+              iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 1_000 }).catch(() => null);
+              console.log(iframeHandle ? '[egp-scraper] iframe appeared after execute!' : '[egp-scraper] iframe still absent after execute');
+            }
+          }
+
+          if (!iframeHandle) {
+            // Last resort: call turnstile.render() directly with the actual site key.
+            // This forces a fresh challenge evaluation after ~3 min of browser activity.
+            const renderResult = await page.evaluate(([siteKey, action]: [string, string]) => {
+              const t = (window as any).turnstile;
+              if (!t?.render) return 'turnstile.render not available';
+              const el = document.getElementById('idcf-turnstile');
+              if (!el) return 'element #idcf-turnstile not found';
+              try {
+                el.innerHTML = '';
+                const newId = t.render(el, { sitekey: siteKey, action, theme: 'light' });
+                return `render called, widgetId=${newId}`;
+              } catch (e: any) { return `render error: ${e.message}`; }
+            }, [config.cfTurnstileSiteKey, 'egp-aann09-web'] as [string, string]);
+            console.log(`[egp-scraper] turnstile.render: ${renderResult}`);
+            if (renderResult.startsWith('render called')) {
+              console.log('[egp-scraper] waiting 30s for iframe after forced render...');
+              iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 30_000 }).catch(() => null);
+              console.log(iframeHandle ? '[egp-scraper] iframe appeared after render!' : '[egp-scraper] iframe still absent after render');
+            }
+          }
         }
       }
 
@@ -378,6 +446,13 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         } else {
           console.log('[egp-scraper] direct validate (CapSolver token sent from browser IP)...');
           announcementToken = await validateTurnstileToken(page, rawTurnstileToken, csrfToken);
+          // Check if F5 BigIP cookies changed — if so, server-side state was updated
+          const postValidateCookies = await context.cookies(config.cfPageUrl);
+          const tsBefore = allCookies.filter(c => c.name.startsWith('TS')).map(c => `${c.name}=${c.value.slice(-12)}`);
+          const tsAfter = postValidateCookies.filter(c => c.name.startsWith('TS')).map(c => `${c.name}=${c.value.slice(-12)}`);
+          console.log(`[egp-scraper] F5 cookies changed after validate: ${JSON.stringify(tsBefore) !== JSON.stringify(tsAfter)}`);
+          console.log(`[egp-scraper] TS before: [${tsBefore.join(', ')}]`);
+          console.log(`[egp-scraper] TS after:  [${tsAfter.join(', ')}]`);
         }
       }
     }

@@ -112,10 +112,10 @@ export async function searchAnnouncements(
 
   const result = await page.evaluate(
     async ({ url, csrfToken }: { url: string; csrfToken: string }) => {
+      // GET request — no body, so no Content-Type. Angular's HttpClient omits it too.
       const res = await fetch(url, {
         headers: {
           'Accept': 'application/json, text/plain, */*',
-          'content-type': 'application/json',
           'X-Xsrf-Token': csrfToken,
         },
       });
