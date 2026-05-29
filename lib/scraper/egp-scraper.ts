@@ -72,6 +72,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       '--no-process-singleton-lock',
     ],
     locale: 'th-TH',
+    // 1440x900 is a common Mac laptop resolution — more realistic than Playwright's 1280x720 default
+    viewport: { width: 1440, height: 900 },
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
   });
   const page = context.pages()[0] ?? await context.newPage();
@@ -227,6 +229,9 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       // userActivation: hasBeenActive=true only if a user gesture occurred (click/key/tap)
       userActivationHas: !!(navigator as Navigator & { userActivation?: { hasBeenActive?: boolean } }).userActivation?.hasBeenActive,
       userActivationIs:  !!(navigator as Navigator & { userActivation?: { isActive?: boolean } }).userActivation?.isActive,
+      // userAgentData: in real Chrome the brands list includes "Google Chrome"; in Chromium it doesn't
+      uaBrands: (() => { try { return (navigator as any).userAgentData?.brands?.map((b: any) => `${b.brand}/${b.version}`).join(', ') ?? 'N/A'; } catch { return 'err'; } })(),
+      uaMobile: (() => { try { return (navigator as any).userAgentData?.mobile ?? null; } catch { return null; } })(),
     }));
     console.log(`[egp-scraper] automation signals: ${JSON.stringify(autoSignals)}`);
 
@@ -246,11 +251,19 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     // iframe context races with the CDP call — just retry on the next tick.
     let csrfToken = '';
     const deadline = Date.now() + config.angularInitMs;
+    let csrfPollTick = 0;
     while (Date.now() < deadline) {
       try {
         csrfToken = await page.evaluate(() => sessionStorage.getItem('csrf') ?? '');
       } catch { /* timeout or context race — retry */ }
       if (csrfToken) break;
+      csrfPollTick++;
+      // Every ~2s simulate a human scanning the page (random mouse movement)
+      if (csrfPollTick % 2 === 0) {
+        const rx = 0.1 + Math.random() * 0.8;
+        const ry = 0.1 + Math.random() * 0.8;
+        await page.mouse.move(vw * rx, vh * ry, { steps: 4 }).catch(() => null);
+      }
       await sleep(1000);
     }
     if (!csrfToken) {
@@ -318,6 +331,43 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
 
       if ('err' in btnPos) {
         console.log(`[egp-scraper] search trigger: ${btnPos.err}`);
+        // If the advanced search panel is open, "ค้นหา" is hidden behind it.
+        // Click "ค้นหาขั้นสูง" to close the panel and reveal "ค้นหา", then retry.
+        if (btnPos.err.includes('ค้นหาขั้นสูง')) {
+          console.log('[egp-scraper] advanced panel open — clicking ค้นหาขั้นสูง to close it');
+          const advBtnPos = await page.evaluate((): BtnPos | null => {
+            const btn = Array.from(document.querySelectorAll<HTMLElement>('button'))
+              .find(el => el.innerText.trim().includes('ค้นหาขั้นสูง') && !!el.offsetParent);
+            if (!btn) return null;
+            const r = btn.getBoundingClientRect();
+            return { text: btn.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
+          }).catch(() => null);
+          if (advBtnPos) {
+            await page.mouse.click(advBtnPos.x, advBtnPos.y).catch(() => null);
+            await sleep(1_500);
+            // Retry the primary button search now that the panel should be closed
+            const btnPos2 = await page.evaluate((): BtnPos | { err: string } => {
+              const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
+                .filter(el => !!el.offsetParent && !(el as HTMLButtonElement).disabled);
+              const target =
+                btns.find(el => el.innerText.trim() === 'ค้นหา') ??
+                btns.find(el => el.innerText.trim() === 'ดูประกาศวันนี้');
+              if (!target) return { err: `still no match after toggle; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 200)}]` };
+              const r = target.getBoundingClientRect();
+              return { text: target.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
+            }).catch((e: unknown): { err: string } => ({ err: String(e) }));
+            if ('err' in btnPos2) {
+              console.log(`[egp-scraper] search trigger retry: ${btnPos2.err}`);
+            } else {
+              console.log(`[egp-scraper] clicking "${btnPos2.text}" via page.mouse.click at (${Math.round(btnPos2.x)}, ${Math.round(btnPos2.y)}) [after toggle]`);
+              await page.mouse.click(btnPos2.x, btnPos2.y).catch(() => null);
+              await sleep(1_000);
+              const tsElToggle = await page.waitForSelector('.cf-turnstile', { timeout: 20_000 }).catch(() => null);
+              if (tsElToggle) console.log('[egp-scraper] .cf-turnstile appeared after toggle+click');
+              else console.log('[egp-scraper] .cf-turnstile still absent after toggle+click');
+            }
+          }
+        }
       } else {
         console.log(`[egp-scraper] clicking "${btnPos.text}" via page.mouse.click at (${Math.round(btnPos.x)}, ${Math.round(btnPos.y)})`);
         await page.mouse.click(btnPos.x, btnPos.y).catch(() => null);
@@ -433,6 +483,28 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
               iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 30_000 }).catch(() => null);
               console.log(iframeHandle ? '[egp-scraper] iframe appeared after render!' : '[egp-scraper] iframe still absent after render');
             }
+          }
+        }
+      }
+
+      // Check if Cloudflare solved the challenge silently (filled hidden input without iframe).
+      // This happens in "managed" mode when the browser trust score is high enough.
+      // Angular's callback fires in the main world and may not reach our isolated eval,
+      // so we read the hidden input directly and call validate ourselves if it has a value.
+      if (!nativeAnnouncementToken) {
+        const hiddenVal = await page.evaluate(() => {
+          const input = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
+          return input?.value ?? '';
+        }).catch(() => '');
+        console.log(`[egp-scraper] cf-turnstile-response: ${hiddenVal ? `"${hiddenVal.slice(0, 30)}…" (${hiddenVal.length} chars)` : 'empty'}`);
+        if (hiddenVal && hiddenVal.length > 10) {
+          console.log('[egp-scraper] native CF token found in hidden input — calling validate...');
+          try {
+            const nativeTok = await validateTurnstileToken(page, hiddenVal, csrfToken);
+            nativeAnnouncementToken = nativeTok;
+            console.log('[egp-scraper] validate succeeded with native hidden-input token');
+          } catch (err: unknown) {
+            console.log(`[egp-scraper] hidden-input validate failed: ${err instanceof Error ? err.message : String(err)}`);
           }
         }
       }
