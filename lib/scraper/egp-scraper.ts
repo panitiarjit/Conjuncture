@@ -80,6 +80,30 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   context.setDefaultTimeout(30_000);
 
   try {
+    // Intercept search requests to log the exact URL + all headers the browser adds
+    // (Referer, Origin, Cookie, Accept-Language, etc.) — this tells us if there's a
+    // header the server checks that we're missing or sending differently.
+    // Only log the first call to avoid spamming on multi-page runs.
+    let searchInterceptCount = 0;
+    await page.route(/\/pb\/a-egp-allt-project\/announcement/, async (route: import('playwright').Route) => {
+      const req = route.request();
+      if (searchInterceptCount < 2) {
+        searchInterceptCount++;
+        console.log(`[egp-scraper] search req #${searchInterceptCount}: ${req.method()} ${req.url().slice(0, 500)}`);
+        const hdrs = req.headers();
+        // Log a subset of headers most relevant to session/auth — full cookie is too long
+        const relevant = ['referer', 'origin', 'x-xsrf-token', 'accept-language', 'x-requested-with', 'authorization'];
+        const subset = Object.fromEntries(Object.entries(hdrs).filter(([k]) => relevant.includes(k) || k.startsWith('cookie')));
+        console.log(`[egp-scraper] search headers (relevant): ${JSON.stringify(subset)}`);
+      }
+      const response = await route.fetch();
+      const bodyText = await response.text();
+      if (searchInterceptCount <= 2 && bodyText.includes('validateCfTurnTile')) {
+        console.log(`[egp-scraper] search response (${response.status()}): ${bodyText.slice(0, 300)}`);
+      }
+      await route.fulfill({ response, body: bodyText });
+    });
+
     // Intercept Angular's own Turnstile validation call BEFORE navigating.
     // Angular auto-validates Turnstile on page load from within the browser (GitHub Actions IP).
     // If we capture that token instead of using CapSolver (which solves from CapSolver's IP),
@@ -144,7 +168,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     );
     console.log('[egp-scraper] Angular bootstrapped, polling for CSRF token...');
 
-    // Diagnose automation signals that Cloudflare's turnstile.js checks
+    // Automation signals captured here (runs in rebrowser isolated world — values reflect
+    // the same underlying objects Cloudflare's turnstile.js sees in the main world).
     const autoSignals = await page.evaluate(() => ({
       webdriver: (navigator as Navigator & { webdriver?: boolean }).webdriver,
       hasFocus: document.hasFocus(),
@@ -153,11 +178,24 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       pluginsLen: navigator.plugins?.length,
       languages: (navigator as Navigator & { languages?: string[] }).languages,
       chromeExists: !!(window as Window & { chrome?: unknown }).chrome,
+      // Additional Turnstile fingerprint signals
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+      screenW: screen.width,
+      screenH: screen.height,
+      colorDepth: screen.colorDepth,
+      outerW: window.outerWidth,
+      outerH: window.outerHeight,
+      innerW: window.innerWidth,
+      innerH: window.innerHeight,
+      // chrome.loadTimes and chrome.csi are only present in real Chrome (not headless)
+      chromeLoadTimes: typeof (window as Window & { chrome?: { loadTimes?: unknown } }).chrome?.loadTimes,
+      chromeRuntime: !!(window as Window & { chrome?: { runtime?: unknown } }).chrome?.runtime,
+      notificationPermission: (typeof Notification !== 'undefined' ? Notification.permission : 'N/A'),
     }));
     console.log(`[egp-scraper] automation signals: ${JSON.stringify(autoSignals)}`);
 
-    // Simulate human-like mouse movement so Cloudflare's behavioural check sees activity.
-    // Without any mouse events, even a clean fingerprint can score as "bot" on first visit.
+    // Initial random mouse movement (early user behavior before page fully loads)
     const viewport = page.viewportSize();
     const vw = viewport?.width ?? 1280;
     const vh = viewport?.height ?? 720;
@@ -167,16 +205,6 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     await sleep(200);
     await page.mouse.move(vw * 0.45, vh * 0.55, { steps: 8 });
     await sleep(150);
-    // Move towards the cf-turnstile element if already rendered.
-    // Use locator.boundingBox() (DOM geometry via CDP) instead of $eval (Runtime.callFunctionOn)
-    // because Runtime calls can deadlock in alwaysIsolated mode when the Turnstile iframe
-    // creates new execution contexts concurrently.
-    const tsBox = await page.locator('.cf-turnstile').boundingBox().catch(() => null);
-    if (tsBox) {
-      await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y + tsBox.height / 2, { steps: 14 });
-      await sleep(250);
-      console.log(`[egp-scraper] hovered over cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
-    }
 
     // Poll for CSRF token — Angular sets it async after bootstrap; give up to angularInitMs.
     // Wrap in try/catch: in alwaysIsolated mode evaluate() may throw TimeoutError if a new
@@ -195,11 +223,25 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     }
     console.log('[egp-scraper] CSRF token obtained');
 
-    // Dump cookies so we can see what Cloudflare has set (__cf_bm, cf_clearance, etc.)
-    const cookieNames = await page.evaluate(() =>
-      document.cookie.split(';').map(c => c.trim().split('=')[0]).filter(Boolean)
-    );
-    console.log(`[egp-scraper] browser cookies at CSRF: [${cookieNames.join(', ')}]`);
+    // context.cookies() includes HttpOnly cookies invisible to document.cookie —
+    // these may include session cookies relevant to the validateCfTurnTile check.
+    const allCookies = await context.cookies(config.cfPageUrl);
+    console.log(`[egp-scraper] all cookies at CSRF (${allCookies.length}): [${allCookies.map(c => c.name).join(', ')}]`);
+
+    // NOW hover over the cf-turnstile element — it's rendered by Angular after bootstrap,
+    // so the element should be in the DOM by the time the CSRF poll finishes (~40s later).
+    // Scroll it into view first so Cloudflare doesn't suppress due to off-screen widget.
+    await page.locator('.cf-turnstile').scrollIntoViewIfNeeded().catch(() => null);
+    const tsBox = await page.locator('.cf-turnstile').boundingBox().catch(() => null);
+    if (tsBox) {
+      await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y - 30, { steps: 8 });
+      await sleep(200);
+      await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y + tsBox.height / 2, { steps: 10 });
+      await sleep(300);
+      console.log(`[egp-scraper] scrolled + hovered cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
+    } else {
+      console.log('[egp-scraper] cf-turnstile not in DOM yet after CSRF poll');
+    }
 
     // ── Turnstile strategy ────────────────────────────────────────────────────
     // After CSRF is set, Angular may still be rendering the Turnstile widget.
@@ -221,9 +263,31 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       // creates the <iframe> asynchronously. We must NOT break early just because the
       // outer div exists — we need to wait for the iframe (which triggers auto-solve).
       console.log('[egp-scraper] waiting up to 45s for Turnstile iframe and native auto-solve...');
-      const iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 45_000 })
+      let iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 45_000 })
         .catch(() => null);
       console.log(iframeHandle ? '[egp-scraper] Turnstile iframe appeared' : '[egp-scraper] Turnstile iframe did NOT appear after 45s (Cloudflare suppressed it)');
+
+      // If the iframe didn't appear, try resetting the Turnstile widget.
+      // After 45s of genuine page activity (mouse moves, scroll, hover), Cloudflare may
+      // score the session higher on a re-challenge. reset() clears the current state and
+      // re-runs Cloudflare's challenge decision.
+      if (!iframeHandle && !nativeAnnouncementToken) {
+        const widgetId = await page.evaluate(() => {
+          const input = document.querySelector<HTMLInputElement>('[id^="cf-chl-widget-"][id$="_response"]');
+          return input?.id?.replace('_response', '') ?? null;
+        });
+        if (widgetId) {
+          const resetResult = await page.evaluate((id: string) => {
+            const t = (window as any).turnstile;
+            if (!t?.reset) return 'turnstile.reset not available';
+            try { t.reset(id); return `reset called for ${id}`; } catch (e: any) { return `reset error: ${e.message}`; }
+          }, widgetId);
+          console.log(`[egp-scraper] turnstile.reset: ${resetResult}`);
+          console.log('[egp-scraper] waiting 30s for iframe after reset...');
+          iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 30_000 }).catch(() => null);
+          console.log(iframeHandle ? '[egp-scraper] Turnstile iframe appeared after reset!' : '[egp-scraper] Turnstile iframe still absent after reset');
+        }
+      }
 
       // Record widget attrs regardless (needed for CapSolver action/cdata)
       turnstileAttrs = await page.evaluate((): TurnstileAttrs | null => {

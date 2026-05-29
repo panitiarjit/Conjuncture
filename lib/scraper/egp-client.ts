@@ -98,25 +98,30 @@ export async function searchAnnouncements(
   config: ScrapeConfig,
   params: SearchParams
 ): Promise<EgpApiResponse> {
+  // Build URL here so we can log it — URLSearchParams encodes ':' as %3A and '=' as %3D.
+  // The server should URL-decode these back, but if it doesn't this is the bug.
+  const qs = new URLSearchParams({
+    announceSDate: params.announceSDate,
+    announceEDate: params.announceEDate,
+    announcementTodayFlag: 'false',
+    page: String(params.page),
+    announcementToken: params.announcementToken,
+  });
+  const searchUrl = `${config.baseUrl}${config.searchPath}?${qs}`;
+  console.log(`[egp-client] search URL (page ${params.page}): ${searchUrl.slice(0, 500)}`);
+
   const result = await page.evaluate(
-    async ({ baseUrl, searchPath, params }: { baseUrl: string; searchPath: string; params: SearchParams }) => {
-      const qs = new URLSearchParams({
-        announceSDate: params.announceSDate,
-        announceEDate: params.announceEDate,
-        announcementTodayFlag: 'false',
-        page: String(params.page),
-        announcementToken: params.announcementToken,
-      });
-      const res = await fetch(`${baseUrl}${searchPath}?${qs}`, {
+    async ({ url, csrfToken }: { url: string; csrfToken: string }) => {
+      const res = await fetch(url, {
         headers: {
           'Accept': 'application/json, text/plain, */*',
           'content-type': 'application/json',
-          'X-Xsrf-Token': params.csrfToken,
+          'X-Xsrf-Token': csrfToken,
         },
       });
       return res.json() as Promise<unknown>;
     },
-    { baseUrl: config.baseUrl, searchPath: config.searchPath, params }
+    { url: searchUrl, csrfToken: params.csrfToken }
   );
 
   return result as EgpApiResponse;
