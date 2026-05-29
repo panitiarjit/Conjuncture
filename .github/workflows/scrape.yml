@@ -66,6 +66,8 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json" >> $GITHUB_ENV
 
       - name: Run status refresh
+        env:
+          CHROME_PROFILE_DIR: /Users/mgsunroof/.egp-chrome-profile-refresh
         run: npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
 
       - name: Revalidate site cache
@@ -110,6 +112,8 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-sa.json" >> $GITHUB_ENV
 
       - name: Run scraper
+        env:
+          CHROME_PROFILE_DIR: /Users/mgsunroof/.egp-chrome-profile-scrape
         run: |
           ARGS=""
           [ -n "${{ github.event.inputs.days }}" ] && ARGS="$ARGS --days ${{ github.event.inputs.days }}"

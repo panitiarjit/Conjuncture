@@ -68,6 +68,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       '--disable-blink-features=AutomationControlled',
       '--no-first-run',
       '--no-default-browser-check',
+      // Prevents Chrome refusing to open a profile whose .lock file survived a kill
+      '--no-process-singleton-lock',
     ],
     locale: 'th-TH',
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
