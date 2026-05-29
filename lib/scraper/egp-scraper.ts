@@ -73,7 +73,11 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     ],
     locale: 'th-TH',
     // 1440x900 is a common Mac laptop resolution — more realistic than Playwright's 1280x720 default
-    viewport: { width: 1440, height: 900 },
+    // innerHeight must be LESS than outerHeight (outerH = window including browser chrome).
+    // On a 1440x900 screen, outerH ≈ 851 (screen minus OS menu bar). Setting viewport
+    // height to 900 makes innerH > outerH, which is physically impossible and a strong
+    // Cloudflare bot signal. 760 leaves ~91 px for tabs + address bar — realistic.
+    viewport: { width: 1440, height: 760 },
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
   });
   const page = context.pages()[0] ?? await context.newPage();
@@ -295,11 +299,51 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     const allCookies = await context.cookies(config.cfPageUrl);
     console.log(`[egp-scraper] all cookies at CSRF (${allCookies.length}): [${allCookies.map(c => c.name).join(', ')}]`);
 
-    // Wait briefly for the cf-turnstile outer div to appear (Angular renders it async).
-    // Use a short timeout so we don't block if it hasn't appeared yet.
-    const tsEl = await page.waitForSelector('.cf-turnstile', { timeout: 5_000 }).catch(() => null);
+    // Click "ค้นหา" immediately — before Angular restores "advanced panel open" state
+    // from the persistent profile (~5 seconds after bootstrap). If we wait first (e.g.
+    // for .cf-turnstile to appear), the button disappears before we can click it.
+    // Use page.mouse.click (real CDP pointer event) so navigator.userActivation is set.
+    type BtnPos = { text: string; x: number; y: number };
+    const findSearchBtn = () => page.evaluate((): BtnPos | { err: string } => {
+      const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
+        .filter(el => !!el.offsetParent && !(el as HTMLButtonElement).disabled);
+      const target =
+        btns.find(el => el.innerText.trim() === 'ค้นหา') ??
+        btns.find(el => el.innerText.trim() === 'ดูประกาศวันนี้') ??
+        btns.find(el => ['search', 'ยืนยัน', 'confirm'].some(t => (el.innerText ?? '').toLowerCase() === t));
+      if (!target) return { err: `no match; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 300)}]` };
+      const r = target.getBoundingClientRect();
+      return { text: target.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }).catch((e: unknown): { err: string } => ({ err: `eval: ${e instanceof Error ? e.message : String(e)}` }));
+
+    let searchClicked = false;
+    const searchBtnPos = await findSearchBtn();
+    if (!('err' in searchBtnPos)) {
+      console.log(`[egp-scraper] clicking "${searchBtnPos.text}" via page.mouse.click at (${Math.round(searchBtnPos.x)}, ${Math.round(searchBtnPos.y)})`);
+      await page.mouse.click(searchBtnPos.x, searchBtnPos.y).catch(() => null);
+      searchClicked = true;
+    } else {
+      console.log(`[egp-scraper] search trigger: ${searchBtnPos.err}`);
+      // Button not visible — dismiss any open dialogs/modals with Escape, then retry.
+      // Clicking ค้นหาขั้นสูง while the panel is already open fires getStepGrp and
+      // opens a sub-dialog ("ออก"), so Escape is safer than trying to click buttons.
+      await page.keyboard.press('Escape').catch(() => null);
+      await sleep(600);
+      await page.keyboard.press('Escape').catch(() => null);
+      await sleep(800);
+      const searchBtnPos2 = await findSearchBtn();
+      if (!('err' in searchBtnPos2)) {
+        console.log(`[egp-scraper] clicking "${searchBtnPos2.text}" after Escape at (${Math.round(searchBtnPos2.x)}, ${Math.round(searchBtnPos2.y)})`);
+        await page.mouse.click(searchBtnPos2.x, searchBtnPos2.y).catch(() => null);
+        searchClicked = true;
+      } else {
+        console.log(`[egp-scraper] still no match after Escape: ${searchBtnPos2.err}`);
+      }
+    }
+
+    // Wait for .cf-turnstile — Angular renders it after the search button click.
+    const tsEl = await page.waitForSelector('.cf-turnstile', { timeout: searchClicked ? 15_000 : 5_000 }).catch(() => null);
     if (tsEl) {
-      // Scroll into view and hover to signal human activity before Turnstile evaluates.
       await tsEl.scrollIntoViewIfNeeded().catch(() => null);
       const tsBox = await tsEl.boundingBox().catch(() => null);
       if (tsBox) {
@@ -310,81 +354,7 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         console.log(`[egp-scraper] scrolled + hovered cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
       }
     } else {
-      console.log('[egp-scraper] cf-turnstile not in DOM after 5s — trying search trigger');
-      // Use page.mouse.click (real CDP event) rather than element.click() from evaluate:
-      // a real pointer event sets navigator.userActivation, which Cloudflare checks.
-      // Prefer exact "ค้นหา" to avoid clicking "ค้นหาขั้นสูง" (advanced search panel).
-      type BtnPos = { text: string; x: number; y: number };
-      const btnPos = await page.evaluate((): BtnPos | { err: string } => {
-        const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
-          .filter(el => !!el.offsetParent && !(el as HTMLButtonElement).disabled);
-        const target =
-          btns.find(el => el.innerText.trim() === 'ค้นหา') ??
-          btns.find(el => el.innerText.trim() === 'ดูประกาศวันนี้') ??
-          btns.find(el => ['search', 'ยืนยัน', 'confirm'].some(t => (el.innerText ?? '').toLowerCase() === t));
-        if (!target) {
-          return { err: `no match; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 300)}]` };
-        }
-        const r = target.getBoundingClientRect();
-        return { text: target.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
-      }).catch((e: unknown): { err: string } => ({ err: `eval error: ${e instanceof Error ? e.message : String(e)}` }));
-
-      if ('err' in btnPos) {
-        console.log(`[egp-scraper] search trigger: ${btnPos.err}`);
-        // If the advanced search panel is open, "ค้นหา" is hidden behind it.
-        // Click "ค้นหาขั้นสูง" to close the panel and reveal "ค้นหา", then retry.
-        if (btnPos.err.includes('ค้นหาขั้นสูง')) {
-          console.log('[egp-scraper] advanced panel open — clicking ค้นหาขั้นสูง to close it');
-          const advBtnPos = await page.evaluate((): BtnPos | null => {
-            const btn = Array.from(document.querySelectorAll<HTMLElement>('button'))
-              .find(el => el.innerText.trim().includes('ค้นหาขั้นสูง') && !!el.offsetParent);
-            if (!btn) return null;
-            const r = btn.getBoundingClientRect();
-            return { text: btn.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
-          }).catch(() => null);
-          if (advBtnPos) {
-            await page.mouse.click(advBtnPos.x, advBtnPos.y).catch(() => null);
-            await sleep(1_500);
-            // Retry the primary button search now that the panel should be closed
-            const btnPos2 = await page.evaluate((): BtnPos | { err: string } => {
-              const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
-                .filter(el => !!el.offsetParent && !(el as HTMLButtonElement).disabled);
-              const target =
-                btns.find(el => el.innerText.trim() === 'ค้นหา') ??
-                btns.find(el => el.innerText.trim() === 'ดูประกาศวันนี้');
-              if (!target) return { err: `still no match after toggle; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 200)}]` };
-              const r = target.getBoundingClientRect();
-              return { text: target.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
-            }).catch((e: unknown): { err: string } => ({ err: String(e) }));
-            if ('err' in btnPos2) {
-              console.log(`[egp-scraper] search trigger retry: ${btnPos2.err}`);
-            } else {
-              console.log(`[egp-scraper] clicking "${btnPos2.text}" via page.mouse.click at (${Math.round(btnPos2.x)}, ${Math.round(btnPos2.y)}) [after toggle]`);
-              await page.mouse.click(btnPos2.x, btnPos2.y).catch(() => null);
-              await sleep(1_000);
-              const tsElToggle = await page.waitForSelector('.cf-turnstile', { timeout: 20_000 }).catch(() => null);
-              if (tsElToggle) console.log('[egp-scraper] .cf-turnstile appeared after toggle+click');
-              else console.log('[egp-scraper] .cf-turnstile still absent after toggle+click');
-            }
-          }
-        }
-      } else {
-        console.log(`[egp-scraper] clicking "${btnPos.text}" via page.mouse.click at (${Math.round(btnPos.x)}, ${Math.round(btnPos.y)})`);
-        await page.mouse.click(btnPos.x, btnPos.y).catch(() => null);
-        await sleep(1_000);
-        const tsElPost = await page.waitForSelector('.cf-turnstile', { timeout: 20_000 }).catch(() => null);
-        if (tsElPost) {
-          console.log('[egp-scraper] .cf-turnstile appeared after search trigger');
-          await tsElPost.scrollIntoViewIfNeeded().catch(() => null);
-          const tsBoxPost = await tsElPost.boundingBox().catch(() => null);
-          if (tsBoxPost) {
-            await page.mouse.move(tsBoxPost.x + tsBoxPost.width / 2, tsBoxPost.y + tsBoxPost.height / 2, { steps: 8 });
-            await sleep(300);
-          }
-        } else {
-          console.log('[egp-scraper] .cf-turnstile still absent after search trigger');
-        }
-      }
+      console.log('[egp-scraper] .cf-turnstile not in DOM after wait — proceeding (may auto-solve in background)');
     }
 
     // ── Turnstile strategy ────────────────────────────────────────────────────
