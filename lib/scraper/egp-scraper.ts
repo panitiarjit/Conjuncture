@@ -78,6 +78,9 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     // height to 900 makes innerH > outerH, which is physically impossible and a strong
     // Cloudflare bot signal. 760 leaves ~91 px for tabs + address bar — realistic.
     viewport: { width: 1440, height: 760 },
+    // screen must reflect the physical display (900px), NOT the viewport (760px).
+    // If screen.height == innerHeight, Cloudflare knows there's no real browser chrome.
+    screen: { width: 1440, height: 900 },
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
   });
   const page = context.pages()[0] ?? await context.newPage();
@@ -275,22 +278,39 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     }
     console.log('[egp-scraper] CSRF token obtained');
 
-    // Snapshot what Angular rendered — needed to discover which interaction triggers Turnstile
+    // Snapshot what Angular rendered AND capture search button coordinates in a single
+    // evaluate — we must click "ค้นหา" BEFORE taking the screenshot (~500ms) or logging
+    // cookies, because Angular restores "advanced panel open" state within ~1 second of
+    // bootstrap, hiding the button.
     const pageInfo = await page.evaluate(() => {
       const visible = (el: Element): boolean => !!(el as HTMLElement).offsetParent;
-      const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
-        .filter(visible)
-        .map(el => `"${el.innerText.trim().slice(0, 50)}"[id=${el.id}]`)
-        .slice(0, 20);
+      const allBtns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]')).filter(visible);
+      const btns = allBtns.map(el => `"${el.innerText.trim().slice(0, 50)}"[id=${el.id}]`).slice(0, 20);
       const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('input:not([type="hidden"])'))
         .filter(visible)
         .map(el => `[type=${el.type}][name=${el.name}][ph="${el.placeholder?.slice(0, 30)}"]`)
         .slice(0, 10);
-      return { title: document.title, buttons: btns, inputs };
-    }).catch(() => ({ title: '?', buttons: [] as string[], inputs: [] as string[] }));
+      const searchTarget = allBtns.find(el => el.innerText.trim() === 'ค้นหา') ??
+                           allBtns.find(el => el.innerText.trim() === 'ดูประกาศวันนี้');
+      const sbc = searchTarget ? (() => {
+        const r = searchTarget.getBoundingClientRect();
+        return { text: searchTarget.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      })() : null;
+      return { title: document.title, buttons: btns, inputs, sbc };
+    }).catch(() => ({ title: '?', buttons: [] as string[], inputs: [] as string[], sbc: null as { text: string; x: number; y: number } | null }));
     console.log(`[egp-scraper] page title: "${pageInfo.title}"`);
     console.log(`[egp-scraper] visible buttons (${pageInfo.buttons.length}): ${JSON.stringify(pageInfo.buttons)}`);
     console.log(`[egp-scraper] visible inputs (${pageInfo.inputs.length}): ${JSON.stringify(pageInfo.inputs)}`);
+
+    // Click the button NOW — before screenshot/cookies delays let Angular hide it.
+    let searchClickedEarly = false;
+    if (pageInfo.sbc) {
+      const { text, x, y } = pageInfo.sbc;
+      console.log(`[egp-scraper] early search click: "${text}" at (${Math.round(x)}, ${Math.round(y)})`);
+      await page.mouse.click(x, y).catch(() => null);
+      searchClickedEarly = true;
+    }
+
     await page.screenshot({ path: '/tmp/egp-scraper-debug.png', fullPage: false }).catch(() => null);
     console.log('[egp-scraper] screenshot → /tmp/egp-scraper-debug.png');
 
@@ -316,28 +336,28 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       return { text: target.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
     }).catch((e: unknown): { err: string } => ({ err: `eval: ${e instanceof Error ? e.message : String(e)}` }));
 
-    let searchClicked = false;
-    const searchBtnPos = await findSearchBtn();
-    if (!('err' in searchBtnPos)) {
-      console.log(`[egp-scraper] clicking "${searchBtnPos.text}" via page.mouse.click at (${Math.round(searchBtnPos.x)}, ${Math.round(searchBtnPos.y)})`);
-      await page.mouse.click(searchBtnPos.x, searchBtnPos.y).catch(() => null);
-      searchClicked = true;
-    } else {
-      console.log(`[egp-scraper] search trigger: ${searchBtnPos.err}`);
-      // Button not visible — dismiss any open dialogs/modals with Escape, then retry.
-      // Clicking ค้นหาขั้นสูง while the panel is already open fires getStepGrp and
-      // opens a sub-dialog ("ออก"), so Escape is safer than trying to click buttons.
-      await page.keyboard.press('Escape').catch(() => null);
-      await sleep(600);
-      await page.keyboard.press('Escape').catch(() => null);
-      await sleep(800);
-      const searchBtnPos2 = await findSearchBtn();
-      if (!('err' in searchBtnPos2)) {
-        console.log(`[egp-scraper] clicking "${searchBtnPos2.text}" after Escape at (${Math.round(searchBtnPos2.x)}, ${Math.round(searchBtnPos2.y)})`);
-        await page.mouse.click(searchBtnPos2.x, searchBtnPos2.y).catch(() => null);
+    let searchClicked = searchClickedEarly;
+    if (!searchClickedEarly) {
+      // Early click missed (button not visible at CSRF time) — try again now, with Escape fallback.
+      const searchBtnPos = await findSearchBtn();
+      if (!('err' in searchBtnPos)) {
+        console.log(`[egp-scraper] clicking "${searchBtnPos.text}" via page.mouse.click at (${Math.round(searchBtnPos.x)}, ${Math.round(searchBtnPos.y)})`);
+        await page.mouse.click(searchBtnPos.x, searchBtnPos.y).catch(() => null);
         searchClicked = true;
       } else {
-        console.log(`[egp-scraper] still no match after Escape: ${searchBtnPos2.err}`);
+        console.log(`[egp-scraper] search trigger: ${searchBtnPos.err}`);
+        await page.keyboard.press('Escape').catch(() => null);
+        await sleep(600);
+        await page.keyboard.press('Escape').catch(() => null);
+        await sleep(800);
+        const searchBtnPos2 = await findSearchBtn();
+        if (!('err' in searchBtnPos2)) {
+          console.log(`[egp-scraper] clicking "${searchBtnPos2.text}" after Escape at (${Math.round(searchBtnPos2.x)}, ${Math.round(searchBtnPos2.y)})`);
+          await page.mouse.click(searchBtnPos2.x, searchBtnPos2.y).catch(() => null);
+          searchClicked = true;
+        } else {
+          console.log(`[egp-scraper] still no match after Escape: ${searchBtnPos2.err}`);
+        }
       }
     }
 
@@ -524,44 +544,9 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
           turnstileAttrs?.cdata ?? undefined,
         );
 
-        // Try injecting token into hidden input to trigger Angular's native validate call.
-        // Angular watches the cf-turnstile-response input; filling it + dispatching events
-        // should cause Angular to call validate from the browser (same IP as search).
-        console.log('[egp-scraper] injecting CapSolver token into hidden input...');
-        const injectResult = await page.evaluate((token: string) => {
-          const input = document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]');
-          if (!input) return 'input not found';
-          // Fill the hidden input
-          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-          nativeInputValueSetter?.call(input, token);
-          // Dispatch events Angular may be listening for
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-          // Also try calling window.turnstile callbacks if registered
-          const turnstile = (window as any).turnstile;
-          if (turnstile?.getResponse) return `filled + turnstile present`;
-          return 'filled';
-        }, rawTurnstileToken);
-        console.log(`[egp-scraper] inject result: ${injectResult}`);
-
-        // Wait up to 10s for Angular to react and call validate
-        const tokenWait = Date.now() + 10_000;
-        while (!nativeAnnouncementToken && Date.now() < tokenWait) await sleep(500);
-        if (nativeAnnouncementToken) {
-          console.log('[egp-scraper] token captured via hidden input injection');
-        } else if (turnstileAttrs?.callback) {
-          // Fallback: try the named window callback if it exists
-          console.log(`[egp-scraper] trying window.${turnstileAttrs.callback}()...`);
-          const cbResult = await page.evaluate(([name, token]: [string, string]) => {
-            const fn = (window as any)[name];
-            if (typeof fn !== 'function') return `window.${name} is not a function`;
-            fn(token);
-            return 'called';
-          }, [turnstileAttrs.callback, rawTurnstileToken] as [string, string]);
-          console.log(`[egp-scraper] callback result: ${cbResult}`);
-          const cbWait = Date.now() + 10_000;
-          while (!nativeAnnouncementToken && Date.now() < cbWait) await sleep(500);
-        }
+        // Token injection via DOM events removed: dispatching input/change caused Angular
+        // to navigate the SPA before route.fetch() could complete, crashing the scraper.
+        // CapSolver tokens don't carry __cf_bm anyway, so the direct validate below is equivalent.
 
         if (nativeAnnouncementToken) {
           announcementToken = nativeAnnouncementToken;
