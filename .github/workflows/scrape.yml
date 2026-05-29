@@ -70,6 +70,15 @@ jobs:
           CHROME_PROFILE_DIR: /Users/mgsunroof/.egp-chrome-profile-refresh
         run: npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
 
+      - name: Upload debug screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: egp-debug-refresh-${{ github.run_id }}
+          path: /tmp/egp-scraper-debug.png
+          retention-days: 1
+          if-no-files-found: ignore
+
       - name: Revalidate site cache
         if: success() && env.SCRAPE_SECRET != ''
         env:
@@ -119,6 +128,15 @@ jobs:
           [ -n "${{ github.event.inputs.days }}" ] && ARGS="$ARGS --days ${{ github.event.inputs.days }}"
           [ -n "${{ github.event.inputs.pages }}" ] && ARGS="$ARGS --pages ${{ github.event.inputs.pages }}"
           npx ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts $ARGS
+
+      - name: Upload debug screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: egp-debug-scrape-${{ github.run_id }}
+          path: /tmp/egp-scraper-debug.png
+          retention-days: 1
+          if-no-files-found: ignore
 
       - name: Revalidate site cache
         if: success() && env.SCRAPE_SECRET != ''

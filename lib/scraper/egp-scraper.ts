@@ -122,13 +122,19 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     let nativeAnnouncementToken: string | null = null;
     await page.route(/cfturnstile\/validate/, async (route: import('playwright').Route) => {
       console.log('[egp-scraper] intercepted validate call');
-      const response = await route.fetch();
-      const body = await response.json() as Record<string, unknown>;
-      // Log full response structure so we can see every field, not just .data
-      console.log(`[egp-scraper] validate response body: ${JSON.stringify(body)}`);
-      const data = typeof body.data === 'string' ? body.data : null;
-      if (data) nativeAnnouncementToken = data;
-      await route.fulfill({ response });
+      try {
+        const response = await route.fetch({ timeout: 60_000 });
+        const bodyText = await response.text();
+        let body: Record<string, unknown> = {};
+        try { body = JSON.parse(bodyText) as Record<string, unknown>; } catch { /* non-JSON */ }
+        console.log(`[egp-scraper] validate response body: ${JSON.stringify(body)}`);
+        const data = typeof body.data === 'string' ? body.data : null;
+        if (data) nativeAnnouncementToken = data;
+        await route.fulfill({ response, body: bodyText });
+      } catch (err: unknown) {
+        console.log(`[egp-scraper] validate route error: ${err instanceof Error ? err.message : String(err)}`);
+        await route.abort('failed').catch(() => null);
+      }
     });
 
     // Stealth patches applied before any page script runs — covers all frames including
@@ -234,6 +240,25 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     }
     console.log('[egp-scraper] CSRF token obtained');
 
+    // Snapshot what Angular rendered — needed to discover which interaction triggers Turnstile
+    const pageInfo = await page.evaluate(() => {
+      const visible = (el: Element): boolean => !!(el as HTMLElement).offsetParent;
+      const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
+        .filter(visible)
+        .map(el => `"${el.innerText.trim().slice(0, 50)}"[id=${el.id}]`)
+        .slice(0, 20);
+      const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('input:not([type="hidden"])'))
+        .filter(visible)
+        .map(el => `[type=${el.type}][name=${el.name}][ph="${el.placeholder?.slice(0, 30)}"]`)
+        .slice(0, 10);
+      return { title: document.title, buttons: btns, inputs };
+    }).catch(() => ({ title: '?', buttons: [] as string[], inputs: [] as string[] }));
+    console.log(`[egp-scraper] page title: "${pageInfo.title}"`);
+    console.log(`[egp-scraper] visible buttons (${pageInfo.buttons.length}): ${JSON.stringify(pageInfo.buttons)}`);
+    console.log(`[egp-scraper] visible inputs (${pageInfo.inputs.length}): ${JSON.stringify(pageInfo.inputs)}`);
+    await page.screenshot({ path: '/tmp/egp-scraper-debug.png', fullPage: false }).catch(() => null);
+    console.log('[egp-scraper] screenshot → /tmp/egp-scraper-debug.png');
+
     // context.cookies() includes HttpOnly cookies invisible to document.cookie —
     // these may include session cookies relevant to the validateCfTurnTile check.
     const allCookies = await context.cookies(config.cfPageUrl);
@@ -254,7 +279,38 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
         console.log(`[egp-scraper] scrolled + hovered cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
       }
     } else {
-      console.log('[egp-scraper] cf-turnstile not in DOM after 5s');
+      console.log('[egp-scraper] cf-turnstile not in DOM after 5s — trying search trigger');
+      // Turnstile only renders after the user initiates a search — click the search button
+      const triggerResult = await page.evaluate(() => {
+        const terms = ['ค้นหา', 'search', 'ยืนยัน', 'confirm'];
+        const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
+          .filter(el => !!el.offsetParent && !(el as HTMLButtonElement).disabled);
+        const target = btns.find(el =>
+          terms.some(t => (el.innerText ?? '').toLowerCase().includes(t))
+        );
+        if (target) {
+          target.click();
+          target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          return `clicked "${target.innerText.trim().slice(0, 60)}"`;
+        }
+        return `no match; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 400)}]`;
+      }).catch((e: unknown) => `error: ${e instanceof Error ? e.message : String(e)}`);
+      console.log(`[egp-scraper] search trigger: ${triggerResult}`);
+
+      if (triggerResult.startsWith('clicked')) {
+        const tsElPost = await page.waitForSelector('.cf-turnstile', { timeout: 15_000 }).catch(() => null);
+        if (tsElPost) {
+          console.log('[egp-scraper] .cf-turnstile appeared after search trigger');
+          await tsElPost.scrollIntoViewIfNeeded().catch(() => null);
+          const tsBoxPost = await tsElPost.boundingBox().catch(() => null);
+          if (tsBoxPost) {
+            await page.mouse.move(tsBoxPost.x + tsBoxPost.width / 2, tsBoxPost.y + tsBoxPost.height / 2, { steps: 8 });
+            await sleep(300);
+          }
+        } else {
+          console.log('[egp-scraper] .cf-turnstile still absent after search trigger');
+        }
+      }
     }
 
     // ── Turnstile strategy ────────────────────────────────────────────────────
