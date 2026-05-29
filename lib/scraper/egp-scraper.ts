@@ -163,6 +163,21 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
             ? Promise.resolve({ state: 'default', onchange: null } as unknown as PermissionStatus)
             : origQuery(p);
       } catch (_) {}
+      // chrome.runtime — present in real Chrome even in regular page context; Cloudflare checks it
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const cr = (window as any).chrome;
+        if (cr && !cr.runtime) {
+          cr.runtime = {
+            id: undefined,
+            lastError: undefined,
+            onMessage: { addListener() {}, removeListener() {}, hasListener() { return false; } },
+            onConnect:  { addListener() {}, removeListener() {}, hasListener() { return false; } },
+            sendMessage() {},
+            connect() {},
+          };
+        }
+      } catch (_) {}
     });
 
     console.log('[egp-scraper] navigating to announcement page (Angular init + WAF session)...');
@@ -209,6 +224,9 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       chromeLoadTimes: typeof (window as Window & { chrome?: { loadTimes?: unknown } }).chrome?.loadTimes,
       chromeRuntime: !!(window as Window & { chrome?: { runtime?: unknown } }).chrome?.runtime,
       notificationPermission: (typeof Notification !== 'undefined' ? Notification.permission : 'N/A'),
+      // userActivation: hasBeenActive=true only if a user gesture occurred (click/key/tap)
+      userActivationHas: !!(navigator as Navigator & { userActivation?: { hasBeenActive?: boolean } }).userActivation?.hasBeenActive,
+      userActivationIs:  !!(navigator as Navigator & { userActivation?: { isActive?: boolean } }).userActivation?.isActive,
     }));
     console.log(`[egp-scraper] automation signals: ${JSON.stringify(autoSignals)}`);
 
@@ -280,25 +298,31 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       }
     } else {
       console.log('[egp-scraper] cf-turnstile not in DOM after 5s — trying search trigger');
-      // Turnstile only renders after the user initiates a search — click the search button
-      const triggerResult = await page.evaluate(() => {
-        const terms = ['ค้นหา', 'search', 'ยืนยัน', 'confirm'];
+      // Use page.mouse.click (real CDP event) rather than element.click() from evaluate:
+      // a real pointer event sets navigator.userActivation, which Cloudflare checks.
+      // Prefer exact "ค้นหา" to avoid clicking "ค้นหาขั้นสูง" (advanced search panel).
+      type BtnPos = { text: string; x: number; y: number };
+      const btnPos = await page.evaluate((): BtnPos | { err: string } => {
         const btns = Array.from(document.querySelectorAll<HTMLElement>('button, [type="submit"]'))
           .filter(el => !!el.offsetParent && !(el as HTMLButtonElement).disabled);
-        const target = btns.find(el =>
-          terms.some(t => (el.innerText ?? '').toLowerCase().includes(t))
-        );
-        if (target) {
-          target.click();
-          target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-          return `clicked "${target.innerText.trim().slice(0, 60)}"`;
+        const target =
+          btns.find(el => el.innerText.trim() === 'ค้นหา') ??
+          btns.find(el => el.innerText.trim() === 'ดูประกาศวันนี้') ??
+          btns.find(el => ['search', 'ยืนยัน', 'confirm'].some(t => (el.innerText ?? '').toLowerCase() === t));
+        if (!target) {
+          return { err: `no match; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 300)}]` };
         }
-        return `no match; visible: [${btns.map(el => `"${el.innerText.trim().slice(0, 25)}"`).join(', ').slice(0, 400)}]`;
-      }).catch((e: unknown) => `error: ${e instanceof Error ? e.message : String(e)}`);
-      console.log(`[egp-scraper] search trigger: ${triggerResult}`);
+        const r = target.getBoundingClientRect();
+        return { text: target.innerText.trim().slice(0, 60), x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      }).catch((e: unknown): { err: string } => ({ err: `eval error: ${e instanceof Error ? e.message : String(e)}` }));
 
-      if (triggerResult.startsWith('clicked')) {
-        const tsElPost = await page.waitForSelector('.cf-turnstile', { timeout: 15_000 }).catch(() => null);
+      if ('err' in btnPos) {
+        console.log(`[egp-scraper] search trigger: ${btnPos.err}`);
+      } else {
+        console.log(`[egp-scraper] clicking "${btnPos.text}" via page.mouse.click at (${Math.round(btnPos.x)}, ${Math.round(btnPos.y)})`);
+        await page.mouse.click(btnPos.x, btnPos.y).catch(() => null);
+        await sleep(1_000);
+        const tsElPost = await page.waitForSelector('.cf-turnstile', { timeout: 20_000 }).catch(() => null);
         if (tsElPost) {
           console.log('[egp-scraper] .cf-turnstile appeared after search trigger');
           await tsElPost.scrollIntoViewIfNeeded().catch(() => null);
