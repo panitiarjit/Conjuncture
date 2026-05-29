@@ -73,6 +73,9 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     ...(proxyConfig ? { proxy: proxyConfig } : {}),
   });
   const page = context.pages()[0] ?? await context.newPage();
+  // alwaysIsolated mode can deadlock evaluate() when iframes create new contexts.
+  // A 30s default timeout converts silent infinite hangs into catchable TimeoutErrors.
+  context.setDefaultTimeout(30_000);
 
   try {
     // Intercept Angular's own Turnstile validation call BEFORE navigating.
@@ -162,22 +165,26 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     await sleep(200);
     await page.mouse.move(vw * 0.45, vh * 0.55, { steps: 8 });
     await sleep(150);
-    // Move towards the cf-turnstile element if already rendered
-    const tsBox = await page.$eval('.cf-turnstile', (el: Element) => {
-      const r = el.getBoundingClientRect();
-      return r.width > 0 ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
-    }).catch(() => null);
+    // Move towards the cf-turnstile element if already rendered.
+    // Use locator.boundingBox() (DOM geometry via CDP) instead of $eval (Runtime.callFunctionOn)
+    // because Runtime calls can deadlock in alwaysIsolated mode when the Turnstile iframe
+    // creates new execution contexts concurrently.
+    const tsBox = await page.locator('.cf-turnstile').boundingBox().catch(() => null);
     if (tsBox) {
-      await page.mouse.move(tsBox.x, tsBox.y, { steps: 14 });
+      await page.mouse.move(tsBox.x + tsBox.width / 2, tsBox.y + tsBox.height / 2, { steps: 14 });
       await sleep(250);
-      console.log(`[egp-scraper] hovered over cf-turnstile at (${Math.round(tsBox.x)}, ${Math.round(tsBox.y)})`);
+      console.log(`[egp-scraper] hovered over cf-turnstile at (${Math.round(tsBox.x + tsBox.width / 2)}, ${Math.round(tsBox.y + tsBox.height / 2)})`);
     }
 
-    // Poll for CSRF token — Angular sets it async after bootstrap; give up to angularInitMs
+    // Poll for CSRF token — Angular sets it async after bootstrap; give up to angularInitMs.
+    // Wrap in try/catch: in alwaysIsolated mode evaluate() may throw TimeoutError if a new
+    // iframe context races with the CDP call — just retry on the next tick.
     let csrfToken = '';
     const deadline = Date.now() + config.angularInitMs;
     while (Date.now() < deadline) {
-      csrfToken = await page.evaluate(() => sessionStorage.getItem('csrf') ?? '');
+      try {
+        csrfToken = await page.evaluate(() => sessionStorage.getItem('csrf') ?? '');
+      } catch { /* timeout or context race — retry */ }
       if (csrfToken) break;
       await sleep(1000);
     }
