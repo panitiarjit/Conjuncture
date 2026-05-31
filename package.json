@@ -19,7 +19,6 @@
     "@hookform/resolvers": "^5.2.2",
     "@opennextjs/cloudflare": "^1.19.11",
     "chromium-bidi": "^16.0.1",
-    "exceljs": "^4.4.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^12.7.0",
     "lucide-react": "^1.16.0",
@@ -32,6 +31,7 @@
     "rebrowser-playwright": "^1.52.0",
     "resend": "^6.12.3",
     "server-only": "^0.0.1",
+    "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ExcelJS from 'exceljs';
+import * as XLSX from 'xlsx';
 import { getAwardedContracts } from '@/lib/data-service';
 import type { AwardedContract } from '@/lib/types';
 
@@ -27,7 +27,6 @@ export async function GET(req: NextRequest) {
 
   const contracts = await getAwardedContracts(keyword);
 
-  // When losersOnly, keep only CoST projects that have identified losers
   const rows = losersOnly
     ? contracts.filter((c) => (c.losers?.length ?? 0) > 0)
     : contracts;
@@ -36,116 +35,59 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No data found' }, { status: 404 });
   }
 
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = 'Conjuncture';
-  workbook.created = new Date();
+  const data = rows.map((c) => ({
+    'ชื่อโครงการ': c.projectName,
+    'หน่วยงาน': c.agency,
+    'จังหวัด': c.province ?? '',
+    'ประเภท': c.projectType ?? '',
+    'วิธีจัดซื้อ': c.procurementMethodGroup ?? '',
+    'งบประมาณ (บาท)': c.budget ?? '',
+    'ราคากลาง (บาท)': c.referencePrice ?? '',
+    'ราคาตกลง (บาท)': c.agreedPrice ?? '',
+    'ส่วนลด (%)': c.discountFromReference ?? '',
+    'ผู้ชนะ': c.winnerName ?? '',
+    'เลขนิติบุคคล': c.winnerBusinessId ?? '',
+    'ผู้แพ้ (CoST)': c.losers?.join(', ') ?? '',
+    'รหัสโครงการ': c.projectId,
+    'ปีงบประมาณ': c.fiscalYear ?? '',
+    'DBD Lookup': c.winnerBusinessId ? DBD_URL(c.winnerBusinessId) : '',
+    'ข้อความติดต่อ': buildOutreachMessage(c),
+    'ติดต่อแล้ว': '',
+    'ตอบกลับ': '',
+    'หมายเหตุ': '',
+  }));
 
-  const sheet = workbook.addWorksheet('Prospects', {
-    views: [{ state: 'frozen', ySplit: 1 }],
-  });
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(data);
 
-  // Header style
-  const headerFill: ExcelJS.Fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FF1E3A5F' },
-  };
-  const headerFont: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-
-  const columns: { header: string; key: string; width: number }[] = [
-    { header: 'ชื่อโครงการ', key: 'projectName', width: 50 },
-    { header: 'หน่วยงาน', key: 'agency', width: 30 },
-    { header: 'จังหวัด', key: 'province', width: 14 },
-    { header: 'ประเภท', key: 'projectType', width: 22 },
-    { header: 'วิธีจัดซื้อ', key: 'procurementMethodGroup', width: 28 },
-    { header: 'งบประมาณ (บาท)', key: 'budget', width: 18 },
-    { header: 'ราคากลาง (บาท)', key: 'referencePrice', width: 18 },
-    { header: 'ราคาตกลง (บาท)', key: 'agreedPrice', width: 18 },
-    { header: 'ส่วนลด (%)', key: 'discountFromReference', width: 12 },
-    { header: 'ผู้ชนะ', key: 'winnerName', width: 35 },
-    { header: 'เลขนิติบุคคล', key: 'winnerBusinessId', width: 18 },
-    { header: 'ผู้แพ้ (CoST)', key: 'losers', width: 40 },
-    { header: 'รหัสโครงการ', key: 'projectId', width: 16 },
-    { header: 'ปีงบประมาณ', key: 'fiscalYear', width: 12 },
-    { header: 'DBD Lookup', key: 'dbdUrl', width: 40 },
-    { header: 'ข้อความติดต่อ', key: 'outreach', width: 70 },
-    { header: 'ติดต่อแล้ว', key: 'contacted', width: 12 },
-    { header: 'ตอบกลับ', key: 'replied', width: 12 },
-    { header: 'หมายเหตุ', key: 'notes', width: 30 },
+  ws['!cols'] = [
+    { wch: 50 }, // ชื่อโครงการ
+    { wch: 30 }, // หน่วยงาน
+    { wch: 14 }, // จังหวัด
+    { wch: 22 }, // ประเภท
+    { wch: 28 }, // วิธีจัดซื้อ
+    { wch: 18 }, // งบประมาณ
+    { wch: 18 }, // ราคากลาง
+    { wch: 18 }, // ราคาตกลง
+    { wch: 12 }, // ส่วนลด
+    { wch: 35 }, // ผู้ชนะ
+    { wch: 18 }, // เลขนิติบุคคล
+    { wch: 40 }, // ผู้แพ้
+    { wch: 16 }, // รหัสโครงการ
+    { wch: 12 }, // ปีงบประมาณ
+    { wch: 40 }, // DBD
+    { wch: 70 }, // ข้อความติดต่อ
+    { wch: 12 }, // ติดต่อแล้ว
+    { wch: 12 }, // ตอบกลับ
+    { wch: 30 }, // หมายเหตุ
   ];
 
-  sheet.columns = columns.map((c) => ({ header: c.header, key: c.key, width: c.width }));
+  XLSX.utils.book_append_sheet(wb, ws, 'Prospects');
 
-  // Style header row
-  const headerRow = sheet.getRow(1);
-  headerRow.eachCell((cell) => {
-    cell.fill = headerFill;
-    cell.font = headerFont;
-    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-    cell.border = {
-      bottom: { style: 'thin', color: { argb: 'FF3B6EA5' } },
-    };
-  });
-  headerRow.height = 28;
-
-  // Data rows
-  for (const c of rows) {
-    const loserList = c.losers?.join('\n') ?? '';
-    const dbdUrl = c.winnerBusinessId ? DBD_URL(c.winnerBusinessId) : '';
-
-    const row = sheet.addRow({
-      projectName: c.projectName,
-      agency: c.agency,
-      province: c.province,
-      projectType: c.projectType,
-      procurementMethodGroup: c.procurementMethodGroup,
-      budget: c.budget,
-      referencePrice: c.referencePrice,
-      agreedPrice: c.agreedPrice,
-      discountFromReference: c.discountFromReference,
-      winnerName: c.winnerName ?? '',
-      winnerBusinessId: c.winnerBusinessId ?? '',
-      losers: loserList,
-      projectId: c.projectId,
-      fiscalYear: c.fiscalYear,
-      dbdUrl,
-      outreach: buildOutreachMessage(c),
-      contacted: '',
-      replied: '',
-      notes: '',
-    });
-
-    // Number format for money columns
-    ['budget', 'referencePrice', 'agreedPrice'].forEach((key) => {
-      const cell = row.getCell(key);
-      if (cell.value) cell.numFmt = '#,##0.00';
-    });
-    const discCell = row.getCell('discountFromReference');
-    if (discCell.value) discCell.numFmt = '0.00"%"';
-
-    // Hyperlink for DBD
-    if (dbdUrl) {
-      const dbdCell = row.getCell('dbdUrl');
-      dbdCell.value = { text: 'ค้นหาผู้ชนะ', hyperlink: dbdUrl };
-      dbdCell.font = { color: { argb: 'FF0563C1' }, underline: true };
-    }
-
-    // Wrap text for long fields
-    ['projectName', 'outreach', 'losers'].forEach((key) => {
-      row.getCell(key).alignment = { wrapText: true, vertical: 'top' };
-    });
-
-    row.height = 60;
-  }
-
-  // Auto-filter
-  sheet.autoFilter = { from: 'A1', to: `${String.fromCharCode(64 + columns.length)}1` };
-
-  // Generate buffer
-  const buffer = await workbook.xlsx.writeBuffer();
+  const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
   const filename = `prospects-${keyword}-${new Date().toISOString().slice(0, 10)}.xlsx`;
-  return new NextResponse(buffer, {
+  return new NextResponse(buffer as Buffer, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}"`,
