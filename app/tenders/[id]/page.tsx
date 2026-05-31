@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProtectedShell from '@/components/layout/ProtectedShell';
 import TenderDetailView from '@/components/ui/TenderDetailView';
-import { getTenderById } from '@/lib/data-service';
+import { getTenderById, getAwardedContract } from '@/lib/data-service';
 import { getDisplayStatus } from '@/lib/deadline';
 
 const SITE_URL = 'https://conjuncture.work';
@@ -44,7 +44,10 @@ export default async function TenderDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const tender = await getTenderById(id);
+  const [tender, awardedContract] = await Promise.all([
+    getTenderById(id),
+    getAwardedContract(id),
+  ]);
   const tenderStatus = tender ? getDisplayStatus(tender) : 'open';
 
   const jsonLd = tender
@@ -69,7 +72,7 @@ export default async function TenderDetailPage({
           />
         )}
         <Header />
-        <TenderDetailView tender={tender ?? null} tenderStatus={tenderStatus} />
+        <TenderDetailView tender={tender ?? null} tenderStatus={tenderStatus} awardedContract={awardedContract} />
         <Footer />
       </div>
     </ProtectedShell>

@@ -104,3 +104,32 @@ export interface Category {
   icon: string;
   count: number;
 }
+
+/** An awarded government contract from the CGD open data API. Stored in cgd_contracts collection. */
+export interface AwardedContract {
+  projectId: string;
+  projectName: string;
+  projectType: string;
+  agency: string;
+  subAgency: string;
+  procurementMethod: string;
+  procurementMethodGroup: string;
+  announceDate: string;
+  budget: number | null;
+  referencePrice: number | null;
+  agreedPrice: number | null;
+  discountFromReference: number | null;
+  fiscalYear: number;
+  province: string;
+  winnerName: string | null;
+  winnerBusinessId: string | null;
+  contractNo: string | null;
+  contractSignDate: string | null;
+  contractEndDate: string | null;
+  contractValue: number | null;
+  contractStatus: string | null;
+  /** Bidder names (all bidders including winner) — only for CoST projects */
+  bidders?: string[];
+  /** Bidder names who did NOT win — only for CoST projects */
+  losers?: string[];
+}

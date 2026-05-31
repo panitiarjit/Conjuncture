@@ -4,9 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import {
   Building2, MapPin, CheckSquare, FileText, Info,
-  ArrowLeft, ExternalLink, Hash,
+  ArrowLeft, ExternalLink, Hash, Trophy, Users, TrendingDown,
 } from 'lucide-react';
-import type { Tender } from '@/lib/types';
+import type { Tender, AwardedContract } from '@/lib/types';
 import StatusPill from './StatusPill';
 import { useLanguage } from '@/lib/language-context';
 import { resolveProcurementType } from '@/lib/procurement';
@@ -14,6 +14,7 @@ import { resolveProcurementType } from '@/lib/procurement';
 interface Props {
   tender: Tender | null;
   tenderStatus: string;
+  awardedContract?: AwardedContract | null;
 }
 
 function formatBudget(amount: number): string {
@@ -26,7 +27,7 @@ function relativeDate(deadlineStr: string, offsetDays: number, locale: string): 
   return d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-export default function TenderDetailView({ tender, tenderStatus }: Props) {
+export default function TenderDetailView({ tender, tenderStatus, awardedContract }: Props) {
   const { t, lang } = useLanguage();
   const locale = lang === 'th' ? 'th-TH' : 'en-US';
 
@@ -218,6 +219,76 @@ export default function TenderDetailView({ tender, tenderStatus }: Props) {
               </div>
             </div>
           </aside>
+          {/* Contract Award card — shown when CGD data is available */}
+          {awardedContract && (
+            <aside className="w-full lg:w-80 flex-shrink-0">
+              <div className="card shadow-sm border-l-4 border-l-amber-400">
+                <div className="flex items-center gap-2 mb-4">
+                  <Trophy size={16} className="text-amber-500" aria-hidden="true" />
+                  <h2 className="text-sm font-semibold text-[#111111] uppercase tracking-wider">
+                    Contract Awarded
+                  </h2>
+                </div>
+                <div className="flex flex-col gap-3 text-sm">
+                  <div>
+                    <div className="text-xs text-[#717171] mb-0.5">Winner</div>
+                    <div className="font-medium text-[#111111]">{awardedContract.winnerName ?? '—'}</div>
+                  </div>
+                  {awardedContract.agreedPrice && (
+                    <div className="flex justify-between">
+                      <div>
+                        <div className="text-xs text-[#717171] mb-0.5">Contract Value</div>
+                        <div className="font-medium text-[#111111]">
+                          {'฿' + awardedContract.agreedPrice.toLocaleString('th-TH')}
+                        </div>
+                      </div>
+                      {awardedContract.discountFromReference !== null && (
+                        <div className="text-right">
+                          <div className="text-xs text-[#717171] mb-0.5">Below Reference</div>
+                          <div className="flex items-center gap-1 text-emerald-700 font-medium justify-end">
+                            <TrendingDown size={13} aria-hidden="true" />
+                            {awardedContract.discountFromReference.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {awardedContract.contractSignDate && (
+                    <div>
+                      <div className="text-xs text-[#717171] mb-0.5">Signed</div>
+                      <div className="text-[#111111]">{awardedContract.contractSignDate}</div>
+                    </div>
+                  )}
+                  {(awardedContract.losers?.length ?? 0) > 0 && (
+                    <div>
+                      <div className="flex items-center gap-1.5 text-xs text-[#717171] mb-1">
+                        <Users size={12} aria-hidden="true" />
+                        Losing Bidders
+                      </div>
+                      <ul className="flex flex-col gap-1">
+                        {awardedContract.losers!.map((name) => (
+                          <li key={name} className="text-xs text-[#444] bg-[#F7F7F7] rounded px-2 py-1">
+                            {name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {awardedContract.winnerBusinessId && (
+                    <a
+                      href={`https://www.dbd.go.th/main.php?filename=index&search=${encodeURIComponent(awardedContract.winnerBusinessId)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-[#3B6EA5] hover:underline"
+                    >
+                      <ExternalLink size={12} aria-hidden="true" />
+                      Look up winner on DBD
+                    </a>
+                  )}
+                </div>
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </main>

@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import fs from 'fs';
 import path from 'path';
 import { TENDERS, PROJECTS, VENDORS, CATEGORIES } from './mock-data';
-import type { Tender, Project, Vendor, Category } from './types';
+import type { Tender, Project, Vendor, Category, AwardedContract } from './types';
 
 function hasFirestoreCredentials(): boolean {
   return Boolean(
@@ -87,4 +87,46 @@ export async function getCategories(): Promise<Category[]> {
     if (t.status !== 'closed') counts[t.category] = (counts[t.category] ?? 0) + 1;
   }
   return CATEGORIES.map((c) => ({ ...c, count: counts[c.id] ?? 0 }));
+}
+
+// ── CGD awarded contracts ─────────────────────────────────────────────────────
+
+/**
+ * Fetch a single awarded contract by e-GP project ID.
+ * Returns null if not in Firestore (tender not yet awarded or not yet fetched).
+ */
+export async function getAwardedContract(projectId: string): Promise<AwardedContract | null> {
+  if (!hasFirestoreCredentials()) return null;
+  try {
+    const { restGetDocument } = await import('./firestore-rest');
+    const doc = await restGetDocument<AwardedContract>('cgd_contracts', projectId);
+    return doc ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch recent awarded contracts, optionally filtered by keyword in project name.
+ * Used by the market intelligence page.
+ */
+const fetchAwardedContractsFromFirestore = unstable_cache(
+  async (keyword?: string): Promise<AwardedContract[]> => {
+    const { restGetCollection } = await import('./firestore-rest');
+    const all = await restGetCollection<AwardedContract>('cgd_contracts');
+    if (!keyword) return all;
+    const kw = keyword.toLowerCase();
+    return all.filter((c) => c.projectName.toLowerCase().includes(kw));
+  },
+  ['cgd_contracts'],
+  { revalidate: 3600, tags: ['cgd_contracts'] },
+);
+
+export async function getAwardedContracts(keyword?: string): Promise<AwardedContract[]> {
+  if (!hasFirestoreCredentials()) return [];
+  try {
+    return await fetchAwardedContractsFromFirestore(keyword);
+  } catch {
+    return [];
+  }
 }
