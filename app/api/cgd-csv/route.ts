@@ -3,8 +3,13 @@ import { getAwardedContractsPage } from '@/lib/data-service';
 
 export async function GET(req: NextRequest) {
   const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
-  // 500 records = 1 Firestore REST call, stays within Cloudflare CPU limits
-  const { contracts, nextPageToken } = await getAwardedContractsPage(500, pageToken);
+  let contracts, nextPageToken;
+  try {
+    // 500 records = 1 Firestore REST call, stays within Cloudflare CPU limits
+    ({ contracts, nextPageToken } = await getAwardedContractsPage(500, pageToken));
+  } catch (err) {
+    return new NextResponse(`Firestore error: ${(err as Error).message}`, { status: 503 });
+  }
 
   const headers = [
     'ชื่อโครงการ', 'หน่วยงาน', 'จังหวัด', 'ประเภท', 'วิธีจัดซื้อ',
