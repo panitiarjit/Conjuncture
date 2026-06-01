@@ -27,12 +27,15 @@ export async function GET(req: NextRequest) {
     ].map(esc).join(','));
   }
 
-  const responseHeaders: Record<string, string> = {
-    'Content-Type': 'text/csv; charset=utf-8',
-    'Cache-Control': 'no-store',
-    'Access-Control-Allow-Origin': '*',
-  };
-  if (nextPageToken) responseHeaders['X-Next-Page-Token'] = nextPageToken;
+  // Embed the next-page token as the final CSV row so it survives Cloudflare
+  // header lowercasing. The Apps Script reads and strips this sentinel line.
+  if (nextPageToken) lines.push(`##NEXT_PAGE_TOKEN,${nextPageToken}`);
 
-  return new NextResponse(lines.join('\n'), { headers: responseHeaders });
+  return new NextResponse(lines.join('\n'), {
+    headers: {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
 }
