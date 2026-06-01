@@ -25,12 +25,16 @@ export async function GET(req: NextRequest) {
   // Thai short-date pattern: "30 ก.ย. 64" — agencies sometimes enter these
   // in the winner name field instead of a company name.
   const THAI_DATE_RE = /\d{1,2}\s+(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)/;
-  const isJunkWinner = (name: string | null) =>
-    !name || THAI_DATE_RE.test(name);
+  const isJunk = (val: string | null) =>
+    !val || THAI_DATE_RE.test(String(val));
+
+  // A row is bad if EITHER winner name OR business ID looks like a date
+  const isJunkRow = (c: typeof contracts[0]) =>
+    isJunk(c.winnerName) || (c.winnerBusinessId != null && THAI_DATE_RE.test(String(c.winnerBusinessId)));
 
   const lines = [headers.map(esc).join(',')];
   for (const c of contracts) {
-    if (isJunkWinner(c.winnerName)) continue; // skip bad-data rows
+    if (isJunkRow(c)) continue; // skip bad-data rows
     lines.push([
       c.projectName, c.agency, c.province ?? '', c.projectType ?? '', c.procurementMethodGroup ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',
