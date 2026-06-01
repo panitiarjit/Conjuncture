@@ -41,9 +41,9 @@ export interface RawCgdContract {
   'เขต/อำเภอ'?: string;
   'เขต/อำเภอ(Eng)'?: string;
   'แขวง/ตำบล'?: string;
-  'แขวง/ตำบล(Eng)'?: string;
+  'แขวง/ตำบล(Eng)'?: string | number | null;
   สถานะโครงการ?: string | number | null;
-  พิกัดของโครงการ?: string | null;
+  พิกัดของโครงการ?: string | number | null;
   ละติจูดโครงการ?: string | number | null;
   ลองจิจูดโครงการ?: string | number | null;
   ชื่อผู้ชนะ: string | null;
@@ -86,6 +86,8 @@ export interface CgdContract {
   district: string;
   districtEn: string;
   subDistrict: string;
+  subDistrictEn: string;
+  gpsPoint: string;
   projectStatus: string | null;
   latitude: number | null;
   longitude: number | null;

@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
 
   const headers = [
     'ชื่อโครงการ', 'หน่วยงาน', 'หน่วยงานย่อย',
-    'จังหวัด', 'จังหวัด (Eng)', 'เขต/อำเภอ', 'เขต/อำเภอ (Eng)', 'แขวง/ตำบล',
-    'ละติจูด', 'ลองจิจูด',
+    'จังหวัด', 'จังหวัด (Eng)', 'เขต/อำเภอ', 'เขต/อำเภอ (Eng)', 'แขวง/ตำบล', 'แขวง/ตำบล (Eng)',
+    'พิกัด (WKT)', 'ละติจูด', 'ลองจิจูด',
     'ประเภท', 'วิธีจัดซื้อ (กลุ่ม)', 'วิธีจัดซื้อ (รายละเอียด)',
     'วันที่ประกาศ', 'วันที่เกิดรายการ',
     'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตกลง (บาท)', 'ส่วนลด (%)',
@@ -48,8 +48,8 @@ export async function GET(req: NextRequest) {
     if (isJunkRow(c)) continue; // skip bad-data rows
     lines.push([
       c.projectName, c.agency, c.subAgency ?? '',
-      c.province ?? '', c.provinceEn ?? '', c.district ?? '', c.districtEn ?? '', c.subDistrict ?? '',
-      c.latitude ?? '', c.longitude ?? '',
+      c.province ?? '', c.provinceEn ?? '', c.district ?? '', c.districtEn ?? '', c.subDistrict ?? '', c.subDistrictEn ?? '',
+      c.gpsPoint ?? '', c.latitude ?? '', c.longitude ?? '',
       c.projectType ?? '', c.procurementMethodGroup ?? '', c.procurementMethod ?? '',
       c.announceDate ?? '', c.transactionDate ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',

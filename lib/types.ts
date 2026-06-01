@@ -126,6 +126,8 @@ export interface AwardedContract {
   district?: string;
   districtEn?: string;
   subDistrict?: string;
+  subDistrictEn?: string;
+  gpsPoint?: string;
   projectStatus?: string | null;
   latitude?: number | null;
   longitude?: number | null;

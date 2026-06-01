@@ -129,6 +129,8 @@ function normaliseCgdContract(raw: RawCgdContract): CgdContract {
     district: raw['เขต/อำเภอ'] ?? '',
     districtEn: raw['เขต/อำเภอ(Eng)'] ?? '',
     subDistrict: raw['แขวง/ตำบล'] ?? '',
+    subDistrictEn: raw['แขวง/ตำบล(Eng)'] != null ? String(raw['แขวง/ตำบล(Eng)']) : '',
+    gpsPoint: raw.พิกัดของโครงการ != null ? String(raw.พิกัดของโครงการ) : '',
     projectStatus: raw.สถานะโครงการ != null ? String(raw.สถานะโครงการ) : null,
     latitude: toNum(raw.ละติจูดโครงการ),
     longitude: toNum(raw.ลองจิจูดโครงการ),
