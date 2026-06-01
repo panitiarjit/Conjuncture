@@ -12,9 +12,15 @@ export async function GET(req: NextRequest) {
   }
 
   const headers = [
-    'ชื่อโครงการ', 'หน่วยงาน', 'จังหวัด', 'ประเภท', 'วิธีจัดซื้อ',
+    'ชื่อโครงการ', 'หน่วยงาน', 'หน่วยงานย่อย', 'จังหวัด', 'ประเภท',
+    'วิธีจัดซื้อ (กลุ่ม)', 'วิธีจัดซื้อ (รายละเอียด)',
+    'วันที่ประกาศ',
     'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตกลง (บาท)', 'ส่วนลด (%)',
-    'ผู้ชนะ', 'เลขนิติบุคคล', 'จำนวนผู้เสนอราคา', 'ผู้แพ้ (CoST)', 'รหัสโครงการ', 'ปีงบประมาณ',
+    'ผู้ชนะ', 'เลขนิติบุคคล',
+    'จำนวนผู้เสนอราคา', 'ผู้แพ้ (CoST)',
+    'เลขที่สัญญา', 'วันที่ลงนามสัญญา', 'วันที่สิ้นสุดสัญญา',
+    'งบสัญญา (บาท)', 'สถานะสัญญา',
+    'รหัสโครงการ', 'ปีงบประมาณ',
   ];
 
   const esc = (v: unknown): string => {
@@ -39,11 +45,15 @@ export async function GET(req: NextRequest) {
   for (const c of contracts) {
     if (isJunkRow(c)) continue; // skip bad-data rows
     lines.push([
-      c.projectName, c.agency, c.province ?? '', c.projectType ?? '', c.procurementMethodGroup ?? '',
+      c.projectName, c.agency, c.subAgency ?? '', c.province ?? '', c.projectType ?? '',
+      c.procurementMethodGroup ?? '', c.procurementMethod ?? '',
+      c.announceDate ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',
       c.winnerName ?? '', c.winnerBusinessId ?? '',
       c.bidders?.length ?? (c.losers?.length ? c.losers.length + 1 : ''),
       (c.losers ?? []).join('; '),
+      c.contractNo ?? '', c.contractSignDate ?? '', c.contractEndDate ?? '',
+      c.contractValue ?? '', c.contractStatus ?? '',
       c.projectId, c.fiscalYear ?? '',
     ].map(esc).join(','));
   }
