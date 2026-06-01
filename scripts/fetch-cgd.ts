@@ -27,7 +27,9 @@ const getArg = (flag: string) => {
 const hasFlag = (flag: string) => args.includes(flag);
 
 const YEAR = Number(getArg('--year') ?? '2567');
-const KEYWORD = getArg('--keyword') ?? 'จ้างเหมา';
+// If --keyword not passed, fetch ALL contract types (no filter).
+// If --keyword passed with a value, filter by that keyword.
+const KEYWORD = args.includes('--keyword') ? (getArg('--keyword') ?? '') : undefined;
 const DRY = hasFlag('--dry');
 const CHUNK_INDEX = getArg('--chunk') !== undefined ? Number(getArg('--chunk')) : null;
 const ALL_BIDDERS = hasFlag('--all-bidders');
@@ -41,7 +43,7 @@ if (!CGD_API_KEY) {
 // ── Firestore init ────────────────────────────────────────────────────────────
 
 const CGD_COLLECTION = 'cgd_contracts';
-const BATCH_SIZE = 400;
+const BATCH_SIZE = 499; // Firestore batch limit is 500
 
 function initDb(): Firestore {
   let app = getApps().find((a) => a.name === 'cgd-fetch');
@@ -91,7 +93,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`[fetch-cgd] Year: ${YEAR} | Keyword: "${KEYWORD}" | Chunks: ${chunks.length} | Dry: ${DRY}`);
+  console.log(`[fetch-cgd] Year: ${YEAR} | Keyword: ${KEYWORD ? `"${KEYWORD}"` : '(all)'} | Chunks: ${chunks.length} | Dry: ${DRY}`);
 
   // Load bidder map upfront if requested
   let bidderMap: Map<string, string[]> | null = null;
@@ -117,7 +119,7 @@ async function main() {
     let chunkCount = 0;
     const buffer: CgdContract[] = [];
 
-    for await (const batch of fetchContractChunk(resourceId, KEYWORD, CGD_API_KEY)) {
+    for await (const batch of fetchContractChunk(resourceId, KEYWORD as string | undefined, CGD_API_KEY)) {
       for (const contract of batch) {
         // Enrich with bidder/loser data if available
         if (bidderMap) {
