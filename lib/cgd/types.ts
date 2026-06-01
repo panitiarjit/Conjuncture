@@ -102,6 +102,52 @@ export interface CgdProjectDetail {
 
 /** cgd-contract resources by BE fiscal year. Each year is split into multiple chunks. */
 export const CGD_CONTRACT_RESOURCES: Record<number, string[]> = {
+  2559: [
+    'd96420a9-75ec-4d05-bf67-0a3c1b7dbebf',
+    '32a2aef4-3e05-43c6-8cfa-a2c5294ced3c',
+    'bbb78ccd-d3dc-4cfe-9b43-663fea65390a',
+    '6cbc3ec3-ff5e-44e5-abdb-71f74c7f4e03',
+  ],
+  2560: [
+    '7015580c-e5b2-40a0-89f0-56a01ad61566',
+    'd10d90bf-ec0d-4918-8cd5-6e268d68500d',
+    '59c71c16-dfb1-4fbe-bf0d-1217297af519',
+    'f8eccf55-d25c-44b3-a59b-d8c61116eb44',
+    '90cf28f8-4813-43a8-a144-4e274937ea70',
+  ],
+  2561: [
+    'fc1e2e63-db02-4b34-90aa-462d5fea9a90',
+    'af6938a2-f55e-4ea9-9596-97aaec680244',
+    'c0e57ce2-8f32-4ac4-8b20-07d427a3f5bb',
+    'fb6bfdb5-c8e8-450c-9501-126a03e23aeb',
+    '0c3b0ae2-7d4b-4aff-aab3-287a09496e80',
+    'c9f94589-963f-46c0-a63c-c65de44268ef',
+    '023ce538-376a-435d-a8b5-da6d86c41b62',
+    'b379a2c7-f2d8-4b3d-9978-650c0c2ec9ed',
+  ],
+  2562: [
+    '5aa78e7b-49b7-4dd0-983e-8c0d3255f5c5',
+    '968cb27d-3b58-4f9b-8e8d-64ce1f86e7b7',
+    'bab0c471-dd02-4887-b8f2-4bb72e6f19ba',
+    '5cab462d-4644-42e9-8e80-0f9ecdb11039',
+    'd4b48b5d-0698-4809-8d04-44747c524ce1',
+    '3219084a-cd93-4184-a2e7-b4d77c0bd1de',
+    '8a5c3679-474c-47af-a49e-4c5d577c7827',
+    'b979c308-7332-471a-9081-03655fbd2574',
+    'ae64e954-7042-456e-a764-f48f772efe72',
+  ],
+  2563: [
+    '77ee205a-bc72-469f-8e53-74052b7897b7',
+    '5b312026-8628-47f6-b7aa-5589f77ddf81',
+    'ab5d301d-a8a7-40f4-a07e-722f05ae5a28',
+    '6ddbf3b7-2ed0-48d7-aa98-74765b91a59e',
+    '8b679893-7634-4318-8469-79581a6c38c8',
+    'd1455f55-4f01-4a93-af51-dfa4544ec74f',
+    '6d9defa8-c32d-4d51-99e1-e0232f8e59ab',
+    '1abcb819-db49-4393-afd4-525a65d26564',
+    'e569629d-dfa4-4e46-8dd5-a2f6d4bd9122',
+    '008aae4d-c7b5-4fa2-a9f6-a40854a8e1df',
+  ],
   2567: [
     '4140ff35-d758-45af-8d7f-3de23010fbb2',
     'c2b65110-52a3-4ded-ad8f-fb3a9964ae53',

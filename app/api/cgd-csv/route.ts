@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const headers = [
     'ชื่อโครงการ', 'หน่วยงาน', 'จังหวัด', 'ประเภท', 'วิธีจัดซื้อ',
     'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตกลง (บาท)', 'ส่วนลด (%)',
-    'ผู้ชนะ', 'เลขนิติบุคคล', 'ผู้แพ้ (CoST)', 'รหัสโครงการ', 'ปีงบประมาณ',
+    'ผู้ชนะ', 'เลขนิติบุคคล', 'จำนวนผู้เสนอราคา', 'ผู้แพ้ (CoST)', 'รหัสโครงการ', 'ปีงบประมาณ',
   ];
 
   const esc = (v: unknown): string => {
@@ -22,7 +22,9 @@ export async function GET(req: NextRequest) {
     lines.push([
       c.projectName, c.agency, c.province ?? '', c.projectType ?? '', c.procurementMethodGroup ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',
-      c.winnerName ?? '', c.winnerBusinessId ?? '', (c.losers ?? []).join('; '),
+      c.winnerName ?? '', c.winnerBusinessId ?? '',
+      c.bidders?.length ?? (c.losers?.length ? c.losers.length + 1 : ''),
+      (c.losers ?? []).join('; '),
       c.projectId, c.fiscalYear ?? '',
     ].map(esc).join(','));
   }
