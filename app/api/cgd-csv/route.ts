@@ -14,7 +14,12 @@ export async function GET(req: NextRequest) {
 
   const esc = (v: unknown): string => {
     const s = (v == null ? '' : String(v)).replace(/"/g, '""');
-    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s}"` : s;
+    // Always quote: comma/newline/quote inside, OR pure-digit strings 6+ chars
+    // (business IDs, project IDs) so Sheets treats them as text, not numbers.
+    if (s.includes(',') || s.includes('"') || s.includes('\n') || /^\d{6,}$/.test(s)) {
+      return `"${s}"`;
+    }
+    return s;
   };
 
   const lines = [headers.map(esc).join(',')];
