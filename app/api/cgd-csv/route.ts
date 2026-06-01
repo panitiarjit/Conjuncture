@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
-import { getAwardedContracts } from '@/lib/data-service';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAwardedContractsPage } from '@/lib/data-service';
 
-export async function GET() {
-  // 2000 records ≈ 1.5 MB / ~6 s — within Google Sheets IMPORTDATA limits
-  const contracts = await getAwardedContracts(undefined, 2_000);
+export async function GET(req: NextRequest) {
+  const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
+  // 2000 records ≈ 1.5 MB / ~8 s — within Google Sheets IMPORTDATA limits
+  const { contracts, nextPageToken } = await getAwardedContractsPage(2_000, pageToken);
 
   const headers = [
     'ชื่อโครงการ', 'หน่วยงาน', 'จังหวัด', 'ประเภท', 'วิธีจัดซื้อ',
@@ -26,11 +27,12 @@ export async function GET() {
     ].map(esc).join(','));
   }
 
-  return new NextResponse(lines.join('\n'), {
-    headers: {
-      'Content-Type': 'text/csv; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
+  const responseHeaders: Record<string, string> = {
+    'Content-Type': 'text/csv; charset=utf-8',
+    'Cache-Control': 'no-store',
+    'Access-Control-Allow-Origin': '*',
+  };
+  if (nextPageToken) responseHeaders['X-Next-Page-Token'] = nextPageToken;
+
+  return new NextResponse(lines.join('\n'), { headers: responseHeaders });
 }

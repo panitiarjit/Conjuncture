@@ -130,3 +130,22 @@ export async function getAwardedContracts(keyword?: string, maxDocs = 5_000): Pr
     return [];
   }
 }
+
+/** Paginated fetch — used by /api/cgd-csv for Google Sheets IMPORTDATA chaining. */
+export async function getAwardedContractsPage(
+  pageSize = 2_000,
+  pageToken?: string,
+): Promise<{ contracts: AwardedContract[]; nextPageToken?: string }> {
+  if (!hasFirestoreCredentials()) return { contracts: [] };
+  try {
+    const { restGetCollectionPage } = await import('./firestore-rest');
+    const { docs, nextPageToken } = await restGetCollectionPage<AwardedContract>(
+      'cgd_contracts',
+      pageSize,
+      pageToken,
+    );
+    return { contracts: docs, nextPageToken };
+  } catch {
+    return { contracts: [] };
+  }
+}

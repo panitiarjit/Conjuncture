@@ -87,18 +87,27 @@ async function getAccessToken(): Promise<string> {
 }
 
 export async function restGetCollection<T>(collection: string, maxDocs?: number): Promise<T[]> {
+  const { docs } = await restGetCollectionPage<T>(collection, maxDocs);
+  return docs;
+}
+
+export async function restGetCollectionPage<T>(
+  collection: string,
+  pageSize = 500,
+  startPageToken?: string,
+): Promise<{ docs: T[]; nextPageToken?: string }> {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
   const token = await getAccessToken();
   const base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
   const results: T[] = [];
-  let pageToken: string | undefined;
+  let cursor: string | undefined = startPageToken;
 
   do {
-    const remaining = maxDocs ? maxDocs - results.length : 500;
-    const pageSize = Math.min(500, remaining);
-    const url = pageToken
-      ? `${base}?pageSize=${pageSize}&pageToken=${pageToken}`
-      : `${base}?pageSize=${pageSize}`;
+    const remaining = pageSize - results.length;
+    const fetchSize = Math.min(500, remaining);
+    const url = cursor
+      ? `${base}?pageSize=${fetchSize}&pageToken=${cursor}`
+      : `${base}?pageSize=${fetchSize}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json() as {
       documents?: Array<{ name: string; fields: Record<string, FirestoreValue> }>;
@@ -109,10 +118,10 @@ export async function restGetCollection<T>(collection: string, maxDocs?: number)
       const { updatedAt: _u, ...fields } = parseFields(doc.fields);
       results.push({ id, ...fields } as T);
     }
-    pageToken = data.nextPageToken;
-  } while (pageToken && (!maxDocs || results.length < maxDocs));
+    cursor = data.nextPageToken;
+  } while (cursor && results.length < pageSize);
 
-  return results;
+  return { docs: results, nextPageToken: cursor };
 }
 
 export async function restGetDocument<T>(collection: string, id: string): Promise<T | undefined> {
