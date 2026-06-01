@@ -3,8 +3,8 @@ import { getAwardedContractsPage } from '@/lib/data-service';
 
 export async function GET(req: NextRequest) {
   const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
-  // 2000 records ≈ 1.5 MB / ~8 s — within Google Sheets IMPORTDATA limits
-  const { contracts, nextPageToken } = await getAwardedContractsPage(2_000, pageToken);
+  // 500 records = 1 Firestore REST call, stays within Cloudflare CPU limits
+  const { contracts, nextPageToken } = await getAwardedContractsPage(500, pageToken);
 
   const headers = [
     'ชื่อโครงการ', 'หน่วยงาน', 'จังหวัด', 'ประเภท', 'วิธีจัดซื้อ',
