@@ -22,27 +22,37 @@ export interface CkanResponse<T> {
 
 export interface RawCgdContract {
   _id: number;
-  รหัสโครงการ: number;           // e-GP project ID — matches Tender.id
-  ชื่อโครงการ: string;           // project name
-  ชื่อประเภทโครงการ: string;     // project type (ซื้อ / จ้างก่อสร้าง / จ้างเหมา)
-  ชื่อหน่วยงาน: string;          // agency name
-  ชื่อหน่วยงานย่อย: string;      // sub-agency
-  'วิธีจัดซื้อฯ': string;        // procurement method group
-  'กลุ่มวิธีจัดซื้อฯ': string;  // procurement method name
-  วันที่ประกาศ: string;          // announcement date (Thai format)
+  ลำดับ?: number;
+  รหัสโครงการ: number;
+  ชื่อโครงการ: string;
+  ชื่อประเภทโครงการ: string;
+  ชื่อหน่วยงาน: string;
+  ชื่อหน่วยงานย่อย: string;
+  'วิธีจัดซื้อฯ': string;
+  'กลุ่มวิธีจัดซื้อฯ': string;
+  วันที่ประกาศ: string;
   'งบประมาณ(บาท)': number | null;
   'ราคากลาง(บาท)': number | null;
-  'ราคาตกลงซื้อ/จ้าง': number | null;  // agreed/winning price
-  ปีงบประมาณ: number;            // fiscal year (BE)
-  วันที่เกิดรายการ: string;      // transaction date
-  จังหวัด: string;               // province
-  ชื่อผู้ชนะ: string | null;     // winner company name
-  เลขนิติบุคคล: string | null;   // winner business registration ID
-  เลขที่สัญญา: string | null;    // contract number
+  'ราคาตกลงซื้อ/จ้าง': number | null;
+  ปีงบประมาณ: number;
+  วันที่เกิดรายการ: string;
+  จังหวัด: string;
+  'จังหวัด(Eng)'?: string;
+  'เขต/อำเภอ'?: string;
+  'เขต/อำเภอ(Eng)'?: string;
+  'แขวง/ตำบล'?: string;
+  'แขวง/ตำบล(Eng)'?: string;
+  สถานะโครงการ?: string | number | null;
+  พิกัดของโครงการ?: string | null;
+  ละติจูดโครงการ?: string | number | null;
+  ลองจิจูดโครงการ?: string | number | null;
+  ชื่อผู้ชนะ: string | null;
+  เลขนิติบุคคล: string | null;
+  เลขที่สัญญา: string | null;
   วันที่ลงนามสัญญา: string | null;
   วันที่สิ้นสุดสัญญา: string | null;
-  'งบสัญญา(บาท)': number | null; // final contract value
-  สถานะสัญญา: string | null;     // contract status
+  'งบสัญญา(บาท)': number | null;
+  สถานะสัญญา: string | null;
 }
 
 // ── egpcost-bidder raw record ─────────────────────────────────────────────────
@@ -58,7 +68,7 @@ export interface RawEgpCostBidder {
 // ── Normalised domain types ───────────────────────────────────────────────────
 
 export interface CgdContract {
-  projectId: string;             // รหัสโครงการ as string
+  projectId: string;
   projectName: string;
   projectType: string;
   agency: string;
@@ -66,11 +76,19 @@ export interface CgdContract {
   procurementMethod: string;
   procurementMethodGroup: string;
   announceDate: string;
+  transactionDate: string;
   budget: number | null;
   referencePrice: number | null;
-  agreedPrice: number | null;    // winning price
-  fiscalYear: number;            // BE year
+  agreedPrice: number | null;
+  fiscalYear: number;
   province: string;
+  provinceEn: string;
+  district: string;
+  districtEn: string;
+  subDistrict: string;
+  projectStatus: string | null;
+  latitude: number | null;
+  longitude: number | null;
   winnerName: string | null;
   winnerBusinessId: string | null;
   contractNo: string | null;
@@ -78,7 +96,6 @@ export interface CgdContract {
   contractEndDate: string | null;
   contractValue: number | null;
   contractStatus: string | null;
-  /** Discount from reference price — null if either price is missing */
   discountFromReference: number | null;
 }
 

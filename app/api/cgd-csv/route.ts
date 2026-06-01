@@ -12,14 +12,16 @@ export async function GET(req: NextRequest) {
   }
 
   const headers = [
-    'ชื่อโครงการ', 'หน่วยงาน', 'หน่วยงานย่อย', 'จังหวัด', 'ประเภท',
-    'วิธีจัดซื้อ (กลุ่ม)', 'วิธีจัดซื้อ (รายละเอียด)',
-    'วันที่ประกาศ',
+    'ชื่อโครงการ', 'หน่วยงาน', 'หน่วยงานย่อย',
+    'จังหวัด', 'จังหวัด (Eng)', 'เขต/อำเภอ', 'เขต/อำเภอ (Eng)', 'แขวง/ตำบล',
+    'ละติจูด', 'ลองจิจูด',
+    'ประเภท', 'วิธีจัดซื้อ (กลุ่ม)', 'วิธีจัดซื้อ (รายละเอียด)',
+    'วันที่ประกาศ', 'วันที่เกิดรายการ',
     'งบประมาณ (บาท)', 'ราคากลาง (บาท)', 'ราคาตกลง (บาท)', 'ส่วนลด (%)',
     'ผู้ชนะ', 'เลขนิติบุคคล',
     'จำนวนผู้เสนอราคา', 'ผู้แพ้ (CoST)',
     'เลขที่สัญญา', 'วันที่ลงนามสัญญา', 'วันที่สิ้นสุดสัญญา',
-    'งบสัญญา (บาท)', 'สถานะสัญญา',
+    'งบสัญญา (บาท)', 'สถานะสัญญา', 'สถานะโครงการ',
     'รหัสโครงการ', 'ปีงบประมาณ',
   ];
 
@@ -45,15 +47,17 @@ export async function GET(req: NextRequest) {
   for (const c of contracts) {
     if (isJunkRow(c)) continue; // skip bad-data rows
     lines.push([
-      c.projectName, c.agency, c.subAgency ?? '', c.province ?? '', c.projectType ?? '',
-      c.procurementMethodGroup ?? '', c.procurementMethod ?? '',
-      c.announceDate ?? '',
+      c.projectName, c.agency, c.subAgency ?? '',
+      c.province ?? '', c.provinceEn ?? '', c.district ?? '', c.districtEn ?? '', c.subDistrict ?? '',
+      c.latitude ?? '', c.longitude ?? '',
+      c.projectType ?? '', c.procurementMethodGroup ?? '', c.procurementMethod ?? '',
+      c.announceDate ?? '', c.transactionDate ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',
       c.winnerName ?? '', c.winnerBusinessId ?? '',
       c.bidders?.length ?? (c.losers?.length ? c.losers.length + 1 : ''),
       (c.losers ?? []).join('; '),
       c.contractNo ?? '', c.contractSignDate ?? '', c.contractEndDate ?? '',
-      c.contractValue ?? '', c.contractStatus ?? '',
+      c.contractValue ?? '', c.contractStatus ?? '', c.projectStatus ?? '',
       c.projectId, c.fiscalYear ?? '',
     ].map(esc).join(','));
   }

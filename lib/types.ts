@@ -115,12 +115,20 @@ export interface AwardedContract {
   procurementMethod: string;
   procurementMethodGroup: string;
   announceDate: string;
+  transactionDate?: string;
   budget: number | null;
   referencePrice: number | null;
   agreedPrice: number | null;
   discountFromReference: number | null;
   fiscalYear: number;
   province: string;
+  provinceEn?: string;
+  district?: string;
+  districtEn?: string;
+  subDistrict?: string;
+  projectStatus?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   winnerName: string | null;
   winnerBusinessId: string | null;
   contractNo: string | null;
@@ -128,8 +136,6 @@ export interface AwardedContract {
   contractEndDate: string | null;
   contractValue: number | null;
   contractStatus: string | null;
-  /** Bidder names (all bidders including winner) — only for CoST projects */
   bidders?: string[];
-  /** Bidder names who did NOT win — only for CoST projects */
   losers?: string[];
 }
