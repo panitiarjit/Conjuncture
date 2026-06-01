@@ -86,7 +86,7 @@ async function getAccessToken(): Promise<string> {
   return access_token;
 }
 
-export async function restGetCollection<T>(collection: string): Promise<T[]> {
+export async function restGetCollection<T>(collection: string, maxDocs?: number): Promise<T[]> {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
   const token = await getAccessToken();
   const base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
@@ -94,7 +94,11 @@ export async function restGetCollection<T>(collection: string): Promise<T[]> {
   let pageToken: string | undefined;
 
   do {
-    const url = pageToken ? `${base}?pageSize=500&pageToken=${pageToken}` : `${base}?pageSize=500`;
+    const remaining = maxDocs ? maxDocs - results.length : 500;
+    const pageSize = Math.min(500, remaining);
+    const url = pageToken
+      ? `${base}?pageSize=${pageSize}&pageToken=${pageToken}`
+      : `${base}?pageSize=${pageSize}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json() as {
       documents?: Array<{ name: string; fields: Record<string, FirestoreValue> }>;
@@ -106,7 +110,7 @@ export async function restGetCollection<T>(collection: string): Promise<T[]> {
       results.push({ id, ...fields } as T);
     }
     pageToken = data.nextPageToken;
-  } while (pageToken);
+  } while (pageToken && (!maxDocs || results.length < maxDocs));
 
   return results;
 }
