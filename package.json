@@ -13,7 +13,9 @@
     "scrape": "ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts",
     "scrape:dry": "ts-node --project tsconfig.scripts.json scripts/scrape-egp.ts --dry",
     "fetch-cgd": "dotenv -e .env.local -- ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts",
-    "fetch-cgd:dry": "dotenv -e .env.local -- ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts --dry"
+    "fetch-cgd:dry": "dotenv -e .env.local -- ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts --dry",
+    "fetch-cost": "dotenv -e .env.local -- ts-node --project tsconfig.scripts.json scripts/fetch-cost-contracts.ts",
+    "fetch-cost:dry": "dotenv -e .env.local -- ts-node --project tsconfig.scripts.json scripts/fetch-cost-contracts.ts --dry"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

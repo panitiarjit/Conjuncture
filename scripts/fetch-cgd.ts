@@ -109,6 +109,7 @@ async function main() {
   const db = DRY ? null : initDb();
   let totalFetched = 0;
   let totalUpserted = 0;
+  let totalWithLosers = 0;
 
   for (let ci = 0; ci < chunks.length; ci++) {
     const resourceId = chunks[ci];
@@ -125,6 +126,7 @@ async function main() {
           const losers = allBidders.filter((b) => b.trim().toLowerCase() !== winner);
           (contract as CgdContract & { bidders?: string[]; losers?: string[] }).bidders = allBidders;
           (contract as CgdContract & { losers?: string[] }).losers = losers;
+          if (losers.length > 0) totalWithLosers++;
         }
         buffer.push(contract);
       }
@@ -146,7 +148,7 @@ async function main() {
     console.log(`[fetch-cgd] Chunk ${ci + 1} done: ${chunkCount} records (keyword: "${KEYWORD}")`);
   }
 
-  console.log(`\n[fetch-cgd] Complete: ${totalFetched} fetched | ${DRY ? '0 (dry run)' : totalUpserted + ' upserted'}`);
+  console.log(`\n[fetch-cgd] Complete: ${totalFetched} fetched | ${DRY ? '0 (dry run)' : totalUpserted + ' upserted'} | ${totalWithLosers} with losers`);
 }
 
 main().catch((err) => {

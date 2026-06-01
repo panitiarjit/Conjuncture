@@ -189,8 +189,14 @@ jobs:
       - name: Fetch CGD contracts
         run: |
           YEAR="${{ github.event.inputs.cgd_year || '2567' }}"
-          KEYWORD="${{ github.event.inputs.cgd_keyword || 'จ้างเหมา' }}"
-          npx ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts \
-            --year "$YEAR" \
-            --keyword "$KEYWORD" \
-            --all-bidders
+          KEYWORD="${{ github.event.inputs.cgd_keyword || '' }}"
+          if [ -n "$KEYWORD" ]; then
+            npx ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts \
+              --year "$YEAR" --keyword "$KEYWORD" --all-bidders
+          else
+            # Default: fetch both hire/service and construction contracts
+            npx ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts \
+              --year "$YEAR" --keyword จ้างเหมา --all-bidders
+            npx ts-node --project tsconfig.scripts.json scripts/fetch-cgd.ts \
+              --year "$YEAR" --keyword จ้างก่อสร้าง --all-bidders
+          fi
