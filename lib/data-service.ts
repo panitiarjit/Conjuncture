@@ -110,12 +110,10 @@ export async function getAwardedContract(projectId: string): Promise<AwardedCont
  * Fetch recent awarded contracts, optionally filtered by keyword in project name.
  * Used by the market intelligence page.
  */
-const CGD_MAX_DOCS = 10_000;
-
 const fetchAwardedContractsFromFirestore = unstable_cache(
-  async (keyword?: string): Promise<AwardedContract[]> => {
+  async (keyword: string | undefined, maxDocs: number): Promise<AwardedContract[]> => {
     const { restGetCollection } = await import('./firestore-rest');
-    const all = await restGetCollection<AwardedContract>('cgd_contracts', CGD_MAX_DOCS);
+    const all = await restGetCollection<AwardedContract>('cgd_contracts', maxDocs);
     if (!keyword) return all;
     const kw = keyword.toLowerCase();
     return all.filter((c) => c.projectName.toLowerCase().includes(kw));
@@ -124,10 +122,10 @@ const fetchAwardedContractsFromFirestore = unstable_cache(
   { revalidate: 3600, tags: ['cgd_contracts'] },
 );
 
-export async function getAwardedContracts(keyword?: string): Promise<AwardedContract[]> {
+export async function getAwardedContracts(keyword?: string, maxDocs = 5_000): Promise<AwardedContract[]> {
   if (!hasFirestoreCredentials()) return [];
   try {
-    return await fetchAwardedContractsFromFirestore(keyword);
+    return await fetchAwardedContractsFromFirestore(keyword, maxDocs);
   } catch {
     return [];
   }

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { getAwardedContracts } from '@/lib/data-service';
 
 export async function GET() {
-  const contracts = await getAwardedContracts();
+  // 2000 records ≈ 1.5 MB / ~6 s — within Google Sheets IMPORTDATA limits
+  const contracts = await getAwardedContracts(undefined, 2_000);
 
   const headers = [
     'ชื่อโครงการ', 'หน่วยงาน', 'จังหวัด', 'ประเภท', 'วิธีจัดซื้อ',
