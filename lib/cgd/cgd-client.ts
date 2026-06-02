@@ -75,8 +75,9 @@ async function* paginateResource<T>(
   resourceId: string,
   q?: string,
   apiKey?: string,
+  startOffset = 0,
 ): AsyncGenerator<T[]> {
-  let offset = 0;
+  let offset = startOffset;
   let total: number | null = null;
 
   while (true) {
@@ -164,8 +165,9 @@ export async function* fetchContractChunk(
   resourceId: string,
   keyword?: string,
   apiKey?: string,
+  startOffset = 0,
 ): AsyncGenerator<CgdContract[]> {
-  for await (const batch of paginateResource<RawCgdContract>(resourceId, keyword, apiKey)) {
+  for await (const batch of paginateResource<RawCgdContract>(resourceId, keyword, apiKey, startOffset)) {
     yield batch.map(normaliseCgdContract);
   }
 }
