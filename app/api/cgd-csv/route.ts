@@ -69,7 +69,9 @@ export async function GET(req: NextRequest) {
   return new NextResponse(lines.join('\n'), {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Cache-Control': 'no-store',
+      // Cache at Cloudflare edge for 12h — data only changes once/day when fetch-historical runs.
+      // Avoids re-reading Firestore on repeated imports within the same day.
+      'Cache-Control': 'public, max-age=43200, s-maxage=43200',
       'Access-Control-Allow-Origin': '*',
     },
   });
