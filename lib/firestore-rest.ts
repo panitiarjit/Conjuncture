@@ -109,6 +109,10 @@ export async function restGetCollectionPage<T>(
       ? `${base}?pageSize=${fetchSize}&pageToken=${cursor}`
       : `${base}?pageSize=${fetchSize}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Firestore ${res.status}: ${errText.slice(0, 300)}`);
+    }
     const data = await res.json() as {
       documents?: Array<{ name: string; fields: Record<string, FirestoreValue> }>;
       nextPageToken?: string;
