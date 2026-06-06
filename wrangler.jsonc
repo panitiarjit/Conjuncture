@@ -20,6 +20,12 @@
   "images": {
     "binding": "IMAGES"
   },
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "3ed094cdb532442f80bb9d7f531df440"
+    }
+  ],
   "observability": {
     "enabled": true
   },

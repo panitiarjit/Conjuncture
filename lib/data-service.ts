@@ -5,6 +5,18 @@ import path from 'path';
 import { TENDERS, PROJECTS, VENDORS, CATEGORIES } from './mock-data';
 import type { Tender, Project, Vendor, Category, AwardedContract } from './types';
 
+// Module-level in-memory cache — persists across requests on the same warm Worker instance.
+// Without R2/KV configured, unstable_cache has no persistent backend in Cloudflare Workers,
+// so this prevents Firestore re-reads on every request from the same warm Worker.
+const _memCache = new Map<string, { data: unknown; expiresAt: number }>();
+function memGet<T>(key: string): T | null {
+  const e = _memCache.get(key);
+  return e && Date.now() < e.expiresAt ? (e.data as T) : null;
+}
+function memSet(key: string, data: unknown, ttlMs: number): void {
+  _memCache.set(key, { data, expiresAt: Date.now() + ttlMs });
+}
+
 function hasFirestoreCredentials(): boolean {
   return Boolean(
     process.env.FIREBASE_ADMIN_PROJECT_ID &&
@@ -50,8 +62,12 @@ const fetchTendersFromFirestore = unstable_cache(
 
 export async function getTenders(): Promise<Tender[]> {
   if (!hasFirestoreCredentials()) return TENDERS;
+  const cached = memGet<Tender[]>('tenders');
+  if (cached) return cached;
   try {
-    return await fetchTendersFromFirestore();
+    const tenders = await fetchTendersFromFirestore();
+    memSet('tenders', tenders, 60 * 60 * 1000); // 1h
+    return tenders;
   } catch (err) {
     console.warn('[data-service] Firestore unavailable, serving disk/mock fallback:', (err as Error).message);
     return loadFromDisk() ?? TENDERS;
@@ -97,10 +113,15 @@ export async function getCategories(): Promise<Category[]> {
  */
 export async function getAwardedContract(projectId: string): Promise<AwardedContract | null> {
   if (!hasFirestoreCredentials()) return null;
+  const cacheKey = `contract:${projectId}`;
+  const cached = memGet<AwardedContract | null>(cacheKey);
+  if (cached !== null) return cached;
   try {
     const { restGetDocument } = await import('./firestore-rest');
     const doc = await restGetDocument<AwardedContract>('cgd_contracts', projectId);
-    return doc ?? null;
+    const result = doc ?? null;
+    memSet(cacheKey, result, 6 * 60 * 60 * 1000); // 6h
+    return result;
   } catch {
     return null;
   }
@@ -119,13 +140,20 @@ const fetchAwardedContractsFromFirestore = unstable_cache(
     return all.filter((c) => c.projectName.toLowerCase().includes(kw));
   },
   ['cgd_contracts'],
-  { revalidate: 3600, tags: ['cgd_contracts'] },
+  // 6h revalidate: cgd_contracts only changes once/day (fetch-historical at 15:00).
+  // Keeps daily Firestore reads from this path to ≤4 revalidations × 2k docs = 8k reads/day.
+  { revalidate: 21600, tags: ['cgd_contracts'] },
 );
 
-export async function getAwardedContracts(keyword?: string, maxDocs = 5_000): Promise<AwardedContract[]> {
+export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Promise<AwardedContract[]> {
   if (!hasFirestoreCredentials()) return [];
+  const cacheKey = `contracts:${keyword ?? ''}:${maxDocs}`;
+  const cached = memGet<AwardedContract[]>(cacheKey);
+  if (cached) return cached;
   try {
-    return await fetchAwardedContractsFromFirestore(keyword, maxDocs);
+    const contracts = await fetchAwardedContractsFromFirestore(keyword, maxDocs);
+    memSet(cacheKey, contracts, 6 * 60 * 60 * 1000); // 6h matches KV revalidate
+    return contracts;
   } catch {
     return [];
   }
