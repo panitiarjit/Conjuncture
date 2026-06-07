@@ -7,8 +7,10 @@ export async function GET(req: NextRequest) {
   // Serve from Cloudflare edge cache if available (free, built into every Worker)
   const cfCache = typeof caches !== 'undefined' ? caches.default : null;
   if (cfCache) {
-    const cached = await cfCache.match(req.url);
-    if (cached) return cached;
+    try {
+      const cached = await cfCache.match(req.url);
+      if (cached) return cached;
+    } catch { /* cache unavailable, fall through to Firestore */ }
   }
 
   const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
@@ -85,7 +87,9 @@ export async function GET(req: NextRequest) {
 
   // Store in Cloudflare edge cache so repeated imports don't re-read Firestore
   if (cfCache) {
-    await cfCache.put(req.url, response.clone());
+    try {
+      await cfCache.put(req.url, response.clone());
+    } catch { /* non-critical, continue without caching */ }
   }
 
   return response;

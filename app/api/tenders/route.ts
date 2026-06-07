@@ -4,8 +4,10 @@ import { getTenders } from '@/lib/data-service';
 export async function GET(req: NextRequest) {
   const cfCache = typeof caches !== 'undefined' ? caches.default : null;
   if (cfCache) {
-    const cached = await cfCache.match(req.url);
-    if (cached) return cached;
+    try {
+      const cached = await cfCache.match(req.url);
+      if (cached) return cached;
+    } catch { /* cache unavailable, fall through */ }
   }
 
   const tenders = await getTenders();
@@ -13,6 +15,10 @@ export async function GET(req: NextRequest) {
     headers: { 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=600' },
   });
 
-  if (cfCache) await cfCache.put(req.url, response.clone());
+  if (cfCache) {
+    try {
+      await cfCache.put(req.url, response.clone());
+    } catch { /* non-critical */ }
+  }
   return response;
 }
