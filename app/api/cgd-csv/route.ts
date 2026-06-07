@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAwardedContractsPage } from '@/lib/data-service';
 
-const CF_CACHE_TTL = 12 * 60 * 60; // 12 hours in seconds
+const CF_CACHE_TTL = 12 * 60 * 60;
 
 export async function GET(req: NextRequest) {
-  // Serve from Cloudflare edge cache if available (free, built into every Worker)
-  const cfCache = typeof caches !== 'undefined' ? caches.default : null;
-  if (cfCache) {
-    try {
-      const cached = await cfCache.match(req.url);
-      if (cached) return cached;
-    } catch { /* cache unavailable, fall through to Firestore */ }
-  }
-
   const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
   let contracts, nextPageToken;
   try {
-    // 500 records = 1 Firestore REST call, stays within Cloudflare CPU limits
     ({ contracts, nextPageToken } = await getAwardedContractsPage(500, pageToken));
   } catch (err) {
     return new NextResponse(`Firestore error: ${(err as Error).message}`, { status: 503 });
@@ -77,20 +67,11 @@ export async function GET(req: NextRequest) {
   // header lowercasing. The Apps Script reads and strips this sentinel line.
   if (nextPageToken) lines.push(`##NEXT_PAGE_TOKEN,${nextPageToken}`);
 
-  const response = new NextResponse(lines.join('\n'), {
+  return new NextResponse(lines.join('\n'), {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
       'Cache-Control': `public, max-age=${CF_CACHE_TTL}, s-maxage=${CF_CACHE_TTL}`,
       'Access-Control-Allow-Origin': '*',
     },
   });
-
-  // Store in Cloudflare edge cache so repeated imports don't re-read Firestore
-  if (cfCache) {
-    try {
-      await cfCache.put(req.url, response.clone());
-    } catch { /* non-critical, continue without caching */ }
-  }
-
-  return response;
 }
