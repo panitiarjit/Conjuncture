@@ -104,11 +104,26 @@ export async function restGetCollectionPage<T>(
 
   do {
     const remaining = pageSize - results.length;
-    const fetchSize = Math.min(500, remaining);
+    const fetchSize = Math.min(300, remaining);
     const url = cursor
       ? `${base}?pageSize=${fetchSize}&pageToken=${cursor}`
       : `${base}?pageSize=${fetchSize}`;
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+    let res: Response;
+    try {
+      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal });
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        // Firestore too slow — return what we have and stop pagination
+        return { docs: results, nextPageToken: undefined };
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     if (!res.ok) {
       const errText = await res.text();
       throw new Error(`Firestore ${res.status}: ${errText.slice(0, 300)}`);
