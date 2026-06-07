@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
   let contracts, nextPageToken;
   try {
-    ({ contracts, nextPageToken } = await getAwardedContractsPage(200, pageToken));
+    ({ contracts, nextPageToken } = await getAwardedContractsPage(100, pageToken));
   } catch (err) {
     return new NextResponse(`Firestore error: ${(err as Error).message}`, { status: 503 });
   }
