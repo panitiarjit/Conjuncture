@@ -112,19 +112,33 @@ export async function restGetCollectionPage<T>(
       : `${base}?pageSize=${fetchSize}`;
     const url = maskQs ? `${base_url}&${maskQs}` : base_url;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+    // Promise.race timeout — AbortController does not reliably cancel
+    // in-flight fetches in Cloudflare Workers, so we race instead.
+    const TIMEOUT_MS = 14_000;
+    const fetchStart = Date.now();
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(Object.assign(new Error('Firestore timeout'), { name: 'AbortError' })),
+        TIMEOUT_MS,
+      ),
+    );
     let res: Response;
     try {
-      res = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal });
+      res = await Promise.race([
+        fetch(url, { headers: { Authorization: `Bearer ${token}` } }),
+        timeoutPromise,
+      ]);
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
-        // Firestore too slow — return what we have and stop pagination
         return { docs: results, nextPageToken: undefined };
       }
       throw err;
-    } finally {
-      clearTimeout(timeoutId);
+    }
+
+    // Fetch resolved, but if it was slow the body may be huge — skip parsing
+    // to avoid a CPU spike on top of the already-slow network time.
+    if (Date.now() - fetchStart > 12_000) {
+      return { docs: results, nextPageToken: undefined };
     }
 
     if (!res.ok) {
