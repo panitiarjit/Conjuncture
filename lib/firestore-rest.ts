@@ -116,12 +116,18 @@ export async function restGetCollectionPage<T>(
     // in-flight fetches in Cloudflare Workers, so we race instead.
     const TIMEOUT_MS = 14_000;
     const fetchStart = Date.now();
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(
+    let clearTimer: () => void = () => {};
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      const id = setTimeout(
         () => reject(Object.assign(new Error('Firestore timeout'), { name: 'AbortError' })),
         TIMEOUT_MS,
-      ),
-    );
+      );
+      clearTimer = () => clearTimeout(id);
+    });
+    // IMPORTANT: attach a no-op catch so the rejection is handled when the
+    // fetch wins the race — otherwise Workers crashes with UnhandledRejection.
+    timeoutPromise.catch(() => {});
+
     let res: Response;
     try {
       res = await Promise.race([
@@ -129,15 +135,18 @@ export async function restGetCollectionPage<T>(
         timeoutPromise,
       ]);
     } catch (err) {
+      clearTimer();
       if ((err as Error).name === 'AbortError') {
         return { docs: results, nextPageToken: undefined };
       }
       throw err;
+    } finally {
+      clearTimer();
     }
 
-    // Fetch resolved, but if it was slow the body may be huge — skip parsing
+    // Fetch resolved, but if it was slow the body may be large — skip parsing
     // to avoid a CPU spike on top of the already-slow network time.
-    if (Date.now() - fetchStart > 12_000) {
+    if (Date.now() - fetchStart > 5_000) {
       return { docs: results, nextPageToken: undefined };
     }
 
