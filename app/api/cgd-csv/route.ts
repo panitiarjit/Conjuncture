@@ -51,16 +51,17 @@ export async function GET(req: NextRequest) {
   };
 
   // Thai short-date pattern: "30 ก.ย. 64" — agencies sometimes enter these
-  // in the winner name field instead of a company name.
+  // in the winner name/ID field instead of a company name.
   const THAI_DATE_RE = /\d{1,2}\s+(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)/;
-  // Only filter non-null strings that match a Thai date pattern
-  const isJunkRow = (c: typeof contracts[0]) =>
-    (!!c.winnerName && THAI_DATE_RE.test(c.winnerName)) ||
-    (!!c.winnerBusinessId && THAI_DATE_RE.test(String(c.winnerBusinessId)));
+  const isJunk = (v: string | null | undefined): boolean =>
+    !!v && THAI_DATE_RE.test(String(v));
 
   const lines = [headers.map(esc).join(',')];
   for (const c of contracts) {
-    if (isJunkRow(c)) continue; // skip bad-data rows
+    // Null out junk winner fields rather than dropping the row —
+    // the rest of the project data (budget, agency, etc.) is still valid.
+    const winnerName = isJunk(c.winnerName) ? null : c.winnerName;
+    const winnerBusinessId = isJunk(String(c.winnerBusinessId ?? '')) ? null : c.winnerBusinessId;
     lines.push([
       c.projectName, c.agency, c.subAgency ?? '',
       c.province ?? '', c.provinceEn ?? '', c.district ?? '', c.districtEn ?? '', c.subDistrict ?? '', c.subDistrictEn ?? '',
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
       c.projectType ?? '', c.procurementMethodGroup ?? '', c.procurementMethod ?? '',
       c.announceDate ?? '', c.transactionDate ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',
-      c.winnerName ?? '', c.winnerBusinessId ?? '',
+      winnerName ?? '', winnerBusinessId ?? '',
       c.losers?.length ? c.losers.length + 1 : '',
       (c.losers ?? []).join('; '),
       c.contractNo ?? '', c.contractSignDate ?? '', c.contractEndDate ?? '',
