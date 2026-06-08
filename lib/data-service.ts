@@ -163,6 +163,7 @@ export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Pr
 export async function getAwardedContractsPage(
   pageSize = 2_000,
   pageToken?: string,
+  fieldMask?: string[],
 ): Promise<{ contracts: AwardedContract[]; nextPageToken?: string }> {
   if (!hasFirestoreCredentials()) throw new Error('Missing Firebase credentials');
   const { restGetCollectionPage } = await import('./firestore-rest');
@@ -170,6 +171,7 @@ export async function getAwardedContractsPage(
     'cgd_contracts',
     pageSize,
     pageToken,
+    fieldMask,
   );
   return { contracts: docs, nextPageToken };
 }

@@ -3,11 +3,25 @@ import { getAwardedContractsPage } from '@/lib/data-service';
 
 const CF_CACHE_TTL = 12 * 60 * 60;
 
+const CGD_CSV_FIELDS = [
+  'projectId', 'projectName', 'agency', 'subAgency',
+  'province', 'provinceEn', 'district', 'districtEn', 'subDistrict', 'subDistrictEn',
+  'gpsPoint', 'latitude', 'longitude',
+  'projectType', 'procurementMethodGroup', 'procurementMethod',
+  'announceDate', 'transactionDate',
+  'budget', 'referencePrice', 'agreedPrice', 'discountFromReference',
+  'winnerName', 'winnerBusinessId',
+  'losers',
+  'contractNo', 'contractSignDate', 'contractEndDate',
+  'contractValue', 'contractStatus', 'projectStatus',
+  'fiscalYear',
+];
+
 export async function GET(req: NextRequest) {
   const pageToken = req.nextUrl.searchParams.get('pageToken') ?? undefined;
   let contracts, nextPageToken;
   try {
-    ({ contracts, nextPageToken } = await getAwardedContractsPage(100, pageToken));
+    ({ contracts, nextPageToken } = await getAwardedContractsPage(100, pageToken, CGD_CSV_FIELDS));
   } catch (err) {
     return new NextResponse(`Firestore error: ${(err as Error).message}`, { status: 503 });
   }
@@ -55,7 +69,7 @@ export async function GET(req: NextRequest) {
       c.announceDate ?? '', c.transactionDate ?? '',
       c.budget ?? '', c.referencePrice ?? '', c.agreedPrice ?? '', c.discountFromReference ?? '',
       c.winnerName ?? '', c.winnerBusinessId ?? '',
-      c.bidders?.length ?? (c.losers?.length ? c.losers.length + 1 : ''),
+      c.losers?.length ? c.losers.length + 1 : '',
       (c.losers ?? []).join('; '),
       c.contractNo ?? '', c.contractSignDate ?? '', c.contractEndDate ?? '',
       c.contractValue ?? '', c.contractStatus ?? '', c.projectStatus ?? '',

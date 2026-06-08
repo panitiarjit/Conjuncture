@@ -95,19 +95,22 @@ export async function restGetCollectionPage<T>(
   collection: string,
   pageSize = 500,
   startPageToken?: string,
+  fieldMask?: string[],
 ): Promise<{ docs: T[]; nextPageToken?: string }> {
   const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
   const token = await getAccessToken();
   const base = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
+  const maskQs = fieldMask ? fieldMask.map((f) => `mask.fieldPaths=${encodeURIComponent(f)}`).join('&') : '';
   const results: T[] = [];
   let cursor: string | undefined = startPageToken;
 
   do {
     const remaining = pageSize - results.length;
     const fetchSize = Math.min(300, remaining);
-    const url = cursor
+    const base_url = cursor
       ? `${base}?pageSize=${fetchSize}&pageToken=${cursor}`
       : `${base}?pageSize=${fetchSize}`;
+    const url = maskQs ? `${base_url}&${maskQs}` : base_url;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15_000);
