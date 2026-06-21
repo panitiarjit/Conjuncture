@@ -13,17 +13,48 @@ import {
 } from "recharts";
 import { Sliders, TrendingUp, Shield, AlertTriangle, Info } from "lucide-react";
 import { t, type Lang } from "@/lib/landing-translations";
-import { recommendBid, generateWinCurve, buildCurveFromBand } from "@/lib/bidsight-core";
+import { recommendBid, generateWinCurve, buildCurveFromBand, positioningLabel, CALIB_ALPHA } from "@/lib/bidsight-core";
 
 interface SimulatorProps {
   lang: Lang;
 }
 
-function computeSimulation(refPriceM: number, costPct: number, targetMarginPct: number) {
+type Band = { p10: number; p25: number; median: number; p75: number; p90: number };
+
+const LABEL_TH: Record<string, string> = {
+  soft: 'ราคาสูง (อ่อน)', conservative: 'ต่ำกว่าตลาด',
+  competitive: 'ระดับตลาด', aggressive: 'เชิงรุก', very_aggressive: 'เชิงรุกมาก',
+};
+const LABEL_EN: Record<string, string> = {
+  soft: 'Soft — below most winners', conservative: 'Conservative — below median',
+  competitive: 'Competitive — around typical range', aggressive: 'Aggressive — strong positioning',
+  very_aggressive: 'Very aggressive — top decile',
+};
+
+// Piecewise CDF interpolation from band knots — same logic as buildCurveFromBand
+function piecewiseFromBand(band: Band, disc: number): number {
+  const maxDisc = Math.max(band.p90 * 1.15, band.median * 2.5, 30);
+  const knots: [number, number][] = [
+    [0, 1], [band.p10, 10], [band.p25, 25], [band.median, 50],
+    [band.p75, 75], [band.p90, 90], [maxDisc, 98],
+  ];
+  if (disc <= 0) return 1;
+  for (let i = 0; i < knots.length - 1; i++) {
+    const [x0, y0] = knots[i];
+    const [x1, y1] = knots[i + 1];
+    if (disc <= x1) return Math.max(1, Math.min(99, Math.round(y0 + (y1 - y0) * (disc - x0) / (x1 - x0))));
+  }
+  return 98;
+}
+
+function computeSimulation(refPriceM: number, costPct: number, targetMarginPct: number, marketBand?: Band | null) {
   const costM = refPriceM * (costPct / 100);
   const rec = recommendBid(refPriceM, costM, targetMarginPct);
 
-  const pct = rec.positioningPct;
+  // Use market band for positioning if available; otherwise use global fallback from rec
+  const pct = marketBand ? piecewiseFromBand(marketBand, rec.recommendedDiscount) : rec.positioningPct;
+  const label = positioningLabel(pct);
+
   const risk: "low" | "medium" | "high" =
     rec.cannotMeetMargin || rec.marginFloorBreached
       ? "high"
@@ -35,15 +66,15 @@ function computeSimulation(refPriceM: number, costPct: number, targetMarginPct: 
 
   return {
     positioningPct:      pct,
-    positioningLabelTh:  rec.positioningLabelTh,
-    positioningLabelEn:  rec.positioningLabelEn,
-    band:                rec.band,
+    positioningLabelTh:  LABEL_TH[label],
+    positioningLabelEn:  LABEL_EN[label],
+    band:                marketBand ?? rec.band,
     optimalBid:          rec.recommendedBid,
     costEstimate:        Math.round(costM * 10) / 10,
     profit:              Math.round((rec.recommendedBid - costM) * 10) / 10,
     actualMargin:        rec.expectedMargin,
     targetDiscount:      rec.recommendedDiscount,
-    benchDiscount:       rec.marketMedianDiscount,
+    benchDiscount:       marketBand?.median ?? rec.marketMedianDiscount,
     marginMaxDiscount:   (1 - (costPct / 100) / (1 - targetMarginPct / 100)) * 100,
     isMarginConstrained: rec.marginFloorBreached || rec.cannotMeetMargin,
     risk,
@@ -157,6 +188,13 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   const tx = t[lang].simulator;
   const isTh = lang === "th";
 
+  // ── Market layer (curve — fetched on category change, independent of sliders)
+  const [projectType, setProjectType] = useState("");
+  const [categories, setCategories] = useState<{ id: string; label: string; n: number }[]>([]);
+  const [marketBand, setMarketBand] = useState<Band | null>(null);
+  const [marketN, setMarketN] = useState(0);
+  const [marketLoading, setMarketLoading] = useState(false);
+
   // ── Slider layer (user economics — local, no fetch) ──────────────────────
   const [refPrice, setRefPrice] = useState(10);
   const [costPct, setCostPct] = useState(82);
@@ -167,24 +205,16 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
     band, optimalBid, costEstimate, profit, actualMargin,
     risk, targetDiscount, benchDiscount, marginMaxDiscount, isMarginConstrained,
   } = useMemo(
-    () => computeSimulation(refPrice, costPct, targetMarginPct),
-    [refPrice, costPct, targetMarginPct]
+    () => computeSimulation(refPrice, costPct, targetMarginPct, marketBand),
+    [refPrice, costPct, targetMarginPct, marketBand]
   );
 
-  // ── Market layer (curve — fetched on category change, independent of sliders)
-  const [projectType, setProjectType] = useState("");
-  const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
-  const [marketBand, setMarketBand] = useState<{ p10: number; p25: number; median: number; p75: number; p90: number } | null>(null);
-  const [marketN, setMarketN] = useState(0);
-  const [marketLoading, setMarketLoading] = useState(false);
-
   useEffect(() => {
-    fetch("/api/categories")
+    fetch("/api/benchmark-categories")
       .then((r) => r.json())
       .then((data: any[]) => {
         const list = (Array.isArray(data) ? data : [])
-          .filter((c) => c.id && c.label)
-          .map((c) => ({ id: c.id as string, label: c.label as string }));
+          .map((c) => ({ id: c.id as string, label: c.id as string, n: c.n as number }));
         setCategories(list);
       })
       .catch(() => {});
@@ -279,7 +309,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                 >
                   <option value="">{isTh ? "ทุกตลาด (ค่าเริ่มต้น)" : "All markets (default)"}</option>
                   {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.label}</option>
+                    <option key={c.id} value={c.id}>{c.label} ({c.n})</option>
                   ))}
                 </select>
                 <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]">▼</div>

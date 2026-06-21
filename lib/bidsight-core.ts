@@ -139,7 +139,7 @@ export type PositioningLabel =
   | 'aggressive'  // 75–90th — strong positioning, thinner margin
   | 'very_aggressive'; // > 90th — top decile, check margin floor
 
-function positioningLabel(pct: number): PositioningLabel {
+export function positioningLabel(pct: number): PositioningLabel {
   if (pct < 25) return 'soft';
   if (pct < 50) return 'conservative';
   if (pct < 75) return 'competitive';
