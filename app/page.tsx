@@ -8,7 +8,7 @@ import BiddingSimulator from "@/components/BiddingSimulator";
 import Features from "@/components/Features";
 import CaseStudy from "@/components/CaseStudy";
 export default function Home() {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("th");
   return (
     <>
       <main>
