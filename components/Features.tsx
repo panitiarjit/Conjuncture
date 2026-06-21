@@ -73,12 +73,12 @@ export default function Features({ lang }: FeaturesProps) {
               {isTh ? "พร้อมเริ่มต้นแล้วหรือยัง?" : "Ready to start winning?"}
             </h3>
             <p className={`text-slate-400 text-sm mt-1 ${isTh ? "lang-th" : ""}`}>
-              {isTh ? "ทดลองฟรี 14 วัน ไม่ต้องใช้บัตรเครดิต" : "14-day free trial. No credit card required."}
+              {isTh ? "ตอบกลับภายใน 24 ชั่วโมง · ไม่มีค่าใช้จ่าย" : "We'll respond within 24 hours · No commitment required."}
             </p>
           </div>
-          <a href="#demo"
+          <a href="mailto:panitiarjit@gmail.com?subject=Demo%20Request&body=Hi%2C%0A%0AI%27d%20like%20to%20request%20a%20demo%20of%20Conjuncture."
             className={`flex-shrink-0 px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-slate-100 transition-colors text-sm ${isTh ? "lang-th" : ""}`}>
-            {isTh ? "เริ่มต้นฟรี →" : "Get started free →"}
+            {isTh ? "ขอทดลองใช้งาน →" : "Request Demo →"}
           </a>
         </div>
       </div>
