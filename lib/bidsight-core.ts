@@ -264,6 +264,45 @@ export function recommendBid(
   };
 }
 
+// ─── Curve from Band Knots (display only, for when only quantiles are known) ──
+
+export function buildCurveFromBand(
+  band: { p10: number; p25: number; median: number; p75: number; p90: number },
+  n: number = 17,
+): Array<{ bid: string; disc: number; positionPct: number }> {
+  const maxDisc = Math.max(band.p90 * 1.15, band.median * 2.5, 30);
+
+  // Piecewise linear CDF through 5 empirical quantile knots
+  const knots: [number, number][] = [
+    [0,           1],
+    [band.p10,   10],
+    [band.p25,   25],
+    [band.median,50],
+    [band.p75,   75],
+    [band.p90,   90],
+    [maxDisc,    98],
+  ];
+
+  function piecewise(disc: number): number {
+    if (disc <= 0) return 1;
+    for (let i = 0; i < knots.length - 1; i++) {
+      const [x0, y0] = knots[i];
+      const [x1, y1] = knots[i + 1];
+      if (disc <= x1) return y0 + (y1 - y0) * (disc - x0) / (x1 - x0);
+    }
+    return 98;
+  }
+
+  return Array.from({ length: n }, (_, i) => {
+    const discPct = (maxDisc * i) / (n - 1);
+    return {
+      bid:         `${Math.round(100 - discPct)}%`,
+      disc:        Math.round(discPct * 10) / 10,
+      positionPct: Math.max(1, Math.min(99, Math.round(piecewise(discPct)))),
+    };
+  });
+}
+
 // ─── Win Curve for Chart (empirical, no normal assumption) ───────────────────
 
 export function generateWinCurve(benchmark?: QuantileTable): Array<{
@@ -276,13 +315,16 @@ export function generateWinCurve(benchmark?: QuantileTable): Array<{
   return Array.from({ length: 17 }, (_, i) => {
     const discPct = (maxDisc * i) / 16;
 
+    // Logistic sigmoid ≈ normal CDF shape, used only when no empirical data.
+    // scale converts normal σ to logistic scale (same steepness).
+    const logisticScale = GLOBAL_SIGMA / (Math.PI / Math.sqrt(3));
     const positionPct = sorted.length > 0
       ? Math.round(
           (sorted.filter((d) => d <= discPct).length + CALIB_ALPHA)
           / (sorted.length + 2 * CALIB_ALPHA)
           * 100,
         )
-      : Math.round((discPct / (median * 2)) * 70);
+      : Math.round(100 / (1 + Math.exp(-(discPct - median) / logisticScale)));
 
     return {
       bid:         `${Math.round(100 - discPct)}%`,

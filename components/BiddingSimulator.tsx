@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { Sliders, TrendingUp, Shield, AlertTriangle, Info } from "lucide-react";
 import { t, type Lang } from "@/lib/landing-translations";
-import { recommendBid, generateWinCurve } from "@/lib/bidsight-core";
+import { recommendBid, generateWinCurve, buildCurveFromBand } from "@/lib/bidsight-core";
 
 interface SimulatorProps {
   lang: Lang;
@@ -157,6 +157,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   const tx = t[lang].simulator;
   const isTh = lang === "th";
 
+  // ── Slider layer (user economics — local, no fetch) ──────────────────────
   const [refPrice, setRefPrice] = useState(10);
   const [costPct, setCostPct] = useState(82);
   const [targetMarginPct, setTargetMarginPct] = useState(5);
@@ -170,7 +171,44 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
     [refPrice, costPct, targetMarginPct]
   );
 
-  const curveData = useMemo(() => generateWinCurve(), []);
+  // ── Market layer (curve — fetched on category change, independent of sliders)
+  const [projectType, setProjectType] = useState("");
+  const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
+  const [marketBand, setMarketBand] = useState<{ p10: number; p25: number; median: number; p75: number; p90: number } | null>(null);
+  const [marketN, setMarketN] = useState(0);
+  const [marketLoading, setMarketLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((data: any[]) => {
+        const list = (Array.isArray(data) ? data : [])
+          .filter((c) => c.id && c.label)
+          .map((c) => ({ id: c.id as string, label: c.label as string }));
+        setCategories(list);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!projectType) { setMarketBand(null); setMarketN(0); return; }
+    setMarketLoading(true);
+    const qs = new URLSearchParams({ refPriceM: "10", costM: "8", targetMarginPct: "10", projectType });
+    fetch(`/api/recommend-bid?${qs}`)
+      .then((r) => r.json())
+      .then((data: any) => {
+        setMarketBand(data.band ?? null);
+        setMarketN(data.comparableN ?? 0);
+      })
+      .catch(() => {})
+      .finally(() => setMarketLoading(false));
+  }, [projectType]);
+
+  // Curve morphs with market selection; sliders never trigger a refetch
+  const curveData = useMemo(
+    () => marketBand ? buildCurveFromBand(marketBand) : generateWinCurve(),
+    [marketBand]
+  );
 
   const riskMap = {
     low:    { color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200",  label: tx.low,    icon: Shield },
@@ -226,6 +264,34 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
               <span className="text-sm font-semibold text-slate-700">
                 {isTh ? "ตัวแปรการประมูล" : "Bid Parameters"}
               </span>
+            </div>
+
+            {/* Market selector — changes the curve, not the sliders */}
+            <div className="space-y-1.5">
+              <label className={`text-sm font-medium text-slate-700 ${isTh ? "lang-th text-[0.85rem]" : ""}`}>
+                {isTh ? "ประเภทตลาด" : "Market"}
+              </label>
+              <div className="relative">
+                <select
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value)}
+                  className="w-full appearance-none bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-slate-400 pr-8"
+                >
+                  <option value="">{isTh ? "ทุกตลาด (ค่าเริ่มต้น)" : "All markets (default)"}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]">▼</div>
+              </div>
+              {marketLoading && (
+                <p className="text-[10px] text-slate-400">{isTh ? "กำลังโหลดข้อมูลตลาด…" : "Loading market data…"}</p>
+              )}
+              {!marketLoading && marketBand && marketN > 0 && (
+                <p className="text-[10px] text-slate-400">
+                  {isTh ? `อ้างอิง ${marketN.toLocaleString()} สัญญา` : `${marketN.toLocaleString()} comparable contracts`}
+                </p>
+              )}
             </div>
 
             <SliderField
@@ -348,15 +414,22 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
 
           {/* Chart panel */}
           <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="mb-4">
-              <h3 className={`text-base font-semibold text-black mb-1 ${isTh ? "lang-th" : ""}`}>
-                {isTh ? "ตำแหน่งราคาเทียบกับผู้ชนะในอดีต" : "Bid Positioning vs. Historical Winners"}
-              </h3>
-              <p className={`text-xs text-slate-400 ${isTh ? "lang-th text-[0.75rem]" : ""}`}>
-                {isTh
-                  ? "แกน Y = % ของผู้ชนะในอดีตที่ให้ส่วนลดน้อยกว่าราคาเสนอของคุณ (ไม่ใช่ความน่าจะเป็นในการชนะ)"
-                  : "Y axis = % of past winners who discounted less than you — not a win probability"}
-              </p>
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h3 className={`text-base font-semibold text-black mb-1 ${isTh ? "lang-th" : ""}`}>
+                  {isTh ? "ตำแหน่งราคาเทียบกับผู้ชนะในอดีต" : "Bid Positioning vs. Historical Winners"}
+                </h3>
+                <p className={`text-xs text-slate-400 ${isTh ? "lang-th text-[0.75rem]" : ""}`}>
+                  {isTh
+                    ? "แกน Y = % ของผู้ชนะในอดีตที่ให้ส่วนลดน้อยกว่าราคาเสนอของคุณ (ไม่ใช่ความน่าจะเป็นในการชนะ)"
+                    : "Y axis = % of past winners who discounted less than you — not a win probability"}
+                </p>
+              </div>
+              {projectType && !marketLoading && (
+                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-blue-500 bg-blue-50 border border-blue-100 rounded px-2 py-0.5">
+                  {categories.find((c) => c.id === projectType)?.label ?? projectType}
+                </span>
+              )}
             </div>
 
             <div className="h-64 lg:h-72">
