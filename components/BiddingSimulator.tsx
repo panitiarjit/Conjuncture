@@ -13,108 +13,34 @@ import {
 } from "recharts";
 import { Sliders, TrendingUp, Shield, AlertTriangle } from "lucide-react";
 import { t, type Lang } from "@/lib/landing-translations";
+import { recommendBid, generateWinCurve } from "@/lib/bidsight-core";
 
 interface SimulatorProps {
   lang: Lang;
 }
 
-// OLS regression on 548 competitive e-bidding construction tenders (FY2559–2568)
-// Model: discount = OLS_B0 + OLS_B1 × bidders  (R²=0.325, RMSE=11.25%)
-// Budget term dropped: log(budget) standardised β = -0.007, partial R² ≈ 0
-const OLS_B0   = 0.87;   // intercept
-const OLS_B1   = 3.03;   // discount added per additional bidder
-const OLS_RMSE = 11.26;  // residual stdev — used as fallback sigma
-
-// Observed means and stdevs per bidder count — derived from AllBidders sheet (FY2559–2568)
-// OLS formula is the fallback for counts without observed data.
-const REAL_DISCOUNT_BY_BIDDERS: Record<number, { mean: number; stdev: number }> = {
-  2:  { mean: 5.8,  stdev: 7.7  },  // n=104
-  3:  { mean: 8.9,  stdev: 11.4 },  // n=145
-  4:  { mean: 13.8, stdev: 12.7 },  // n=86
-  5:  { mean: 19.2, stdev: 12.4 },  // n=65
-  6:  { mean: 20.3, stdev: 13.0 },  // n=48
-  7:  { mean: 20.5, stdev: 10.9 },  // n=26
-  8:  { mean: 29.6, stdev: 10.5 },  // n=14
-  9:  { mean: 27.2, stdev: 11.1 },  // n=25
-  10: { mean: 27.0, stdev: 14.0 },  // n=13
-  11: { mean: 34.5, stdev: 8.4  },  // n=11
-  12: { mean: 37.6, stdev: 3.2  },  // n=6
-  13: { mean: 35.3, stdev: 2.2  },  // n=2
-};
-
-function getBench(competitors: number): { mean: number; stdev: number } {
-  if (REAL_DISCOUNT_BY_BIDDERS[competitors]) return REAL_DISCOUNT_BY_BIDDERS[competitors];
-  return {
-    mean:  OLS_B0 + OLS_B1 * competitors,
-    stdev: OLS_RMSE,
-  };
-}
-
-function computeSimulation(
-  competitors: number,
-  budgetM: number,
-  costPct: number,
-  targetMarginPct: number,
-) {
-  const bench = getBench(competitors);
-
-  const benchDiscount = bench.mean;
-  const sigma = Math.max(bench.stdev, 5);
-
-  const costRatio = costPct / 100;
-
-  const marginMaxDiscount = Math.max(0, (1 - costRatio / (1 - targetMarginPct / 100)) * 100);
-
-  const marketOptimalDiscount = benchDiscount;
-
-  const targetDiscount = Math.min(marketOptimalDiscount, marginMaxDiscount);
-  const optimalBid = budgetM * (1 - targetDiscount / 100);
-
-  const z = (targetDiscount - benchDiscount) / sigma;
-  const peakWin = Math.min(88, (100 / competitors) * 1.3);
-  const winProb = Math.max(8, Math.exp(-0.5 * z * z) * peakWin);
-
-  const costEstimate = budgetM * costRatio;
-  const actualMargin = ((optimalBid - costEstimate) / optimalBid) * 100;
-
-  const isMarginConstrained = marginMaxDiscount < marketOptimalDiscount;
-
-  const risk: "low" | "medium" | "high" = isMarginConstrained ? "high" : winProb > 45 ? "low" : winProb > 25 ? "medium" : "high";
-
-  const profit = optimalBid - costEstimate;
+function computeSimulation(refPriceM: number, costPct: number, targetMarginPct: number) {
+  const costM = refPriceM * (costPct / 100);
+  const rec = recommendBid(refPriceM, costM, targetMarginPct);
 
   return {
-    winProb: Math.round(winProb),
-    optimalBid: Math.round(optimalBid * 10) / 10,
-    costEstimate: Math.round(costEstimate * 10) / 10,
-    profit: Math.round(profit * 10) / 10,
-    actualMargin: Math.round(actualMargin * 10) / 10,
-    targetDiscount: Math.round(targetDiscount * 10) / 10,
-    benchDiscount: Math.round(benchDiscount * 10) / 10,
-    marginMaxDiscount: Math.round(marginMaxDiscount * 10) / 10,
-    isMarginConstrained,
-    risk,
+    winProb: rec.predictedWinProb,
+    optimalBid: rec.recommendedBid,
+    costEstimate: Math.round(costM * 10) / 10,
+    profit: Math.round((rec.recommendedBid - costM) * 10) / 10,
+    actualMargin: rec.expectedMargin,
+    targetDiscount: rec.recommendedDiscount,
+    benchDiscount: rec.marketMedianDiscount,
+    marginMaxDiscount: (1 - (costPct / 100) / (1 - targetMarginPct / 100)) * 100,
+    isMarginConstrained: rec.marginFloorBreached || rec.cannotMeetMargin,
+    risk: rec.marginFloorBreached || rec.cannotMeetMargin
+      ? "high"
+      : rec.predictedWinProb > 45
+      ? "low"
+      : rec.predictedWinProb > 25
+      ? "medium"
+      : "high",
   };
-}
-
-function generateCurveData(competitors: number) {
-  const bench = getBench(competitors);
-  const benchDiscount = bench.mean;
-  const sigma = Math.max(bench.stdev, 5);
-
-  const peakWin = Math.min(88, (100 / competitors) * 1.3);
-  const maxDisc = Math.min(55, benchDiscount * 2.5 + sigma);
-
-  return Array.from({ length: 17 }, (_, i) => {
-    const discPct = (maxDisc * i) / 16;
-    const z = (discPct - benchDiscount) / sigma;
-    const relProb = Math.exp(-0.5 * z * z);
-    return {
-      bid: `${Math.round(100 - discPct)}%`,
-      disc: Math.round(discPct * 10) / 10,
-      winProb: Math.max(2, Math.round(relProb * peakWin)),
-    };
-  });
 }
 
 interface SliderFieldProps {
@@ -220,20 +146,16 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   const tx = t[lang].simulator;
   const isTh = lang === "th";
 
-  const [competitors, setCompetitors] = useState(5);
-  const [scope, setScope] = useState(10);
+  const [refPrice, setRefPrice] = useState(10);
   const [costPct, setCostPct] = useState(82);
   const [targetMarginPct, setTargetMarginPct] = useState(5);
 
   const { winProb, optimalBid, costEstimate, profit, actualMargin, risk, targetDiscount, benchDiscount, marginMaxDiscount, isMarginConstrained } = useMemo(
-    () => computeSimulation(competitors, scope, costPct, targetMarginPct),
-    [competitors, scope, costPct, targetMarginPct]
+    () => computeSimulation(refPrice, costPct, targetMarginPct),
+    [refPrice, costPct, targetMarginPct]
   );
 
-  const curveData = useMemo(
-    () => generateCurveData(competitors),
-    [competitors]
-  );
+  const curveData = useMemo(() => generateWinCurve(), []);
 
   const riskMap = {
     low:    { color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200",  label: tx.low,    icon: Shield },
@@ -251,7 +173,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
       Math.abs(d.disc - disc) < Math.abs(best.disc - disc) ? d : best
     ).bid;
   const optimalLabel = snapLabel(targetDiscount);
-  const marginLabel  = snapLabel(marginMaxDiscount);
+  const marginLabel = snapLabel(marginMaxDiscount);
 
   return (
     <section id="simulator" className="py-24 lg:py-32 bg-slate-50">
@@ -284,29 +206,18 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
             </div>
 
             <SliderField
-              label={tx.competitorCount}
-              value={competitors}
-              min={2}
-              max={13}
-              step={1}
-              unit={` ${tx.competitors}`}
-              onChange={setCompetitors}
-              accentColor="text-blue-600"
-              isTh={isTh}
-            />
-            <SliderField
               label={tx.projectScope}
-              value={scope}
+              value={refPrice}
               min={1}
               max={200}
               step={1}
               unit="฿M"
-              onChange={setScope}
+              onChange={setRefPrice}
               accentColor="text-emerald-600"
               isTh={isTh}
             />
             <SliderField
-              label={isTh ? `ต้นทุนของคุณ (% ราคากลาง) = ฿${(scope * costPct / 100).toFixed(1)}M` : `Your estimated costs (% of budget) = ฿${(scope * costPct / 100).toFixed(1)}M`}
+              label={isTh ? `ต้นทุนของคุณ (% ราคากลาง) = ฿${(refPrice * costPct / 100).toFixed(1)}M` : `Your estimated costs (% of budget) = ฿${(refPrice * costPct / 100).toFixed(1)}M`}
               value={costPct}
               min={50}
               max={100}
@@ -331,7 +242,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
             {/* Output metrics */}
             <div className="pt-2 border-t border-slate-100 space-y-2.5">
 
-              {/* Row 1 — Win Probability (hero) */}
+              {/* Row 1 — Win Probability */}
               <div className="bg-slate-50 rounded-xl p-3">
                 <p className={`text-[11px] text-slate-500 mb-1 ${isTh ? "lang-th" : ""}`}>{tx.winProbability}</p>
                 <div className="flex items-end gap-2">
@@ -346,7 +257,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                   </div>
                 </div>
                 <p className="text-[10px] text-slate-400 mt-0.5">
-                  {isTh ? `vs ${Math.round(100/competitors)}% หากไม่มีข้อมูล` : `vs ${Math.round(100/competitors)}% uninformed baseline`}
+                  {isTh ? "ตามข้อมูลตลาด" : "based on market data"}
                 </p>
               </div>
 
@@ -356,7 +267,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                   <p className={`text-[11px] text-slate-500 mb-1 ${isTh ? "lang-th" : ""}`}>{tx.optimalBid}</p>
                   <p className={`text-base font-bold ${isMarginConstrained ? "text-red-600" : "text-black"}`}>฿{optimalBid.toFixed(1)}M</p>
                   <p className={`text-[10px] mt-0.5 ${isMarginConstrained ? "text-red-400" : "text-slate-400"}`}>
-                    {isTh ? `−${targetDiscount}% จากราคากลาง` : `−${targetDiscount}% off budget`}
+                    {isTh ? `−${targetDiscount}% จากราคาอ้างอิง` : `−${targetDiscount}% off reference`}
                   </p>
                 </div>
                 <div className={`rounded-xl p-3 border ${isMarginConstrained ? "bg-red-50 border-red-200" : "bg-slate-50 border-transparent"}`}>
@@ -381,7 +292,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     {isTh ? `ส่วนลดสูงสุด (${targetMarginPct}% กำไร)` : `Max discount (${targetMarginPct}% margin)`}
                   </p>
                   <p className={`text-base font-bold ${isMarginConstrained ? "text-red-600" : "text-emerald-600"}`}>
-                    −{marginMaxDiscount}%
+                    −{marginMaxDiscount.toFixed(1)}%
                   </p>
                   <p className={`text-[10px] mt-0.5 ${isMarginConstrained ? "text-red-400" : "text-emerald-500"}`}>
                     {isMarginConstrained
@@ -426,7 +337,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     tick={{ fill: "#94a3b8", fontSize: 11 }}
                     axisLine={{ stroke: "#e2e8f0" }}
                     tickLine={false}
-                    label={{ value: isTh ? "ราคาเสนอ (% ราคากลาง)" : "Bid price (% of budget)", position: "insideBottom", offset: -2, fill: "#94a3b8", fontSize: 11 }}
+                    label={{ value: isTh ? "ราคาเสนอ (% ราคาอ้างอิง)" : "Bid price (% of reference)", position: "insideBottom", offset: -2, fill: "#94a3b8", fontSize: 11 }}
                   />
                   <YAxis
                     domain={[0, 100]}
@@ -442,7 +353,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     stroke={isMarginConstrained ? "#ef4444" : "#8b5cf6"}
                     strokeDasharray="6 3"
                     strokeWidth={1.5}
-                    label={{ value: isTh ? `จุดคุ้มทุน −${marginMaxDiscount}%` : `Break-even limit −${marginMaxDiscount}%`, fill: isMarginConstrained ? "#ef4444" : "#8b5cf6", fontSize: 10, dy: -6 }}
+                    label={{ value: isTh ? `จุดคุ้มทุน −${marginMaxDiscount.toFixed(1)}%` : `Break-even limit −${marginMaxDiscount.toFixed(1)}%`, fill: isMarginConstrained ? "#ef4444" : "#8b5cf6", fontSize: 10, dy: -6 }}
                   />
                   <ReferenceLine
                     x={optimalLabel}
@@ -485,37 +396,16 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                   <span className="font-semibold text-red-700">{isTh ? "ถึงจุดคุ้มทุนแล้ว: " : "Break-even limit reached: "}</span>
                   {isTh ? (
                     <>เป้ากำไร {targetMarginPct}% จำกัดส่วนลดสูงสุดที่{" "}
-                    <span className="font-semibold text-red-600">−{marginMaxDiscount}%</span> แต่ตลาดนี้
-                    ({competitors} ราย) อยู่ที่{" "}
+                    <span className="font-semibold text-red-600">−{marginMaxDiscount.toFixed(1)}%</span> แต่ตลาดนี้ต้องการ{" "}
                     <span className="font-semibold text-black">−{benchDiscount}%</span> — คุณเสนอราคาสูงกว่าตลาด โอกาสชนะเหลือ{" "}
-                    <span className={`font-semibold ${winColor}`}>{winProb}%</span> ลดเป้ากำไรหรือถอนตัวจากการประมูลนี้</>
+                    <span className={`font-semibold ${winColor}`}>{winProb}%</span> ลดเป้ากำไรหรือถอนตัว</>
                   ) : (
                     <>Your {targetMarginPct}% margin target caps your discount at{" "}
-                    <span className="font-semibold text-red-600">−{marginMaxDiscount}%</span>, but this market
-                    ({competitors} bidders) benchmarks at{" "}
+                    <span className="font-semibold text-red-600">−{marginMaxDiscount.toFixed(1)}%</span>, but market needs{" "}
                     <span className="font-semibold text-black">−{benchDiscount}%</span>. You&apos;re bidding above market —
-                    win probability drops to{" "}
+                    win probability{" "}
                     <span className={`font-semibold ${winColor}`}>{winProb}%</span>.
-                    Lower your margin target or walk away from this tender.</>
-                  )}
-                </p>
-              </div>
-            ) : competitors <= 2 ? (
-              <div className="mt-5 flex items-start gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-                <TrendingUp className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                <p className={`text-xs text-slate-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
-                  <span className="font-semibold text-emerald-700">{isTh ? "โซนการแข่งขันต่ำ: " : "Low Competition Zone: "}</span>
-                  {isTh ? (
-                    <>คู่แข่งเพียง 2 ราย ข้อมูล singlebidder 524 โครงการมีส่วนลดมัธยฐาน{" "}
-                    <span className="font-semibold text-emerald-600">0.65%</span> — ใกล้ราคากลาง
-                    เป้ากำไร {targetMarginPct}% รองรับได้ที่ต้นทุน {costPct}%: เสนอ ฿{optimalBid.toFixed(1)}M (−{targetDiscount}%)
-                    กำไรจริง <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}%</span></>
-                  ) : (
-                    <>Only 2 competitors. Our singlebidder dataset shows 524 e-bidding tenders with 1 bidder at a{" "}
-                    <span className="font-semibold text-emerald-600">0.65% median discount</span> — near reference price.
-                    Your {targetMarginPct}% margin target is viable at {costPct}% estimated costs: bid ฿{optimalBid.toFixed(1)}M (−{targetDiscount}%),
-                    estimated{" "}
-                    <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}% actual margin</span>.</>
+                    Lower your margin or walk away.</>
                   )}
                 </p>
               </div>
@@ -525,15 +415,15 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                 <p className={`text-xs text-slate-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
                   <span className="font-semibold text-blue-600">{isTh ? "ข้อมูลตลาด: " : "Market Data: "}</span>
                   {isTh ? (
-                    <>สัญญา {competitors} ราย มีส่วนลดอ้างอิง{" "}
-                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span> จาก 548 โครงการ
-                    กำไร {targetMarginPct}% รองรับได้ถึง −{marginMaxDiscount}% ✓ — เสนอ ฿{optimalBid.toFixed(1)}M (−{targetDiscount}%){" "}
+                    <>ตลาดมีส่วนลดอ้างอิง{" "}
+                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span> จาก 29,750 โครงการ e-bidding
+                    กำไร {targetMarginPct}% รองรับได้ถึง −{marginMaxDiscount.toFixed(1)}% ✓ — เสนอ ฿{optimalBid.toFixed(1)}M{" "}
                     <span className={`font-semibold ${winColor}`}>โอกาสชนะ {winProb}%</span>{" "}
                     กำไร <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}%</span></>
                   ) : (
-                    <>{competitors}-bidder contracts benchmark at{" "}
-                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span> across 548 tenders.
-                    Your {targetMarginPct}% margin allows up to −{marginMaxDiscount}% ✓ — bid at ฿{optimalBid.toFixed(1)}M (−{targetDiscount}%),{" "}
+                    <>Market benchmarks{" "}
+                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span> across 29,750 e-bidding tenders.
+                    Your {targetMarginPct}% margin allows up to −{marginMaxDiscount.toFixed(1)}% ✓ — bid ฿{optimalBid.toFixed(1)}M,{" "}
                     <span className={`font-semibold ${winColor}`}>{winProb}% win probability</span>,{" "}
                     <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}% estimated margin</span>.</>
                   )}
@@ -542,8 +432,8 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
             )}
             <p className="mt-2 text-[10px] text-slate-400 text-right">
               {isTh
-                ? "อ้างอิง: 548 โครงการ e-bidding + 524 โครงการรายเดียว · โอกาสชนะ = ฐาน(1/n) × ค่าปรับเทียบ · ปีงบ 2561–2568"
-                : "Benchmarks: 548 e-bidding tenders + 524 singlebidder records · win prob = base(1/n) × calibration · FY2561–2568"}
+                ? "อ้างอิง: 29,750 โครงการ e-bidding · ข้อมูลอ้างอิง (reference price) · ปีงบ 2561–2568"
+                : "Benchmarks: 29,750 e-bidding tenders · reference price discounts · FY2561–2568"}
             </p>
           </div>
         </div>
