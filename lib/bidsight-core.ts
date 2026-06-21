@@ -4,10 +4,21 @@
  * Out-of-time R² ≈ 0.03 (correct, not a bug: bidder count unknowable pre-bid).
  */
 
+import type { AwardedContract } from './types';
+
 // Empirical benchmarks from 29,750 e-bidding tenders (FY2559–2568)
 export const GLOBAL_MEDIAN = 18.5;  // median discount
 export const GLOBAL_SIGMA = 12.0;   // stdev
 export const CALIB = 0.875;         // calibration shrink (0.70/0.80 coverage gap)
+
+export interface QuantileTable {
+  median: number;
+  sigma: number;
+  q25: number;
+  q75: number;
+  n: number;
+  source: string;
+}
 
 // Standard normal CDF using Abramowitz–Stegun approximation
 export function phi(z: number): number {
@@ -31,20 +42,23 @@ export interface BidRecommendation {
 /**
  * Core calculation: given profile, cost, reference price, margin target,
  * recommend a bid and discount.
+ * Optionally pass a benchmark table for category-specific predictions.
  */
 export function recommendBid(
   refPrice: number,
   costM: number,
   targetMarginPct: number = 10,
   targetWinProbPct: number = 60,
+  benchmark?: QuantileTable,
 ): BidRecommendation {
   const costRatio = costM / refPrice;
 
   // Margin guard: largest discount that preserves target margin
   const marginMaxDiscount = (1 - costRatio / (1 - targetMarginPct / 100)) * 100;
 
-  const benchDiscount = GLOBAL_MEDIAN;
-  const sigma = Math.max(GLOBAL_SIGMA, 1);
+  const benchDiscount = benchmark?.median ?? GLOBAL_MEDIAN;
+  const sigma = Math.max(benchmark?.sigma ?? GLOBAL_SIGMA, 1);
+  const source = benchmark?.source ?? 'global';
 
   // Target discount: market benchmark, capped by margin floor
   const targetDiscount = Math.min(benchDiscount, marginMaxDiscount);
@@ -72,7 +86,7 @@ export function recommendBid(
     expectedMargin: Math.round(actualMargin * 10) / 10,
     marginFloorBreached,
     cannotMeetMargin,
-    benchmarkSource: 'global',
+    benchmarkSource: source,
   };
 }
 
@@ -98,4 +112,105 @@ export function generateWinCurve(): Array<{ bid: string; disc: number; winProb: 
       winProb: probPct,
     };
   });
+}
+
+/**
+ * Compute quantile table from a list of discount values.
+ */
+function computeQuantiles(discounts: number[]): QuantileTable {
+  if (discounts.length === 0) {
+    return { median: GLOBAL_MEDIAN, sigma: GLOBAL_SIGMA, q25: 0, q75: 0, n: 0, source: 'empty' };
+  }
+
+  const sorted = [...discounts].sort((a, b) => a - b);
+  const len = sorted.length;
+
+  const median = len % 2 === 0
+    ? (sorted[len / 2 - 1] + sorted[len / 2]) / 2
+    : sorted[Math.floor(len / 2)];
+
+  const q25Idx = Math.floor(len * 0.25);
+  const q75Idx = Math.floor(len * 0.75);
+  const q25 = sorted[q25Idx];
+  const q75 = sorted[q75Idx];
+
+  // Stdev
+  const mean = discounts.reduce((a, b) => a + b, 0) / len;
+  const variance = discounts.reduce((sum, x) => sum + (x - mean) ** 2, 0) / len;
+  const sigma = Math.sqrt(variance);
+
+  return { median: Math.round(median * 10) / 10, sigma: Math.round(sigma * 10) / 10, q25: Math.round(q25 * 10) / 10, q75: Math.round(q75 * 10) / 10, n: len, source: 'computed' };
+}
+
+/**
+ * Build benchmark tables from awarded contracts.
+ * Returns { agency_category, category, global }
+ */
+export function buildBenchmarkTables(contracts: AwardedContract[]): {
+  agencyCategory: Map<string, QuantileTable>;
+  category: Map<string, QuantileTable>;
+  global: QuantileTable;
+} {
+  // Filter: only e-bidding (procurementMethodGroup), only those with valid discount
+  const ebidding = contracts.filter(
+    (c) =>
+      c.procurementMethodGroup === 'e-bidding' &&
+      c.discountFromReference != null &&
+      c.discountFromReference > 0 &&
+      c.discountFromReference < 100
+  );
+
+  const agencyCategory = new Map<string, number[]>();
+  const category = new Map<string, number[]>();
+
+  // Group by agency×category and category
+  for (const contract of ebidding) {
+    const key = `${contract.agency}|${contract.projectType}`;
+    if (!agencyCategory.has(key)) agencyCategory.set(key, []);
+    agencyCategory.get(key)!.push(contract.discountFromReference!);
+
+    if (!category.has(contract.projectType)) category.set(contract.projectType, []);
+    category.get(contract.projectType)!.push(contract.discountFromReference!);
+  }
+
+  // Compute quantiles
+  const agencyCategoryTables = new Map<string, QuantileTable>();
+  for (const [key, discounts] of agencyCategory) {
+    if (discounts.length >= 8) {
+      const qt = computeQuantiles(discounts);
+      qt.source = 'agency×category';
+      agencyCategoryTables.set(key, qt);
+    }
+  }
+
+  const categoryTables = new Map<string, QuantileTable>();
+  for (const [cat, discounts] of category) {
+    const qt = computeQuantiles(discounts);
+    qt.source = 'category';
+    categoryTables.set(cat, qt);
+  }
+
+  const globalQt = computeQuantiles(ebidding.map((c) => c.discountFromReference!));
+  globalQt.source = 'global';
+
+  return { agencyCategory: agencyCategoryTables, category: categoryTables, global: globalQt };
+}
+
+/**
+ * Get benchmark for a tender profile (agency, category).
+ * Fall back: agency×category (n≥8) → category → global
+ */
+export function getBenchmarkFromTables(
+  agency: string | undefined,
+  category: string | undefined,
+  tables: ReturnType<typeof buildBenchmarkTables>
+): QuantileTable {
+  const key = `${agency}|${category}`;
+  if (agency && category && tables.agencyCategory.has(key)) {
+    return tables.agencyCategory.get(key)!;
+  }
+  if (category && tables.category.has(category)) {
+    return tables.category.get(category)!;
+  }
+  return tables.global;
 }
