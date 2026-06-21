@@ -1,5 +1,32 @@
 # BidSight Model: Core Calculations & Validation
 
+> **Version 2 (corrected).** Removes win probability entirely. Replaces it with positioning percentile
+> and an empirical competitiveness band. See correction rationale below.
+
+---
+
+## Why "Win Probability" Was Removed
+
+Three problems with the original model:
+
+1. **Data is winner-only.** Every row in `cgd_contracts` is an awarded tender — the winning bid.
+   There are no losing bids. A CDF over winners tells you where a bid sits among past winners,
+   not the probability it wins against an unknown pool of other bidders.
+
+2. **The 0.875 calibration had no theoretical basis.** It was derived from a single observation
+   (the model's 80th-percentile prediction covering 70% of outcomes) and then applied globally.
+   Single-point calibration on winner-only data is not a valid procedure.
+
+3. **Bidder count explains ~97% of outcome variance.** With bidder count unknowable at bid time,
+   the out-of-time R² ceiling is ~0.03. No statistical model can estimate P(win) meaningfully
+   without knowing how many firms will bid.
+
+**What replaced it:** positioning percentile (empirical CDF) + competitiveness band (p10–p90).
+These are honest claims about where a bid sits vs. historical winners. They do not claim to predict
+P(win | bid).
+
+---
+
 ## Part 1: Core Bid Recommendation Logic
 
 ### Input Parameters
@@ -7,15 +34,16 @@
 refPrice        Reference price (ราคากลาง) in millions
 costM           Estimated cost in millions
 targetMarginPct Target profit margin % (default 10%)
-benchmark       Optional category-specific quantile table
+benchmark       Optional: QuantileTable from buildBenchmarkTables()
 ```
 
 ### Step 1: Margin Guard
-**Purpose:** Ensure the bid doesn't go below the margin floor.
+**Purpose:** Ensure the bid doesn't violate the margin floor.
 
 ```javascript
 costRatio = costM / refPrice
 marginMaxDiscount = (1 - costRatio / (1 - targetMarginPct/100)) × 100
+cannotMeetMargin = marginMaxDiscount <= 0
 ```
 
 **Example:**
@@ -23,402 +51,241 @@ marginMaxDiscount = (1 - costRatio / (1 - targetMarginPct/100)) × 100
 - costRatio = 0.82
 - marginMaxDiscount = (1 - 0.82 / 0.9) × 100 = 8.9%
 
-If your costs are too high, marginMaxDiscount can be ≤0, meaning **no profitable bid possible**.
+If costs are too high, marginMaxDiscount ≤ 0 → **no profitable bid possible**.
 
-### Step 2: Get Benchmark Discount
-**Purpose:** Use market data to predict what discount wins bids.
+### Step 2: Get Benchmark Quantile Table
 
+**Fallback chain (priority order):**
 ```javascript
-// Fallback chain (priority order):
-if (agency && category && hasAgencyCategory(tables)) {
-  benchDiscount = tables.agencyCategory[agency+category].median
+if (agency && category && agencyCategory.has(key) && n >= 8) {
+  benchmark = agencyCategory[agency+"|"+category]
   source = "agency×category"
-} else if (category && hasCategory(tables)) {
-  benchDiscount = tables.category[category].median
+} else if (category && category.has(projectType)) {
+  benchmark = category[projectType]
   source = "category"
 } else {
-  benchDiscount = 18.5  // global median from 29,750 e-bidding tenders
+  benchmark = global   // median=18.5, from 29,750 e-bidding tenders
   source = "global"
 }
-
-sigma = benchmark.sigma ?? 12.0  // stdev of discounts in this bucket
 ```
 
-**Data origin:** Computed from awarded contracts where:
-- `procurementMethodGroup == 'e-bidding'`
-- `discountFromReference` is 0–100%
-- Grouped by category, then agency×category (if n≥8)
+**QuantileTable fields:**
+```javascript
+{
+  discounts: number[],   // sorted raw values — for empirical CDF
+  p10, p25, median, p75, p90: number,
+  sigma: number,         // stdev (informational only, not used in recommendations)
+  n: number,
+  source: string
+}
+```
 
 ### Step 3: Choose Target Discount
-**Purpose:** Bid at market rate OR lower if margin floor requires it.
 
 ```javascript
-targetDiscount = min(benchDiscount, marginMaxDiscount)
+targetDiscount = cannotMeetMargin ? 0 : min(benchmark.median, marginMaxDiscount)
+marginFloorBreached = !cannotMeetMargin && benchmark.median > marginMaxDiscount
 ```
 
-If marketBenchmark=18.5% but marginMaxDiscount=8.9%, bid at 8.9% (safer, but lower win chance).
+Logic: bid at market median **or** margin floor, whichever is lower.
+If margin floor is below market median, you're bidding above most past winners.
 
 ### Step 4: Calculate Recommended Bid
-**Purpose:** Convert discount to bid amount.
 
 ```javascript
-bid = refPrice × (1 - targetDiscount/100)
+bid = refPrice × (1 - targetDiscount / 100)
 ```
 
-**Critical:** Anchor on **reference price**, not budget. The discount % is defined as:
+**Critical:** Anchor on **reference price** (ราคากลาง), not budget. The discount % is defined as:
 ```
 discount = (refPrice - agreedPrice) / refPrice × 100
 ```
 
-### Step 5: Calculate Win Probability
-**Purpose:** Estimate likelihood of winning at this discount.
+### Step 5: Positioning Percentile (replaces "win probability")
 
-**Formula (CDF-based, monotonic):**
+**Purpose:** Show where the recommended discount sits vs. comparable past winners.
 
 ```javascript
-// Standard normal CDF using Abramowitz–Stegun approximation
-function phi(z) {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z))
-  const d = 0.3989423 * Math.exp(-z*z / 2)
-  const ans = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))))
-  return z >= 0 ? 1 - ans : ans
-}
-
-// Calculate z-score
-z = (targetDiscount - benchDiscount) / sigma
-
-// Apply CDF
-phiZ = phi(z)
-
-// Shrink toward 0.5 (calibration factor from backtest)
-CALIB = 0.875  // accounts for 70%/80% coverage gap
-winProb = phiZ * CALIB + 0.5 * (1 - CALIB)
-
-// Clamp to realistic range [3%, 97%]
-winProbPct = max(3, min(97, round(winProb * 100)))
+positioningPct = round(
+  sorted(benchmark.discounts).filter(d => d <= targetDiscount).length
+  / benchmark.discounts.length
+  × 100
+)
 ```
 
-**Why CDF, not Gaussian bell?**
-- Gaussian bell: exp(-0.5 * z²) — *decreases* when z increases (wrong!)
-- CDF: Φ(z) — *increases* monotonically (correct)
-- Bidding more aggressively should always raise your win chance
+**Reading:** positioningPct = 60 means your bid discounts more than 60% of past winners. That is
+**not** P(win) = 60%. It is a positioning statement.
 
-**Calibration factor (0.875)?**
-- Backtest showed model's 80th percentile prediction only covered 70% of real outcomes
-- Model was slightly optimistic
-- Shrink: `p = Φ(z) × 0.875 + 0.5 × 0.125` brings it into line
+**Positioning labels:**
 
-### Step 6: Calculate Actual Margin
-**Purpose:** Show the margin you'll actually achieve if you win.
+| Range | Label | Thai |
+|-------|-------|------|
+| < 25th pct | soft | ราคาสูง (อ่อน) |
+| 25–50th pct | conservative | ต่ำกว่าตลาด |
+| 50–75th pct | competitive | ระดับตลาด |
+| 75–90th pct | aggressive | เชิงรุก |
+| > 90th pct | very_aggressive | เชิงรุกมาก |
+
+### Step 6: Actual Margin
 
 ```javascript
-actualMargin = (bid - costM) / bid × 100
+actualMargin = cannotMeetMargin ? 0 : (bid - costM) / bid × 100
 ```
 
 **Example:** bid=฿9.1M, cost=฿8.2M → margin = 9.89% ≈ 10%
 
-### Step 7: Flags
+---
+
+## Part 2: Competitiveness Band
+
+The band shows the spread of discounts among comparable past winners.
+Use it to understand market dispersion, not to predict your outcome.
 
 ```javascript
-marginFloorBreached = (marginMaxDiscount > 0) && (targetDiscount > marginMaxDiscount)
-// True if you're forced to bid above your safe margin floor
-
-cannotMeetMargin = marginMaxDiscount <= 0
-// True if costs are so high there's no profitable bid possible
+band = {
+  p10:    benchmark.p10,    // bottom decile — few winners discount this little
+  p25:    benchmark.p25,    // first quartile
+  median: benchmark.median, // typical winner
+  p75:    benchmark.p75,    // third quartile
+  p90:    benchmark.p90,    // top decile — winners who discounted most aggressively
+}
 ```
+
+**Rule of thumb:** Target discounts in the p25–p75 range to balance competitiveness and margin.
+Below p25: you are above most past winners. Above p75: thinner margins, check the floor.
 
 ---
 
-## Part 2: Forward-Walk Backtest
+## Part 3: Benchmark Table Computation
 
-**Purpose:** Validate that the model's baseline performance is as expected (MAE ≈ 8-9pp, R² ≈ 0.03).
-
-### Setup
-
-```javascript
-// Load all awarded e-bidding contracts
-contracts = loadContracts()
-  .filter(c => c.procurementMethodGroup === 'e-bidding')
-  .filter(c => c.discountFromReference > 0 && c.discountFromReference < 100)
-
-// Sort by announcement date (oldest first)
-contracts.sort((a, b) => new Date(a.announceDate) - new Date(b.announceDate))
-
-numFolds = 5
-foldSize = floor(contracts.length / numFolds)
-```
-
-### Loop: For Each Fold
-
-```javascript
-for (fold = 0; fold < numFolds; fold++) {
-  
-  // Split: train on all prior, test on next block
-  trainStart = 0
-  trainEnd = fold * foldSize
-  testStart = fold * foldSize
-  testEnd = (fold + 1) * foldSize  // or end of data if last fold
-  
-  trainData = contracts[trainStart : trainEnd]
-  testData = contracts[testStart : testEnd]
-  
-  // Build benchmark table from training data ONLY (no leakage)
-  trainBenchmark = computeQuantiles(trainData.map(c => c.discountFromReference))
-  // trainBenchmark.median, trainBenchmark.sigma, etc.
-  
-  // Test on held-out fold
-  predictions = []
-  for (contract in testData) {
-    // Use ONLY training data to predict
-    predicted_discount = trainBenchmark.median
-    actual_discount = contract.discountFromReference
-    
-    error = abs(actual_discount - predicted_discount)
-    predictions.push({actual: actual_discount, predicted: predicted_discount, error: error})
-  }
-  
-  // Metrics for this fold
-  mae = mean(predictions.map(p => p.error))
-  rmse = sqrt(mean(predictions.map(p => p.error²)))
-  
-  // R² = 1 - (SS_residual / SS_total)
-  testMean = mean(testData.map(c => c.discountFromReference))
-  ssTotal = sum((c.discountFromReference - testMean)²)
-  ssResidual = sum((prediction.predicted - prediction.actual)²)
-  r2 = 1 - (ssResidual / ssTotal)
-  
-  results[fold] = {mae, rmse, r2, trainSize: len(trainData), testSize: len(testData)}
-}
-```
-
-### Interpretation
-
-```
-Expected results (baseline using ONLY global median):
-- MAE ≈ 8-9 discount points
-- RMSE ≈ 12-13 discount points
-- R² ≈ 0.03 (correct, not a bug)
-
-Why R² is low:
-- Bidder count explains ~97% of outcome variance
-- Model can only use: category, agency, reference price, cost
-- These explain ~3% → R² ≈ 0.03
-- High residual variance is STRUCTURAL, not model error
-```
-
-**Key insight:** If R² > 0.3, you have **data leakage** (using future information).
-
----
-
-## Part 3: Backward-Test (Per-Tender Validation)
-
-**Purpose:** For each awarded contract, show what model would have recommended vs what actually happened.
-
-### Data Structure
-
-```javascript
-tender {
-  id: string
-  projectName: string
-  agency: string
-  projectType: string
-  referencePrice: number
-  agreedPrice: number  // actual winning bid
-  actualDiscount: number  // (refPrice - agreedPrice) / refPrice * 100
-  competitors: number  // actual bidders (post-hoc only, not used in model)
-}
-```
-
-### For Each Tender
-
-```javascript
-// Assume 80% cost ratio (typical for construction e-bidding)
-estimatedCost = tender.referencePrice * 0.8
-
-// What would the model have recommended?
-recommendation = recommendBid(
-  refPrice = tender.referencePrice,
-  cost = estimatedCost,
-  targetMargin = 10%
-)
-
-// Would it have won?
-wouldHaveWon = (recommendation.bid <= tender.agreedPrice) ? 1 : 0
-
-// If won, what margin would we achieve?
-if (wouldHaveWon) {
-  profit = tender.agreedPrice - estimatedCost
-  profitMargin = (profit / tender.agreedPrice) * 100
-} else {
-  profitMargin = null
-}
-
-// Prediction error
-error = recommendation.predictedDiscount - tender.actualDiscount
-```
-
-### Aggregation
-
-```javascript
-results = {
-  total_tenders: count,
-  average_error: mean(abs(errors)),  // ≈ 7-8pp (model conservative)
-  would_have_won_rate: sum(wouldHaveWon) / total,  // ≈ 13% (realistic)
-  profitable_wins_rate: sum(profitableWins) / sum(wouldHaveWon),  // ≈ 100%
-  win_prob_accuracy: fraction_of_correct_predictions  // ≈ 86.7% (validates CDF)
-}
-```
-
-### Backward Test v2: With Competitor Count
-
-**Post-hoc validation** (NOT used in live bidding):
-
-```javascript
-// After tender is closed, we know actual bidders
-actualCompetitors = tender.bidders.length
-
-// Recalculate what win prob SHOULD have been
-z = (tender.actualDiscount - benchmarkMedian) / benchmarkSigma
-actualWinProb = phi(z) * CALIB + 0.5 * (1 - CALIB)
-
-// Did we predict correctly?
-if (recommendation.predictedWinProb > 50 && wouldHaveWon) {
-  correctPrediction = true
-} else if (recommendation.predictedWinProb <= 50 && !wouldHaveWon) {
-  correctPrediction = true
-} else {
-  correctPrediction = false
-}
-
-// Accuracy = fraction of tenders where this is true
-// Expected: ≈ 86.7%
-```
-
-This validates:
-- CDF calibration is accurate
-- Win prob estimates match reality
-- Conservative approach protects margin
-
----
-
-## Part 4: Benchmark Table Computation
-
-**When:** On each API call (cached 1 hour) or during validation
-
-**Input:** List of awarded contracts
+**When:** API call on first request, then cached for 1 hour.
 
 ```javascript
 function buildBenchmarkTables(contracts) {
-  
-  // Filter e-bidding only
-  ebidding = contracts.filter(c => 
+  // Filter to e-bidding only with valid discounts
+  ebidding = contracts.filter(c =>
     c.procurementMethodGroup === 'e-bidding' &&
     c.discountFromReference > 0 &&
     c.discountFromReference < 100
   )
-  
-  agencyCategory = new Map()
-  categoryMap = new Map()
-  
-  // Group by (agency, category)
-  for (contract in ebidding) {
-    key = contract.agency + "|" + contract.projectType
-    
-    if (!agencyCategory.has(key)) {
-      agencyCategory.set(key, [])
-    }
-    agencyCategory.get(key).push(contract.discountFromReference)
-    
-    // Also group by category alone
-    if (!categoryMap.has(contract.projectType)) {
-      categoryMap.set(contract.projectType, [])
-    }
-    categoryMap.get(contract.projectType).push(contract.discountFromReference)
+
+  // Group raw discounts by agency×category and category
+  for (contract of ebidding) {
+    agCatMap[agency+"|"+projectType].push(contract.discountFromReference)
+    catMap[projectType].push(contract.discountFromReference)
   }
-  
-  // Compute quantiles for each bucket
-  for (key, discounts in agencyCategory) {
-    if (discounts.length >= 8) {  // minimum sample size
-      tables.agencyCategory[key] = computeQuantiles(discounts)
-      tables.agencyCategory[key].source = "agency×category"
+
+  // Build QuantileTables — include raw sorted discounts for empirical CDF
+  for ([key, vals] of agCatMap) {
+    if (vals.length >= MIN_N) {  // MIN_N = 8
+      agencyCategory[key] = computeQuantileTable(vals, "agency×category")
     }
   }
-  
-  for (category, discounts in categoryMap) {
-    tables.category[category] = computeQuantiles(discounts)
-    tables.category[category].source = "category"
+  for ([cat, vals] of catMap) {
+    category[cat] = computeQuantileTable(vals, "category")
   }
-  
-  // Global fallback
-  allDiscounts = ebidding.map(c => c.discountFromReference)
-  tables.global = computeQuantiles(allDiscounts)
-  tables.global.source = "global"
-  
-  return tables
+
+  global = computeQuantileTable(allDiscounts, "global")
+  return { agencyCategory, category, global }
 }
 
-function computeQuantiles(discounts) {
-  sorted = discounts.sort()
-  n = len(sorted)
-  
-  // Median
-  if (n % 2 === 0) {
-    median = (sorted[n/2 - 1] + sorted[n/2]) / 2
-  } else {
-    median = sorted[floor(n/2)]
-  }
-  
-  // Percentiles
-  q25 = sorted[floor(n * 0.25)]
-  q75 = sorted[floor(n * 0.75)]
-  
-  // Standard deviation
-  mean = sum(discounts) / n
-  variance = sum((x - mean)²) / n
-  sigma = sqrt(variance)
-  
+function computeQuantileTable(discounts, source) {
+  sorted = discounts.sort((a, b) => a - b)
+  n = sorted.length
+  mean = sum(sorted) / n
+  variance = sum((x - mean)² for x in sorted) / n
   return {
-    median: round(median, 1),
-    sigma: round(sigma, 1),
-    q25: round(q25, 1),
-    q75: round(q75, 1),
-    n: n,
-    source: "computed"
+    discounts: sorted,          // raw — for empirical CDF
+    p10:    sorted[floor(n * 0.10)],
+    p25:    sorted[floor(n * 0.25)],
+    median: sorted[floor(n * 0.50)],
+    p75:    sorted[floor(n * 0.75)],
+    p90:    sorted[floor(n * 0.90)],
+    sigma:  sqrt(variance),
+    n,
+    source
   }
-}
-```
-
-### Fallback Lookup
-
-```javascript
-function getBenchmark(agency, projectType, tables) {
-  
-  // Try agency × category (highest confidence)
-  key = agency + "|" + projectType
-  if (tables.agencyCategory.has(key) && tables.agencyCategory[key].n >= 8) {
-    return tables.agencyCategory[key]
-  }
-  
-  // Try category alone
-  if (tables.category.has(projectType)) {
-    return tables.category[projectType]
-  }
-  
-  // Fall back to global
-  return tables.global  // median=18.5%, sigma=12.0%
 }
 ```
 
 ---
 
-## Constants
+## Part 4: Forward-Walk Backtest
+
+**Purpose:** Validate baseline model performance (MAE, R²) without data leakage.
+
+### Setup
 
 ```javascript
-GLOBAL_MEDIAN = 18.5      // median discount across 29,750 e-bidding tenders
-GLOBAL_SIGMA = 12.0       // stdev of discounts
-CALIB = 0.875             // win prob calibration factor
-MIN_SAMPLE_SIZE = 8       // minimum n to use agency×category table
+contracts = ebidding.filter(valid).sortByAnnounceDate()
+numFolds = 5
+foldSize = floor(contracts.length / numFolds)
 ```
+
+### Loop: Expanding Window
+
+```javascript
+for (fold = 0; fold < numFolds; fold++) {
+  trainData = contracts[0 : fold * foldSize]          // all prior folds
+  testData  = contracts[fold * foldSize : (fold+1) * foldSize]
+
+  // Build benchmark from training data ONLY — no leakage
+  trainMedian = median(trainData.map(c => c.discountFromReference))
+
+  for (contract of testData) {
+    predicted = trainMedian
+    actual    = contract.discountFromReference
+    errors.push(abs(predicted - actual))
+  }
+
+  mae  = mean(errors)
+  rmse = sqrt(mean(errors²))
+  r2   = 1 - (ssResidual / ssTotal)
+}
+```
+
+### Expected Results
+
+```
+MAE ≈ 8.3pp   (correct baseline)
+RMSE ≈ 9.6pp
+R² ≈ 0.03     (correct — not a bug)
+```
+
+**Why R² ≈ 0.03:**
+Bidder count explains ~97% of outcome variance. At bid time, bidder count is unknowable.
+A median-only model correctly achieves ~3% R². If R² > 0.3, there is data leakage.
+
+---
+
+## Part 5: Backward Test (Per-Tender Validation)
+
+**Purpose:** For each awarded contract, compare model recommendation vs. actual outcome.
+Used for sanity checks, not for model tuning (would be circular — winners-only data).
+
+```javascript
+for (contract of testContracts) {
+  estimatedCost = contract.referencePrice * 0.8   // assumed 80% cost ratio
+  rec = recommendBid(contract.referencePrice, estimatedCost, targetMargin=10)
+
+  error = rec.recommendedDiscount - contract.discountFromReference
+  wouldHaveWon = rec.recommendedBid <= contract.agreedPrice
+
+  if (wouldHaveWon) {
+    profitMargin = (contract.agreedPrice - estimatedCost) / contract.agreedPrice * 100
+  }
+}
+```
+
+**Observed results:**
+- Average error: ~7.4pp (model is slightly conservative — recommends less discount than actual winners)
+- Would-have-won rate: ~13.3% (model bids conservatively, loses to more aggressive winners)
+- Profitable wins: ~100% (margin guard correctly filters unprofitable bids)
+
+**Note on "86.7% accuracy":** The previous version claimed "win probability accuracy = 86.7%".
+This was circular: comparing predicted win probability against winner-only outcomes
+(every row in the data won, by definition). The metric was measuring tautology, not accuracy.
+It has been removed.
 
 ---
 
@@ -429,11 +296,11 @@ MIN_SAMPLE_SIZE = 8       // minimum n to use agency×category table
 **Request:**
 ```json
 {
-  "refPriceM": 10,           // reference price in millions
-  "costM": 8.2,              // estimated cost in millions
-  "targetMarginPct": 10,     // desired margin (optional, default 10)
-  "agency": "Bangkok",       // optional
-  "projectType": "construction"  // optional
+  "refPriceM": 10,
+  "costM": 8.2,
+  "targetMarginPct": 10,
+  "agency": "optional agency name",
+  "projectType": "optional category"
 }
 ```
 
@@ -443,25 +310,51 @@ MIN_SAMPLE_SIZE = 8       // minimum n to use agency×category table
   "recommendedBid": 9.1,
   "recommendedDiscount": 8.9,
   "marketMedianDiscount": 18.5,
-  "predictedWinProb": 25,
   "expectedMargin": 10.0,
   "marginFloorBreached": false,
   "cannotMeetMargin": false,
-  "benchmarkSource": "global"
+  "positioningPct": 23,
+  "positioningLabel": "soft",
+  "positioningLabelTh": "ราคาสูง (อ่อน)",
+  "positioningLabelEn": "Soft — below most winners, safe margin",
+  "band": { "p10": 4.2, "p25": 9.1, "median": 18.5, "p75": 27.3, "p90": 34.1 },
+  "comparableN": 29750,
+  "scope": "global",
+  "fallbackUsed": true,
+  "benchmarkSource": "global",
+  "note": "Positioning percentile is not a win probability. It shows where this bid sits relative to historical winners, not P(this bid wins). True win probability requires knowing how many firms will bid — which is unknowable at bid time."
 }
 ```
 
+**Interpretation of positioningPct = 23:**
+Your bid is less aggressive than 77% of past winners. You will likely lose to more aggressive bidders.
+To improve positioning, increase discount — but check marginFloorBreached.
+
 ---
 
-## Validation Results
+## Constants
 
-| Metric | Forward-Walk | Backward v1 | Backward v2 |
-|--------|-------------|------------|-----------|
-| MAE (pp) | 8.3 | 8.2 | 7.4 |
-| RMSE (pp) | 9.6 | — | — |
-| R² | 0.03 ✓ | — | — |
-| Win Rate | — | 13.3% ✓ | 13.3% ✓ |
-| Profitable Wins | — | 100% ✓ | 100% ✓ |
-| Win Prob Accuracy | — | — | 86.7% ✓ |
+```javascript
+GLOBAL_MEDIAN = 18.5      // median discount across 29,750 e-bidding tenders FY2559–2568
+GLOBAL_SIGMA  = 12.0      // stdev of discounts (informational)
+MIN_N = 8                  // minimum bucket size before falling back to category/global
+```
 
-✓ All results validate expected baseline performance.
+**Removed:**
+- `CALIB = 0.875` — single-point shrink, no theoretical basis, removed
+- `phi()` — normal CDF, removed (data is not normally distributed; empirical CDF is sufficient)
+
+---
+
+## Validation Summary
+
+| Metric | Forward-Walk | Backward |
+|--------|-------------|----------|
+| MAE (pp) | 8.3 | 7.4 |
+| RMSE (pp) | 9.6 | — |
+| R² | 0.03 ✓ | — |
+| Would-have-won rate | — | 13.3% |
+| Profitable wins | — | ~100% |
+| "Win prob accuracy" | removed | removed |
+
+✓ R² ≈ 0.03 is correct and expected given winner-only data and unknowable bidder count.

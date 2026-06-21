@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { Sliders, TrendingUp, Shield, AlertTriangle } from "lucide-react";
+import { Sliders, TrendingUp, Shield, AlertTriangle, Info } from "lucide-react";
 import { t, type Lang } from "@/lib/landing-translations";
 import { recommendBid, generateWinCurve } from "@/lib/bidsight-core";
 
@@ -23,23 +23,30 @@ function computeSimulation(refPriceM: number, costPct: number, targetMarginPct: 
   const costM = refPriceM * (costPct / 100);
   const rec = recommendBid(refPriceM, costM, targetMarginPct);
 
-  return {
-    winProb: rec.predictedWinProb,
-    optimalBid: rec.recommendedBid,
-    costEstimate: Math.round(costM * 10) / 10,
-    profit: Math.round((rec.recommendedBid - costM) * 10) / 10,
-    actualMargin: rec.expectedMargin,
-    targetDiscount: rec.recommendedDiscount,
-    benchDiscount: rec.marketMedianDiscount,
-    marginMaxDiscount: (1 - (costPct / 100) / (1 - targetMarginPct / 100)) * 100,
-    isMarginConstrained: rec.marginFloorBreached || rec.cannotMeetMargin,
-    risk: rec.marginFloorBreached || rec.cannotMeetMargin
+  const pct = rec.positioningPct;
+  const risk: "low" | "medium" | "high" =
+    rec.cannotMeetMargin || rec.marginFloorBreached
       ? "high"
-      : rec.predictedWinProb > 45
+      : pct >= 50 && pct <= 85
       ? "low"
-      : rec.predictedWinProb > 25
-      ? "medium"
-      : "high",
+      : pct > 85 || pct < 25
+      ? "high"
+      : "medium";
+
+  return {
+    positioningPct:      pct,
+    positioningLabelTh:  rec.positioningLabelTh,
+    positioningLabelEn:  rec.positioningLabelEn,
+    band:                rec.band,
+    optimalBid:          rec.recommendedBid,
+    costEstimate:        Math.round(costM * 10) / 10,
+    profit:              Math.round((rec.recommendedBid - costM) * 10) / 10,
+    actualMargin:        rec.expectedMargin,
+    targetDiscount:      rec.recommendedDiscount,
+    benchDiscount:       rec.marketMedianDiscount,
+    marginMaxDiscount:   (1 - (costPct / 100) / (1 - targetMarginPct / 100)) * 100,
+    isMarginConstrained: rec.marginFloorBreached || rec.cannotMeetMargin,
+    risk,
   };
 }
 
@@ -135,7 +142,11 @@ const CustomTooltip = ({ active, payload, label, isTh }: any) => {
     return (
       <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-lg">
         <p className="text-xs text-slate-400 mb-1">{isTh ? `ราคาเสนอ ${label}` : `Bid at ${label} of reference`}</p>
-        <p className="text-sm font-bold text-blue-600">{payload[0]?.value}% {isTh ? "โอกาสชนะ" : "win chance"}</p>
+        <p className="text-sm font-bold text-blue-600">
+          {isTh
+            ? `เชิงรุกกว่า ${payload[0]?.value}% ของผู้ชนะในอดีต`
+            : `More aggressive than ${payload[0]?.value}% of past winners`}
+        </p>
       </div>
     );
   }
@@ -150,7 +161,11 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   const [costPct, setCostPct] = useState(82);
   const [targetMarginPct, setTargetMarginPct] = useState(5);
 
-  const { winProb, optimalBid, costEstimate, profit, actualMargin, risk, targetDiscount, benchDiscount, marginMaxDiscount, isMarginConstrained } = useMemo(
+  const {
+    positioningPct, positioningLabelTh, positioningLabelEn,
+    band, optimalBid, costEstimate, profit, actualMargin,
+    risk, targetDiscount, benchDiscount, marginMaxDiscount, isMarginConstrained,
+  } = useMemo(
     () => computeSimulation(refPrice, costPct, targetMarginPct),
     [refPrice, costPct, targetMarginPct]
   );
@@ -164,7 +179,15 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   } as const;
   const riskConfig = riskMap[risk as keyof typeof riskMap];
 
-  const winColor = winProb >= 45 ? "text-emerald-600" : winProb >= 25 ? "text-amber-600" : "text-red-600";
+  // Colour for positioning percentile: green at 50-75th (competitive), amber below 25 or above 85, red at extremes
+  const positionColor =
+    isMarginConstrained
+      ? "text-red-600"
+      : positioningPct >= 50 && positioningPct <= 85
+      ? "text-emerald-600"
+      : positioningPct > 85 || positioningPct < 25
+      ? "text-red-600"
+      : "text-amber-600";
 
   const RiskIcon = riskConfig.icon;
 
@@ -173,7 +196,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
       Math.abs(d.disc - disc) < Math.abs(best.disc - disc) ? d : best
     ).bid;
   const optimalLabel = snapLabel(targetDiscount);
-  const marginLabel = snapLabel(marginMaxDiscount);
+  const marginLabel  = snapLabel(marginMaxDiscount);
 
   return (
     <section id="simulator" className="py-24 lg:py-32 bg-slate-50">
@@ -217,7 +240,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
               isTh={isTh}
             />
             <SliderField
-              label={isTh ? `ต้นทุนของคุณ (% ราคากลาง) = ฿${(refPrice * costPct / 100).toFixed(1)}M` : `Your estimated costs (% of budget) = ฿${(refPrice * costPct / 100).toFixed(1)}M`}
+              label={isTh ? `ต้นทุนของคุณ (% ราคากลาง) = ฿${(refPrice * costPct / 100).toFixed(1)}M` : `Your estimated costs (% of ref. price) = ฿${(refPrice * costPct / 100).toFixed(1)}M`}
               value={costPct}
               min={50}
               max={100}
@@ -242,22 +265,28 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
             {/* Output metrics */}
             <div className="pt-2 border-t border-slate-100 space-y-2.5">
 
-              {/* Row 1 — Win Probability */}
+              {/* Row 1 — Positioning Percentile */}
               <div className="bg-slate-50 rounded-xl p-3">
-                <p className={`text-[11px] text-slate-500 mb-1 ${isTh ? "lang-th" : ""}`}>{tx.winProbability}</p>
+                <p className={`text-[11px] text-slate-500 mb-1 ${isTh ? "lang-th" : ""}`}>
+                  {isTh ? "ตำแหน่งในตลาด" : "Market Positioning"}
+                </p>
                 <div className="flex items-end gap-2">
-                  <span className={`text-3xl font-black ${winColor}`}>{winProb}%</span>
+                  <span className={`text-3xl font-black ${positionColor}`}>{positioningPct}th</span>
                   <div className="mb-1 flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        winProb >= 45 ? "bg-emerald-500" : winProb >= 25 ? "bg-amber-500" : "bg-red-500"
+                        positioningPct >= 50 && positioningPct <= 85
+                          ? "bg-emerald-500"
+                          : positioningPct > 85 || positioningPct < 25
+                          ? "bg-red-500"
+                          : "bg-amber-500"
                       }`}
-                      style={{ width: `${winProb}%` }}
+                      style={{ width: `${positioningPct}%` }}
                     />
                   </div>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-0.5">
-                  {isTh ? "ตามข้อมูลตลาด" : "based on market data"}
+                <p className={`text-[10px] font-medium mt-0.5 ${positionColor} ${isTh ? "lang-th" : ""}`}>
+                  {isTh ? positioningLabelTh : positioningLabelEn}
                 </p>
               </div>
 
@@ -285,20 +314,22 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                 </div>
               </div>
 
-              {/* Row 3 — Max Discount + Risk Level */}
+              {/* Row 3 — Band + Risk */}
               <div className="grid grid-cols-2 gap-2.5">
-                <div className={`rounded-xl p-3 border ${isMarginConstrained ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"}`}>
-                  <p className={`text-[11px] text-slate-500 mb-1 ${isTh ? "lang-th" : ""}`}>
-                    {isTh ? `ส่วนลดสูงสุด (${targetMarginPct}% กำไร)` : `Max discount (${targetMarginPct}% margin)`}
+                <div className="rounded-xl p-3 border bg-slate-50 border-transparent">
+                  <p className={`text-[11px] text-slate-500 mb-1.5 ${isTh ? "lang-th" : ""}`}>
+                    {isTh ? "แถบส่วนลดตลาด" : "Market discount band"}
                   </p>
-                  <p className={`text-base font-bold ${isMarginConstrained ? "text-red-600" : "text-emerald-600"}`}>
-                    −{marginMaxDiscount.toFixed(1)}%
-                  </p>
-                  <p className={`text-[10px] mt-0.5 ${isMarginConstrained ? "text-red-400" : "text-emerald-500"}`}>
-                    {isMarginConstrained
-                      ? (isTh ? `ตลาดต้องการ −${benchDiscount}%` : `Market needs −${benchDiscount}%`)
-                      : (isTh ? `ตลาด −${benchDiscount}% ✓` : `Market −${benchDiscount}% ✓`)}
-                  </p>
+                  <div className="flex justify-between text-[9px] text-slate-400 mb-0.5">
+                    <span>P10</span><span>P25</span><span>P50</span><span>P75</span><span>P90</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] font-semibold text-slate-700">
+                    <span>{band.p10}%</span>
+                    <span>{band.p25}%</span>
+                    <span className="text-blue-600">{band.median}%</span>
+                    <span>{band.p75}%</span>
+                    <span>{band.p90}%</span>
+                  </div>
                 </div>
                 <div className={`${riskConfig.bg} border rounded-xl p-3`}>
                   <div className="flex items-center gap-1.5 mb-1">
@@ -306,8 +337,8 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     <p className={`text-[11px] text-slate-500 ${isTh ? "lang-th" : ""}`}>{tx.riskLevel}</p>
                   </div>
                   <p className={`text-base font-semibold ${riskConfig.color} ${isTh ? "lang-th" : ""}`}>{riskConfig.label}</p>
-                  <p className={`text-[10px] mt-0.5 ${isMarginConstrained ? "text-red-400" : "text-slate-400"}`}>
-                    {isTh ? `${winProb}% โอกาสชนะ` : `${winProb}% win chance`}
+                  <p className={`text-[10px] mt-0.5 text-slate-400`}>
+                    {isTh ? `เปอร์เซ็นไทล์ที่ ${positioningPct}` : `${positioningPct}th percentile`}
                   </p>
                 </div>
               </div>
@@ -318,15 +349,21 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
           {/* Chart panel */}
           <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
             <div className="mb-4">
-              <h3 className={`text-base font-semibold text-black mb-1 ${isTh ? "lang-th" : ""}`}>{tx.chartTitle}</h3>
-              <p className={`text-xs text-slate-400 ${isTh ? "lang-th text-[0.75rem]" : ""}`}>{tx.chartDesc}</p>
+              <h3 className={`text-base font-semibold text-black mb-1 ${isTh ? "lang-th" : ""}`}>
+                {isTh ? "ตำแหน่งราคาเทียบกับผู้ชนะในอดีต" : "Bid Positioning vs. Historical Winners"}
+              </h3>
+              <p className={`text-xs text-slate-400 ${isTh ? "lang-th text-[0.75rem]" : ""}`}>
+                {isTh
+                  ? "แกน Y = % ของผู้ชนะในอดีตที่ให้ส่วนลดน้อยกว่าราคาเสนอของคุณ (ไม่ใช่ความน่าจะเป็นในการชนะ)"
+                  : "Y axis = % of past winners who discounted less than you — not a win probability"}
+              </p>
             </div>
 
             <div className="h-64 lg:h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={curveData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
                   <defs>
-                    <linearGradient id="winGradient" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="posGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%"  stopColor="#3b82f6" stopOpacity={0.15} />
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
@@ -337,15 +374,21 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     tick={{ fill: "#94a3b8", fontSize: 11 }}
                     axisLine={{ stroke: "#e2e8f0" }}
                     tickLine={false}
-                    label={{ value: isTh ? "ราคาเสนอ (% ราคาอ้างอิง)" : "Bid price (% of reference)", position: "insideBottom", offset: -2, fill: "#94a3b8", fontSize: 11 }}
+                    label={{
+                      value: isTh ? "ราคาเสนอ (% ราคาอ้างอิง)" : "Bid price (% of reference)",
+                      position: "insideBottom", offset: -2, fill: "#94a3b8", fontSize: 11,
+                    }}
                   />
                   <YAxis
                     domain={[0, 100]}
                     tick={{ fill: "#94a3b8", fontSize: 11 }}
                     axisLine={{ stroke: "#e2e8f0" }}
                     tickLine={false}
-                    tickFormatter={(v) => `${v}%`}
-                    label={{ value: isTh ? "โอกาสชนะ" : "Win probability", angle: -90, position: "insideLeft", offset: 14, fill: "#94a3b8", fontSize: 11 }}
+                    tickFormatter={(v: any) => `${v}%`}
+                    label={{
+                      value: isTh ? "เปอร์เซ็นไทล์" : "Positioning %ile",
+                      angle: -90, position: "insideLeft", offset: 14, fill: "#94a3b8", fontSize: 11,
+                    }}
                   />
                   <Tooltip content={<CustomTooltip isTh={isTh} />} />
                   <ReferenceLine
@@ -353,20 +396,26 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     stroke={isMarginConstrained ? "#ef4444" : "#8b5cf6"}
                     strokeDasharray="6 3"
                     strokeWidth={1.5}
-                    label={{ value: isTh ? `จุดคุ้มทุน −${marginMaxDiscount.toFixed(1)}%` : `Break-even limit −${marginMaxDiscount.toFixed(1)}%`, fill: isMarginConstrained ? "#ef4444" : "#8b5cf6", fontSize: 10, dy: -6 }}
+                    label={{
+                      value: isTh ? `จุดคุ้มทุน −${marginMaxDiscount.toFixed(1)}%` : `Break-even −${marginMaxDiscount.toFixed(1)}%`,
+                      fill: isMarginConstrained ? "#ef4444" : "#8b5cf6", fontSize: 10, dy: -6,
+                    }}
                   />
                   <ReferenceLine
                     x={optimalLabel}
                     stroke="#10b981"
                     strokeWidth={2.5}
-                    label={{ value: isTh ? "ราคาที่เหมาะสม" : "Optimal bid", fill: "#10b981", fontSize: 11, dy: 12 }}
+                    label={{
+                      value: isTh ? "ราคาที่เหมาะสม" : "Optimal bid",
+                      fill: "#10b981", fontSize: 11, dy: 12,
+                    }}
                   />
                   <Area
                     type="monotone"
-                    dataKey="winProb"
+                    dataKey="positionPct"
                     stroke="#3b82f6"
                     strokeWidth={2.5}
-                    fill="url(#winGradient)"
+                    fill="url(#posGradient)"
                     dot={false}
                     activeDot={{ r: 5, fill: "#3b82f6", strokeWidth: 0 }}
                   />
@@ -377,7 +426,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
             <div className="mt-4 flex items-center gap-6 text-xs text-slate-400 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-0.5 bg-blue-500" />
-                <span className={isTh ? "lang-th" : ""}>{isTh ? "โอกาสชนะ" : "Win Probability"}</span>
+                <span className={isTh ? "lang-th" : ""}>{isTh ? "เปอร์เซ็นไทล์ตำแหน่ง" : "Positioning %ile"}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-0.5 bg-emerald-500" />
@@ -396,15 +445,12 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                   <span className="font-semibold text-red-700">{isTh ? "ถึงจุดคุ้มทุนแล้ว: " : "Break-even limit reached: "}</span>
                   {isTh ? (
                     <>เป้ากำไร {targetMarginPct}% จำกัดส่วนลดสูงสุดที่{" "}
-                    <span className="font-semibold text-red-600">−{marginMaxDiscount.toFixed(1)}%</span> แต่ตลาดนี้ต้องการ{" "}
-                    <span className="font-semibold text-black">−{benchDiscount}%</span> — คุณเสนอราคาสูงกว่าตลาด โอกาสชนะเหลือ{" "}
-                    <span className={`font-semibold ${winColor}`}>{winProb}%</span> ลดเป้ากำไรหรือถอนตัว</>
+                    <span className="font-semibold text-red-600">−{marginMaxDiscount.toFixed(1)}%</span> แต่ตลาดนี้มีส่วนลดกลางที่{" "}
+                    <span className="font-semibold text-black">−{benchDiscount}%</span> — ราคาของคุณสูงกว่าผู้ชนะส่วนใหญ่ ลดเป้ากำไรหรือถอนตัว</>
                   ) : (
                     <>Your {targetMarginPct}% margin target caps your discount at{" "}
-                    <span className="font-semibold text-red-600">−{marginMaxDiscount.toFixed(1)}%</span>, but market needs{" "}
-                    <span className="font-semibold text-black">−{benchDiscount}%</span>. You&apos;re bidding above market —
-                    win probability{" "}
-                    <span className={`font-semibold ${winColor}`}>{winProb}%</span>.
+                    <span className="font-semibold text-red-600">−{marginMaxDiscount.toFixed(1)}%</span>, but market median is{" "}
+                    <span className="font-semibold text-black">−{benchDiscount}%</span>. You&apos;re bidding above most past winners.
                     Lower your margin or walk away.</>
                   )}
                 </p>
@@ -415,24 +461,36 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                 <p className={`text-xs text-slate-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
                   <span className="font-semibold text-blue-600">{isTh ? "ข้อมูลตลาด: " : "Market Data: "}</span>
                   {isTh ? (
-                    <>ตลาดมีส่วนลดอ้างอิง{" "}
+                    <>ส่วนลดกลางตลาด{" "}
                     <span className="font-semibold text-amber-600">−{benchDiscount}%</span> จาก 29,750 โครงการ e-bidding
                     กำไร {targetMarginPct}% รองรับได้ถึง −{marginMaxDiscount.toFixed(1)}% ✓ — เสนอ ฿{optimalBid.toFixed(1)}M{" "}
-                    <span className={`font-semibold ${winColor}`}>โอกาสชนะ {winProb}%</span>{" "}
+                    (เปอร์เซ็นไทล์ที่ <span className={`font-semibold ${positionColor}`}>{positioningPct}</span>
+                    {" "}· <span className={`font-semibold ${positionColor} lang-th`}>{positioningLabelTh}</span>)
                     กำไร <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}%</span></>
                   ) : (
-                    <>Market benchmarks{" "}
+                    <>Market median{" "}
                     <span className="font-semibold text-amber-600">−{benchDiscount}%</span> across 29,750 e-bidding tenders.
-                    Your {targetMarginPct}% margin allows up to −{marginMaxDiscount.toFixed(1)}% ✓ — bid ฿{optimalBid.toFixed(1)}M,{" "}
-                    <span className={`font-semibold ${winColor}`}>{winProb}% win probability</span>,{" "}
+                    Your {targetMarginPct}% margin allows up to −{marginMaxDiscount.toFixed(1)}% ✓ — bid ฿{optimalBid.toFixed(1)}M{" "}
+                    (<span className={`font-semibold ${positionColor}`}>{positioningPct}th %ile</span>
+                    {" "}· <span className={`font-semibold ${positionColor}`}>{positioningLabelEn.split(" — ")[0]}</span>),{" "}
                     <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}% estimated margin</span>.</>
                   )}
                 </p>
               </div>
             )}
-            <p className="mt-2 text-[10px] text-slate-400 text-right">
+
+            <div className="mt-2 flex items-start gap-1.5 text-[10px] text-slate-400">
+              <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <span className={isTh ? "lang-th" : ""}>
+                {isTh
+                  ? "เปอร์เซ็นไทล์ตำแหน่ง ≠ ความน่าจะเป็นในการชนะ ข้อมูลมีเฉพาะผู้ชนะ — ไม่มีข้อมูลผู้แพ้ ความน่าจะเป็นที่แท้จริงต้องใช้จำนวนผู้ประมูลซึ่งไม่สามารถรู้ล่วงหน้า"
+                  : "Positioning %ile ≠ win probability. Data contains only winners, not losers. True P(win) requires bidder count — unknowable at bid time."}
+              </span>
+            </div>
+
+            <p className="mt-1 text-[10px] text-slate-400 text-right">
               {isTh
-                ? "อ้างอิง: 29,750 โครงการ e-bidding · ข้อมูลอ้างอิง (reference price) · ปีงบ 2561–2568"
+                ? "อ้างอิง: 29,750 โครงการ e-bidding · ส่วนลดจากราคากลาง · ปีงบ 2561–2568"
                 : "Benchmarks: 29,750 e-bidding tenders · reference price discounts · FY2561–2568"}
             </p>
           </div>

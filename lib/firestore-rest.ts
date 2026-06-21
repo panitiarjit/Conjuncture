@@ -31,7 +31,7 @@ function parseFields(fields: Record<string, FirestoreValue>): Record<string, unk
   return out;
 }
 
-function b64url(buf: ArrayBuffer): string {
+function b64url(buf: ArrayBuffer | Uint8Array): string {
   const bytes = new Uint8Array(buf);
   let s = '';
   for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);

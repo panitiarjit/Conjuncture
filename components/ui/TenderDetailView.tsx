@@ -71,7 +71,7 @@ export default function TenderDetailView({ tender, tenderStatus, awardedContract
           <div className="flex-1 min-w-0">
             {/* Badges row */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <StatusPill status={tenderStatus} />
+              <StatusPill status={tenderStatus as import('@/lib/status').StatusValue} />
               <span className="badge">{t(catKey)}</span>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-[#EFF6FF] border border-[#BFDBFE] rounded text-[#1D4ED8]">
                 {t(typeKey)}

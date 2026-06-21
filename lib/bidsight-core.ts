@@ -1,216 +1,293 @@
 /**
- * BidSight core bid-recommendation logic (corrected model).
- * CDF-based win probability, quantile benchmarks, no bidder-count dependence.
- * Out-of-time R² ≈ 0.03 (correct, not a bug: bidder count unknowable pre-bid).
+ * BidSight core bid-recommendation logic (corrected model v2).
+ *
+ * Key corrections from v1:
+ * 1. No "win probability" — data is winner-only (every row won), so P(win)
+ *    cannot be estimated. Replaced with positioning percentile.
+ * 2. No normal distribution assumption. Discounts are right-skewed and
+ *    zero-inflated — the empirical CDF speaks for itself.
+ * 3. Calibration retained but re-derived. The old 0.875 was a single-point
+ *    shrink with no theoretical basis. Replaced with Bayesian Beta prior
+ *    (additive smoothing): add CALIB_ALPHA pseudo-observations on each side,
+ *    shrinking extreme percentile claims toward 50 with small n. Effect
+ *    vanishes naturally as n grows — no magic constant.
+ * 4. Output is a competitiveness band (p10–p90) + percentile + label.
+ *
+ * Out-of-time R² ≈ 0.03 (correct: bidder count unknowable pre-bid).
  */
 
 import type { AwardedContract } from './types';
 
-// Empirical benchmarks from 29,750 e-bidding tenders (FY2559–2568)
-export const GLOBAL_MEDIAN = 18.5;  // median discount
-export const GLOBAL_SIGMA = 12.0;   // stdev
-export const CALIB = 0.875;         // calibration shrink (0.70/0.80 coverage gap)
+// Global fallback constants (from 29,750 e-bidding tenders FY2559–2568)
+export const GLOBAL_MEDIAN  = 18.5;
+export const GLOBAL_SIGMA   = 12.0;
+export const MIN_N          = 8;    // minimum bucket size before falling back
+// Beta prior pseudo-count per side. CALIB_ALPHA=2 adds 4 pseudo-observations
+// (2 below, 2 above), strongly shrinking tiny buckets toward 50th pct while
+// having negligible effect at n≥100. Equivalent to a Beta(2,2) prior.
+export const CALIB_ALPHA    = 2;
+
+// ─── Quantile Table ─────────────────────────────────────────────────────────
 
 export interface QuantileTable {
+  discounts: number[];  // sorted raw values — for empirical CDF lookups
+  p10: number;
+  p25: number;
   median: number;
+  p75: number;
+  p90: number;
   sigma: number;
-  q25: number;
-  q75: number;
   n: number;
   source: string;
 }
 
-// Standard normal CDF using Abramowitz–Stegun approximation
-export function phi(z: number): number {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z));
-  const d = 0.3989423 * Math.exp((-z * z) / 2);
-  const ans = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
-  return z >= 0 ? 1 - ans : ans;
+function percentile(sorted: number[], p: number): number {
+  const h = (sorted.length - 1) * p / 100;
+  const lo = Math.floor(h);
+  const hi = Math.min(lo + 1, sorted.length - 1);
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
 }
 
-export interface BidRecommendation {
-  recommendedBid: number;
-  recommendedDiscount: number;
-  marketMedianDiscount: number;
-  predictedWinProb: number;
-  expectedMargin: number;
-  marginFloorBreached: boolean;
-  cannotMeetMargin: boolean;
-  benchmarkSource: string;
-}
-
-/**
- * Core calculation: given profile, cost, reference price, margin target,
- * recommend a bid and discount.
- * Optionally pass a benchmark table for category-specific predictions.
- */
-export function recommendBid(
-  refPrice: number,
-  costM: number,
-  targetMarginPct: number = 10,
-  targetWinProbPct: number = 60,
-  benchmark?: QuantileTable,
-): BidRecommendation {
-  const costRatio = costM / refPrice;
-
-  // Margin guard: largest discount that preserves target margin
-  const marginMaxDiscount = (1 - costRatio / (1 - targetMarginPct / 100)) * 100;
-
-  const benchDiscount = benchmark?.median ?? GLOBAL_MEDIAN;
-  const sigma = Math.max(benchmark?.sigma ?? GLOBAL_SIGMA, 1);
-  const source = benchmark?.source ?? 'global';
-
-  // Target discount: market benchmark, capped by margin floor
-  const targetDiscount = Math.min(benchDiscount, marginMaxDiscount);
-
-  // Recommended bid anchored on reference price
-  const bid = refPrice * (1 - targetDiscount / 100);
-
-  // Win probability: CDF-based, monotonic, calibrated
-  const z = (targetDiscount - benchDiscount) / sigma;
-  const phiZ = phi(z);
-  const winProb = phiZ * CALIB + 0.5 * (1 - CALIB);
-  const winProbPct = Math.max(3, Math.min(97, Math.round(winProb * 100)));
-
-  // Actual margin on revenue
-  const actualMargin = (bid - costM) / bid * 100;
-
-  const marginFloorBreached = marginMaxDiscount > 0 && targetDiscount > marginMaxDiscount;
-  const cannotMeetMargin = marginMaxDiscount <= 0;
+function computeQuantileTable(discounts: number[], source: string): QuantileTable {
+  const sorted = [...discounts].sort((a, b) => a - b);
+  const n = sorted.length;
+  const mean = sorted.reduce((a, b) => a + b, 0) / n;
+  const variance = sorted.reduce((s, x) => s + (x - mean) ** 2, 0) / n;
 
   return {
-    recommendedBid: Math.round(bid * 10) / 10,
-    recommendedDiscount: Math.round(targetDiscount * 10) / 10,
-    marketMedianDiscount: benchDiscount,
-    predictedWinProb: winProbPct,
-    expectedMargin: Math.round(actualMargin * 10) / 10,
-    marginFloorBreached,
-    cannotMeetMargin,
-    benchmarkSource: source,
+    discounts: sorted,
+    p10:    Math.round(percentile(sorted, 10)  * 10) / 10,
+    p25:    Math.round(percentile(sorted, 25)  * 10) / 10,
+    median: Math.round(percentile(sorted, 50)  * 10) / 10,
+    p75:    Math.round(percentile(sorted, 75)  * 10) / 10,
+    p90:    Math.round(percentile(sorted, 90)  * 10) / 10,
+    sigma:  Math.round(Math.sqrt(variance)     * 10) / 10,
+    n,
+    source,
   };
 }
 
-/**
- * Generate the win-probability curve for visualization.
- * Maps discount % → win probability % along the CDF.
- */
-export function generateWinCurve(): Array<{ bid: string; disc: number; winProb: number }> {
-  const benchDiscount = GLOBAL_MEDIAN;
-  const sigma = Math.max(GLOBAL_SIGMA, 1);
-  const maxDisc = Math.min(55, benchDiscount * 2.5 + sigma);
+// ─── Benchmark Tables ────────────────────────────────────────────────────────
 
-  return Array.from({ length: 17 }, (_, i) => {
-    const discPct = (maxDisc * i) / 16;
-    const z = (discPct - benchDiscount) / sigma;
-    const phiZ = phi(z);
-    const probRaw = phiZ * CALIB + 0.5 * (1 - CALIB);
-    const probPct = Math.max(3, Math.min(97, Math.round(probRaw * 100)));
-
-    return {
-      bid: `${Math.round(100 - discPct)}%`,
-      disc: Math.round(discPct * 10) / 10,
-      winProb: probPct,
-    };
-  });
-}
-
-/**
- * Compute quantile table from a list of discount values.
- */
-function computeQuantiles(discounts: number[]): QuantileTable {
-  if (discounts.length === 0) {
-    return { median: GLOBAL_MEDIAN, sigma: GLOBAL_SIGMA, q25: 0, q75: 0, n: 0, source: 'empty' };
-  }
-
-  const sorted = [...discounts].sort((a, b) => a - b);
-  const len = sorted.length;
-
-  const median = len % 2 === 0
-    ? (sorted[len / 2 - 1] + sorted[len / 2]) / 2
-    : sorted[Math.floor(len / 2)];
-
-  const q25Idx = Math.floor(len * 0.25);
-  const q75Idx = Math.floor(len * 0.75);
-  const q25 = sorted[q25Idx];
-  const q75 = sorted[q75Idx];
-
-  // Stdev
-  const mean = discounts.reduce((a, b) => a + b, 0) / len;
-  const variance = discounts.reduce((sum, x) => sum + (x - mean) ** 2, 0) / len;
-  const sigma = Math.sqrt(variance);
-
-  return { median: Math.round(median * 10) / 10, sigma: Math.round(sigma * 10) / 10, q25: Math.round(q25 * 10) / 10, q75: Math.round(q75 * 10) / 10, n: len, source: 'computed' };
-}
-
-/**
- * Build benchmark tables from awarded contracts.
- * Returns { agency_category, category, global }
- */
 export function buildBenchmarkTables(contracts: AwardedContract[]): {
   agencyCategory: Map<string, QuantileTable>;
-  category: Map<string, QuantileTable>;
-  global: QuantileTable;
+  category:       Map<string, QuantileTable>;
+  global:         QuantileTable;
 } {
-  // Filter: only e-bidding (procurementMethodGroup), only those with valid discount
   const ebidding = contracts.filter(
     (c) =>
       c.procurementMethodGroup === 'e-bidding' &&
       c.discountFromReference != null &&
       c.discountFromReference > 0 &&
-      c.discountFromReference < 100
+      c.discountFromReference < 100,
   );
 
-  const agencyCategory = new Map<string, number[]>();
-  const category = new Map<string, number[]>();
+  const agCatMap = new Map<string, number[]>();
+  const catMap   = new Map<string, number[]>();
 
-  // Group by agency×category and category
-  for (const contract of ebidding) {
-    const key = `${contract.agency}|${contract.projectType}`;
-    if (!agencyCategory.has(key)) agencyCategory.set(key, []);
-    agencyCategory.get(key)!.push(contract.discountFromReference!);
+  for (const c of ebidding) {
+    const key = `${c.agency}|${c.projectType}`;
+    if (!agCatMap.has(key)) agCatMap.set(key, []);
+    agCatMap.get(key)!.push(c.discountFromReference!);
 
-    if (!category.has(contract.projectType)) category.set(contract.projectType, []);
-    category.get(contract.projectType)!.push(contract.discountFromReference!);
+    if (!catMap.has(c.projectType)) catMap.set(c.projectType, []);
+    catMap.get(c.projectType)!.push(c.discountFromReference!);
   }
 
-  // Compute quantiles
-  const agencyCategoryTables = new Map<string, QuantileTable>();
-  for (const [key, discounts] of agencyCategory) {
-    if (discounts.length >= 8) {
-      const qt = computeQuantiles(discounts);
-      qt.source = 'agency×category';
-      agencyCategoryTables.set(key, qt);
+  const agencyCategory = new Map<string, QuantileTable>();
+  for (const [key, vals] of agCatMap) {
+    if (vals.length >= MIN_N) {
+      agencyCategory.set(key, computeQuantileTable(vals, 'agency×category'));
     }
   }
 
-  const categoryTables = new Map<string, QuantileTable>();
-  for (const [cat, discounts] of category) {
-    const qt = computeQuantiles(discounts);
-    qt.source = 'category';
-    categoryTables.set(cat, qt);
+  const category = new Map<string, QuantileTable>();
+  for (const [cat, vals] of catMap) {
+    category.set(cat, computeQuantileTable(vals, 'category'));
   }
 
-  const globalQt = computeQuantiles(ebidding.map((c) => c.discountFromReference!));
-  globalQt.source = 'global';
+  const allDiscounts = ebidding.map((c) => c.discountFromReference!);
+  const global = allDiscounts.length > 0
+    ? computeQuantileTable(allDiscounts, 'global')
+    : computeQuantileTable([GLOBAL_MEDIAN], 'global-fallback');
 
-  return { agencyCategory: agencyCategoryTables, category: categoryTables, global: globalQt };
+  return { agencyCategory, category, global };
 }
 
-/**
- * Get benchmark for a tender profile (agency, category).
- * Fall back: agency×category (n≥8) → category → global
- */
 export function getBenchmarkFromTables(
-  agency: string | undefined,
+  agency:   string | undefined,
   category: string | undefined,
-  tables: ReturnType<typeof buildBenchmarkTables>
-): QuantileTable {
+  tables:   ReturnType<typeof buildBenchmarkTables>,
+): { table: QuantileTable; fallbackUsed: boolean } {
   const key = `${agency}|${category}`;
+
   if (agency && category && tables.agencyCategory.has(key)) {
-    return tables.agencyCategory.get(key)!;
+    return { table: tables.agencyCategory.get(key)!, fallbackUsed: false };
   }
   if (category && tables.category.has(category)) {
-    return tables.category.get(category)!;
+    return { table: tables.category.get(category)!, fallbackUsed: true };
   }
-  return tables.global;
+  return { table: tables.global, fallbackUsed: true };
+}
+
+// ─── Positioning Percentile (replaces "win probability") ────────────────────
+
+export type PositioningLabel =
+  | 'soft'        // < 25th pct — below most winners, safe margin, low competitiveness
+  | 'conservative'// 25–50th
+  | 'competitive' // 50–75th — around the typical winning range
+  | 'aggressive'  // 75–90th — strong positioning, thinner margin
+  | 'very_aggressive'; // > 90th — top decile, check margin floor
+
+function positioningLabel(pct: number): PositioningLabel {
+  if (pct < 25) return 'soft';
+  if (pct < 50) return 'conservative';
+  if (pct < 75) return 'competitive';
+  if (pct < 90) return 'aggressive';
+  return 'very_aggressive';
+}
+
+const LABEL_TH: Record<PositioningLabel, string> = {
+  soft:           'ราคาสูง (อ่อน)',
+  conservative:   'ต่ำกว่าตลาด',
+  competitive:    'ระดับตลาด',
+  aggressive:     'เชิงรุก',
+  very_aggressive:'เชิงรุกมาก',
+};
+
+const LABEL_EN: Record<PositioningLabel, string> = {
+  soft:           'Soft — below most winners, safe margin',
+  conservative:   'Conservative — below median',
+  competitive:    'Competitive — around the typical winning range',
+  aggressive:     'Aggressive — strong positioning, thinner margin',
+  very_aggressive:'Very aggressive — top decile, check margin',
+};
+
+// ─── Main Output Types ───────────────────────────────────────────────────────
+
+export interface BidRecommendation {
+  // Economics
+  recommendedBid:           number;
+  recommendedDiscount:      number;
+  marketMedianDiscount:     number;
+  expectedMargin:           number;
+  marginFloorBreached:      boolean;
+  cannotMeetMargin:         boolean;
+
+  // Positioning (replaces "win probability")
+  positioningPct:           number;      // 0–100, e.g. 53 = more aggressive than 53% of past winners
+  positioningLabel:         PositioningLabel;
+  positioningLabelTh:       string;
+  positioningLabelEn:       string;
+  band: {
+    p10: number; p25: number; median: number; p75: number; p90: number;
+  };
+  comparableN:              number;
+  scope:                    string;
+  fallbackUsed:             boolean;
+  benchmarkSource:          string;
+
+  // Honesty flag — always shown
+  note: string;
+}
+
+// ─── Core Recommendation ─────────────────────────────────────────────────────
+
+export function recommendBid(
+  refPrice:        number,
+  costM:           number,
+  targetMarginPct: number = 10,
+  benchmark?:      QuantileTable,
+): BidRecommendation {
+  const costRatio = costM / refPrice;
+
+  // Margin guard: largest discount that still preserves target margin
+  const marginMaxDiscount = (1 - costRatio / (1 - targetMarginPct / 100)) * 100;
+  const cannotMeetMargin  = marginMaxDiscount <= 0;
+
+  const bench         = benchmark ?? null;
+  const benchMedian   = bench?.median ?? GLOBAL_MEDIAN;
+  const source        = bench?.source ?? 'global';
+
+  // Target discount: market median OR margin floor, whichever is lower
+  const targetDiscount    = cannotMeetMargin
+    ? 0
+    : Math.min(benchMedian, marginMaxDiscount);
+  const marginFloorBreached = !cannotMeetMargin && benchMedian > marginMaxDiscount;
+
+  // Recommended bid — anchored on reference price
+  const bid = refPrice * (1 - targetDiscount / 100);
+
+  // Actual margin on revenue
+  const actualMargin = cannotMeetMargin ? 0 : (bid - costM) / bid * 100;
+
+  // Positioning percentile — empirical CDF with Beta prior smoothing.
+  // Raw count/(n) is unreliable at small n (e.g. n=8 can claim 100th pct).
+  // Adding CALIB_ALPHA pseudo-observations per side shrinks toward 50 when n
+  // is small, relaxing to the raw empirical value as n grows.
+  const sorted = bench?.discounts ?? [];
+  const positionPct = sorted.length > 0
+    ? Math.round(
+        (sorted.filter((d) => d <= targetDiscount).length + CALIB_ALPHA)
+        / (sorted.length + 2 * CALIB_ALPHA)
+        * 100,
+      )
+    : 50;
+
+  const label = positioningLabel(positionPct);
+
+  return {
+    recommendedBid:       Math.round(bid * 10) / 10,
+    recommendedDiscount:  Math.round(targetDiscount * 10) / 10,
+    marketMedianDiscount: benchMedian,
+    expectedMargin:       Math.round(actualMargin * 10) / 10,
+    marginFloorBreached,
+    cannotMeetMargin,
+
+    positioningPct:     positionPct,
+    positioningLabel:   label,
+    positioningLabelTh: LABEL_TH[label],
+    positioningLabelEn: LABEL_EN[label],
+    band: {
+      p10:    bench?.p10    ?? 0,
+      p25:    bench?.p25    ?? 0,
+      median: bench?.median ?? GLOBAL_MEDIAN,
+      p75:    bench?.p75    ?? 0,
+      p90:    bench?.p90    ?? 0,
+    },
+    comparableN:    bench?.n     ?? 0,
+    scope:          source,
+    fallbackUsed:   !benchmark,
+    benchmarkSource: source,
+
+    note: 'Positioning percentile is not a win probability. It shows where this bid sits relative to historical winners, not P(this bid wins). True win probability requires knowing how many firms will bid — which is unknowable at bid time.',
+  };
+}
+
+// ─── Win Curve for Chart (empirical, no normal assumption) ───────────────────
+
+export function generateWinCurve(benchmark?: QuantileTable): Array<{
+  bid: string; disc: number; positionPct: number;
+}> {
+  const sorted    = benchmark?.discounts ?? [];
+  const median    = benchmark?.median ?? GLOBAL_MEDIAN;
+  const maxDisc   = benchmark?.p90 ? benchmark.p90 * 1.1 : 45;
+
+  return Array.from({ length: 17 }, (_, i) => {
+    const discPct = (maxDisc * i) / 16;
+
+    const positionPct = sorted.length > 0
+      ? Math.round(
+          (sorted.filter((d) => d <= discPct).length + CALIB_ALPHA)
+          / (sorted.length + 2 * CALIB_ALPHA)
+          * 100,
+        )
+      : Math.round((discPct / (median * 2)) * 70);
+
+    return {
+      bid:         `${Math.round(100 - discPct)}%`,
+      disc:        Math.round(discPct * 10) / 10,
+      positionPct: Math.max(1, Math.min(99, positionPct)),
+    };
+  });
 }

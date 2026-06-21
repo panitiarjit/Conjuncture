@@ -14,6 +14,7 @@ import categories from './translations/categories';
 import footer from './translations/footer';
 import procurement from './translations/procurement';
 import waitlist from './translations/waitlist';
+import tenderDetail from './translations/tenderDetail';
 import type { ProjectCategory } from './types';
 
 export type TranslationKey =
@@ -32,7 +33,8 @@ export type TranslationKey =
   | keyof typeof categories.en
   | keyof typeof footer.en
   | keyof typeof procurement.en
-  | keyof typeof waitlist.en;
+  | keyof typeof waitlist.en
+  | keyof typeof tenderDetail.en;
 
 export const CATEGORY_KEYS: Record<ProjectCategory, TranslationKey> = {
   construction: 'cat.construction',

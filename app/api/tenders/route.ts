@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getTenders } from '@/lib/data-service';
 
 export async function GET(req: NextRequest) {
-  const cfCache = typeof caches !== 'undefined' ? caches.default : null;
+  const cfCache = typeof caches !== 'undefined' ? (caches as any).default : null;
   if (cfCache) {
     try {
       const cached = await cfCache.match(req.url);

@@ -18,6 +18,6 @@ export async function POST(req: NextRequest) {
   if (!process.env.SCRAPE_SECRET || auth !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  revalidateTag('tenders');
+  revalidateTag('tenders', 'max');
   return NextResponse.json({ ok: true, revalidated: true });
 }

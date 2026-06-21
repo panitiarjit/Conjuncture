@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
   const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
   const filename = `prospects-${keyword}-${new Date().toISOString().slice(0, 10)}.xlsx`;
-  return new NextResponse(buffer as Buffer, {
+  return new NextResponse(buffer as unknown as BodyInit, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${filename}"`,
