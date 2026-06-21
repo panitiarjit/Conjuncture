@@ -23,11 +23,11 @@ const SITE_URL = 'https://conjuncture.work';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Conjuncture — Thailand's Open Procurement Platform",
+    default: "Conjuncture — Procurement Data & Bidding Insights",
     template: '%s | Conjuncture',
   },
   description:
-    'Conjuncture connects Thai businesses and government agencies with verified vendors through transparent, competitive procurement. Sealed bids, escrow payments, government tenders.',
+    'Conjuncture gives Thai contractors procurement intelligence from 153,685 government projects — benchmark your bids, track competitors, and win more with real e-GP data.',
   keywords: [
     'Conjuncture',
     'ConjunctureTH',
@@ -60,17 +60,17 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE_URL,
     siteName: 'Conjuncture',
-    title: "Conjuncture — Thailand's Open Procurement Platform",
+    title: "Conjuncture — Procurement Data & Bidding Insights",
     description:
-      'Transparent competition. Trusted procurement. Connect with verified vendors and government agencies across Thailand.',
+      'Procurement intelligence from 153,685 Thai government projects — benchmark bids, track competitors, and win more with real e-GP data.',
     locale: 'th_TH',
     alternateLocale: ['en_US'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Conjuncture — Thailand's Open Procurement Platform",
+    title: "Conjuncture — Procurement Data & Bidding Insights",
     description:
-      'Transparent competition. Trusted procurement. Connect with verified vendors and government agencies across Thailand.',
+      'Procurement intelligence from 153,685 Thai government projects — benchmark bids, track competitors, and win more with real e-GP data.',
   },
 };
 
@@ -80,7 +80,7 @@ const jsonLd = {
   name: 'Conjuncture',
   url: SITE_URL,
   description:
-    "Thailand's open procurement platform connecting businesses and government agencies with verified vendors.",
+    'Procurement intelligence from 153,685 Thai government projects — benchmark bids, track competitors, and win more with real e-GP data.',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Bangkok',
