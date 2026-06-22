@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAwardedContracts } from '@/lib/data-service';
+import { getContractsForBenchmark } from '@/lib/data-service';
 import { recommendBid, buildBenchmarkTables, getBenchmarkFromTables } from '@/lib/bidsight-core';
 
 let cachedTables: ReturnType<typeof buildBenchmarkTables> | null = null;
@@ -9,7 +9,10 @@ async function getBenchmarkTables() {
   const now = Date.now();
   if (cachedTables && now < cachedTablesExpiry) return cachedTables;
   try {
-    const contracts = await getAwardedContracts(undefined, 10_000);
+    // Use the field-masked benchmark fetch — same source as benchmark-categories,
+    // guaranteed to return all contracts. getAwardedContracts fetches full docs
+    // and times out mid-pagination, leaving the category map mostly empty.
+    const contracts = await getContractsForBenchmark();
     cachedTables = buildBenchmarkTables(contracts);
     cachedTablesExpiry = now + 60 * 60 * 1000;
     return cachedTables;
