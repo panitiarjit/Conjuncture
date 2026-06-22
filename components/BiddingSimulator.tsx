@@ -210,7 +210,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   );
 
   useEffect(() => {
-    fetch("/api/benchmark-categories")
+    fetch("/api/benchmark-categories", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: any[]) => {
         const list = (Array.isArray(data) ? data : [])
