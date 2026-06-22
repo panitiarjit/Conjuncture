@@ -159,10 +159,14 @@ export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Pr
   }
 }
 
-// Minimal contract shape for benchmark computation (field-masked fetch)
-type BenchmarkContract = Pick<AwardedContract, 'procurementMethod' | 'discountFromReference' | 'projectType'>;
+// Minimal contract shape for benchmark computation (field-masked fetch).
+// agency and province are required to build the agency×category and province×category
+// fallback tiers — omitting them silently collapses both tiers to category/global.
+type BenchmarkContract = Pick<AwardedContract,
+  'procurementMethod' | 'discountFromReference' | 'projectType' | 'agency' | 'province'
+>;
 
-const BENCHMARK_FIELDS = ['procurementMethod', 'discountFromReference', 'projectType'];
+const BENCHMARK_FIELDS = ['procurementMethod', 'discountFromReference', 'projectType', 'agency', 'province'];
 
 const fetchBenchmarkContractsFromFirestore = unstable_cache(
   async (): Promise<BenchmarkContract[]> => {

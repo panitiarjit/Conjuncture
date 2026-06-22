@@ -9,9 +9,6 @@ async function getBenchmarkTables() {
   const now = Date.now();
   if (cachedTables && now < cachedTablesExpiry) return cachedTables;
   try {
-    // Use the field-masked benchmark fetch — same source as benchmark-categories,
-    // guaranteed to return all contracts. getAwardedContracts fetches full docs
-    // and times out mid-pagination, leaving the category map mostly empty.
     const contracts = await getContractsForBenchmark();
     cachedTables = buildBenchmarkTables(contracts);
     cachedTablesExpiry = now + 60 * 60 * 1000;
@@ -29,17 +26,11 @@ async function getBenchmarkTables() {
  *   costM: number,             // estimated cost in millions
  *   targetMarginPct?: number,  // default 10
  *   agency?: string,
- *   projectType?: string
+ *   projectType?: string,
+ *   province?: string          // optional — enables province×category fallback tier
  * }
  *
- * Response:
- * {
- *   recommendedBid, recommendedDiscount, marketMedianDiscount,
- *   expectedMargin, marginFloorBreached, cannotMeetMargin,
- *   positioningPct, positioningLabel, positioningLabelTh, positioningLabelEn,
- *   band: { p10, p25, median, p75, p90 },
- *   comparableN, scope, fallbackUsed, benchmarkSource, note
- * }
+ * Fallback chain: agency×category → province×category → category → global
  *
  * NOTE: positioningPct is NOT win probability.
  * It shows where the bid sits vs comparable historical winners.
@@ -48,7 +39,7 @@ async function getBenchmarkTables() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { refPriceM, costM, targetMarginPct = 10, agency, projectType } = body;
+    const { refPriceM, costM, targetMarginPct = 10, agency, projectType, province } = body;
 
     if (typeof refPriceM !== 'number' || refPriceM <= 0)
       return NextResponse.json({ error: 'refPriceM must be a positive number' }, { status: 400 });
@@ -58,12 +49,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'targetMarginPct must be 0–50' }, { status: 400 });
 
     const tables = await getBenchmarkTables();
-    const benchmark = tables
-      ? getBenchmarkFromTables(agency, projectType, tables).table
-      : undefined;
+    let benchmarkTable: ReturnType<typeof getBenchmarkFromTables>['table'] | undefined;
+    let fallbackUsed = true;
+    if (tables) {
+      const result = getBenchmarkFromTables(agency, projectType, tables, province);
+      benchmarkTable = result.table;
+      fallbackUsed   = result.fallbackUsed;
+    }
 
-    const rec = recommendBid(refPriceM, costM, targetMarginPct, benchmark);
-    return NextResponse.json(rec);
+    const rec = recommendBid(refPriceM, costM, targetMarginPct, benchmarkTable);
+    return NextResponse.json({ ...rec, fallbackUsed });
   } catch (err) {
     console.error('[recommend-bid POST]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -73,11 +68,12 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const sp = request.nextUrl.searchParams;
-    const refPriceM      = parseFloat(sp.get('refPriceM')      || '0');
-    const costM          = parseFloat(sp.get('costM')          || '0');
+    const refPriceM       = parseFloat(sp.get('refPriceM')       || '0');
+    const costM           = parseFloat(sp.get('costM')           || '0');
     const targetMarginPct = parseFloat(sp.get('targetMarginPct') || '10');
-    const agency         = sp.get('agency')      || undefined;
-    const projectType    = sp.get('projectType') || undefined;
+    const agency          = sp.get('agency')      || undefined;
+    const projectType     = sp.get('projectType') || undefined;
+    const province        = sp.get('province')    || undefined;
 
     if (isNaN(refPriceM) || refPriceM <= 0)
       return NextResponse.json({ error: 'refPriceM required and must be positive' }, { status: 400 });
@@ -85,12 +81,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'costM must be non-negative' }, { status: 400 });
 
     const tables = await getBenchmarkTables();
-    const benchmark = tables
-      ? getBenchmarkFromTables(agency, projectType, tables).table
-      : undefined;
+    let benchmarkTable: ReturnType<typeof getBenchmarkFromTables>['table'] | undefined;
+    let fallbackUsed = true;
+    if (tables) {
+      const result = getBenchmarkFromTables(agency, projectType, tables, province);
+      benchmarkTable = result.table;
+      fallbackUsed   = result.fallbackUsed;
+    }
 
-    const rec = recommendBid(refPriceM, costM, targetMarginPct, benchmark);
-    return NextResponse.json(rec);
+    const rec = recommendBid(refPriceM, costM, targetMarginPct, benchmarkTable);
+    return NextResponse.json({ ...rec, fallbackUsed });
   } catch (err) {
     console.error('[recommend-bid GET]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

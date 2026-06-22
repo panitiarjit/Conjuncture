@@ -376,17 +376,23 @@ def market_summary(agency: str, category: str, df: pd.DataFrame,
     # Top 3 incumbents from AllBidders (winner names for this agency×category)
     top_incumbents = []
     if bidders_df is not None:
-        ab_sub = bidders_df[
+        # Use all rows (Won + Lost) to count unique projects covered by AllBidders,
+        # then filter to Won for the company tally. Consistent with incumbent_flag().
+        ab_sub_all = bidders_df[
             (bidders_df['หน่วยงาน'] == agency) &
-            (bidders_df['ประเภท']   == category) &
-            (bidders_df['Won/Lost'] == 'Won')
+            (bidders_df['ประเภท']   == category)
         ]
+        ab_sub = ab_sub_all[ab_sub_all['Won/Lost'] == 'Won']
+        ab_total = int(ab_sub_all['ชื่อโครงการ'].nunique()) if len(ab_sub_all) > 0 else 1
         if len(ab_sub) > 0:
             top3 = (
                 ab_sub['Company'].value_counts().head(3)
                 .rename_axis('company').reset_index(name='wins')
             )
-            top3['win_rate'] = (top3['wins'] / cs['n_tenders']).round(3)
+            # Divide by AllBidders-covered projects, not full dataset n_tenders.
+            # Using n_tenders (full dataset) would understate win_rate by ~28x
+            # since AllBidders covers only ~3.6% of e-bidding tenders.
+            top3['win_rate'] = (top3['wins'] / max(ab_total, 1)).round(3)
             top_incumbents   = top3.to_dict('records')
 
     hhi = cs.get('winner_hhi')

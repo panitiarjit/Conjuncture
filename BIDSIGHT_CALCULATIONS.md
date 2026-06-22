@@ -64,7 +64,7 @@ if (agency && category && agencyCategory.has(key) && n >= 8) {
   benchmark = category[projectType]
   source = "category"
 } else {
-  benchmark = global   // median=18.5, from 29,750 e-bidding tenders
+  benchmark = global   // median=6.1, from 27,954 positive-discount e-bidding tenders
   source = "global"
 }
 ```
@@ -194,13 +194,24 @@ function computeQuantileTable(discounts, source) {
   n = sorted.length
   mean = sum(sorted) / n
   variance = sum((x - mean)² for x in sorted) / n
+
+  // Type 7 linear interpolation (pandas/numpy default).
+  // h = (n-1) * p/100; result = sorted[floor(h)] + frac(h) * (sorted[ceil(h)] - sorted[floor(h)])
+  // NOT nearest-rank (sorted[floor(n * p)]) — those differ at small n.
+  function percentile(p) {
+    const h  = (n - 1) * p / 100
+    const lo = Math.floor(h)
+    const hi = Math.min(lo + 1, n - 1)
+    return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo])
+  }
+
   return {
     discounts: sorted,          // raw — for empirical CDF
-    p10:    sorted[floor(n * 0.10)],
-    p25:    sorted[floor(n * 0.25)],
-    median: sorted[floor(n * 0.50)],
-    p75:    sorted[floor(n * 0.75)],
-    p90:    sorted[floor(n * 0.90)],
+    p10:    percentile(10),
+    p25:    percentile(25),
+    median: percentile(50),
+    p75:    percentile(75),
+    p90:    percentile(90),
     sigma:  sqrt(variance),
     n,
     source
@@ -309,7 +320,7 @@ It has been removed.
 {
   "recommendedBid": 9.1,
   "recommendedDiscount": 8.9,
-  "marketMedianDiscount": 18.5,
+  "marketMedianDiscount": 6.1,
   "expectedMargin": 10.0,
   "marginFloorBreached": false,
   "cannotMeetMargin": false,
@@ -317,7 +328,7 @@ It has been removed.
   "positioningLabel": "soft",
   "positioningLabelTh": "ราคาสูง (อ่อน)",
   "positioningLabelEn": "Soft — below most winners, safe margin",
-  "band": { "p10": 4.2, "p25": 9.1, "median": 18.5, "p75": 27.3, "p90": 34.1 },
+  "band": { "p10": 0.2, "p25": 0.8, "median": 6.1, "p75": 18.2, "p90": 32.0 },
   "comparableN": 29750,
   "scope": "global",
   "fallbackUsed": true,
@@ -335,8 +346,8 @@ To improve positioning, increase discount — but check marginFloorBreached.
 ## Constants
 
 ```javascript
-GLOBAL_MEDIAN = 18.5      // median discount across 29,750 e-bidding tenders FY2559–2568
-GLOBAL_SIGMA  = 12.0      // stdev of discounts (informational)
+GLOBAL_MEDIAN = 6.1       // p50 of 27,954 positive-discount e-bidding tenders (old value 18.5 was the p75)
+GLOBAL_SIGMA  = 13.9      // stdev of discounts (informational)
 MIN_N = 8                  // minimum bucket size before falling back to category/global
 ```
 

@@ -16,9 +16,11 @@
  * Out-of-time R² ≈ 0.03 (correct: bidder count unknowable pre-bid).
  */
 
-// Global fallback constants (from 29,750 e-bidding tenders FY2559–2568)
-export const GLOBAL_MEDIAN  = 18.5;
-export const GLOBAL_SIGMA   = 12.0;
+// Global fallback constants — computed from 27,954 positive-discount e-bidding tenders.
+// GLOBAL_MEDIAN is the empirical p50 (6.09%), NOT the p75 (18.23%).
+// The old value of 18.5 was the 75th percentile, mislabelled as the median.
+export const GLOBAL_MEDIAN  = 6.1;
+export const GLOBAL_SIGMA   = 13.9;
 export const MIN_N          = 8;    // minimum bucket size before falling back
 // Beta prior pseudo-count per side. CALIB_ALPHA=2 adds 4 pseudo-observations
 // (2 below, 2 above), strongly shrinking tiny buckets toward 50th pct while
@@ -75,6 +77,7 @@ type ContractRow = {
   discountFromReference: number | null;
   projectType: string;
   agency?: string;
+  province?: string;
 };
 
 // Competitive bidding methods: e-bidding (Thai) + selective + traditional auction.
@@ -83,9 +86,10 @@ type ContractRow = {
 const COMPETITIVE_RE = /ประกวดราคา|คัดเลือก|e-bidding/i;
 
 export function buildBenchmarkTables(contracts: ContractRow[]): {
-  agencyCategory: Map<string, QuantileTable>;
-  category:       Map<string, QuantileTable>;
-  global:         QuantileTable;
+  agencyCategory:   Map<string, QuantileTable>;
+  provinceCategory: Map<string, QuantileTable>;
+  category:         Map<string, QuantileTable>;
+  global:           QuantileTable;
 } {
   const ebidding = contracts.filter(
     (c) => {
@@ -99,13 +103,22 @@ export function buildBenchmarkTables(contracts: ContractRow[]): {
     },
   );
 
-  const agCatMap = new Map<string, number[]>();
-  const catMap   = new Map<string, number[]>();
+  const agCatMap   = new Map<string, number[]>();
+  const provCatMap = new Map<string, number[]>();
+  const catMap     = new Map<string, number[]>();
 
   for (const c of ebidding) {
-    const key = `${c.agency ?? ''}|${c.projectType}`;
-    if (!agCatMap.has(key)) agCatMap.set(key, []);
-    agCatMap.get(key)!.push(c.discountFromReference!);
+    if (c.agency) {
+      const key = `${c.agency}|${c.projectType}`;
+      if (!agCatMap.has(key)) agCatMap.set(key, []);
+      agCatMap.get(key)!.push(c.discountFromReference!);
+    }
+
+    if (c.province) {
+      const key = `${c.province}|${c.projectType}`;
+      if (!provCatMap.has(key)) provCatMap.set(key, []);
+      provCatMap.get(key)!.push(c.discountFromReference!);
+    }
 
     if (!catMap.has(c.projectType)) catMap.set(c.projectType, []);
     catMap.get(c.projectType)!.push(c.discountFromReference!);
@@ -115,6 +128,13 @@ export function buildBenchmarkTables(contracts: ContractRow[]): {
   for (const [key, vals] of agCatMap) {
     if (vals.length >= MIN_N) {
       agencyCategory.set(key, computeQuantileTable(vals, 'agency×category'));
+    }
+  }
+
+  const provinceCategory = new Map<string, QuantileTable>();
+  for (const [key, vals] of provCatMap) {
+    if (vals.length >= MIN_N) {
+      provinceCategory.set(key, computeQuantileTable(vals, 'province×category'));
     }
   }
 
@@ -128,21 +148,28 @@ export function buildBenchmarkTables(contracts: ContractRow[]): {
     ? computeQuantileTable(allDiscounts, 'global')
     : computeQuantileTable([GLOBAL_MEDIAN], 'global-fallback');
 
-  return { agencyCategory, category, global };
+  return { agencyCategory, provinceCategory, category, global };
 }
 
+// Fallback chain (most → least specific):
+//   agency×category → province×category → category → global
 export function getBenchmarkFromTables(
   agency:   string | undefined,
   category: string | undefined,
   tables:   ReturnType<typeof buildBenchmarkTables>,
+  province?: string | undefined,
 ): { table: QuantileTable; fallbackUsed: boolean } {
-  const key = `${agency}|${category}`;
-
-  if (agency && category && tables.agencyCategory.has(key)) {
-    return { table: tables.agencyCategory.get(key)!, fallbackUsed: false };
+  if (agency && category) {
+    const t = tables.agencyCategory.get(`${agency}|${category}`);
+    if (t) return { table: t, fallbackUsed: false };
   }
-  if (category && tables.category.has(category)) {
-    return { table: tables.category.get(category)!, fallbackUsed: true };
+  if (province && category) {
+    const t = tables.provinceCategory.get(`${province}|${category}`);
+    if (t) return { table: t, fallbackUsed: true };
+  }
+  if (category) {
+    const t = tables.category.get(category);
+    if (t) return { table: t, fallbackUsed: true };
   }
   return { table: tables.global, fallbackUsed: true };
 }
@@ -180,6 +207,76 @@ const LABEL_EN: Record<PositioningLabel, string> = {
   very_aggressive:'Very aggressive — top decile, check margin',
 };
 
+// ─── Bid Score ───────────────────────────────────────────────────────────────
+
+export interface BidScore {
+  score:          number;                            // 0–100 composite
+  recommendation: 'bid' | 'investigate' | 'pass';
+  signals: {
+    marginViability: number;  // 0–100 — can we make money at a competitive price?
+    competitiveness: number;  // 0–100 — how does our bid sit vs. past winners?
+    marketVolume:    number;  // 0–100 — how much history backs this benchmark?
+  };
+  rationale: string;
+}
+
+function _volumeSignal(n: number): number {
+  if (n >= 200) return 100;
+  if (n >= 50)  return Math.round(70 + (n - 50)  / 150 * 30);
+  if (n >= 20)  return Math.round(50 + (n - 20)  / 30  * 20);
+  if (n >= 8)   return Math.round(30 + (n - 8)   / 12  * 20);
+  return 20;
+}
+
+export function computeBidScore(
+  cannotMeetMargin:   boolean,
+  marginFloorBreached:boolean,
+  expectedMargin:     number,
+  positioningPct:     number,
+  comparableN:        number,
+  targetMarginPct:    number,
+): BidScore {
+  // Signal 1 (40%): Margin viability — can we make money?
+  const marginViability = cannotMeetMargin   ? 0
+    : marginFloorBreached                    ? 20
+    : Math.min(100, Math.round(expectedMargin / Math.max(targetMarginPct, 1) * 100));
+
+  // Signal 2 (35%): Competitiveness — where our bid sits vs. past winners.
+  // If floor is breached we're forced above the market median; penalise accordingly.
+  const competitiveness = marginFloorBreached
+    ? Math.round(positioningPct * 0.4)
+    : positioningPct;
+
+  // Signal 3 (25%): Market volume — richness of the benchmark
+  const marketVolume = _volumeSignal(comparableN);
+
+  const score = Math.round(
+    0.40 * marginViability + 0.35 * competitiveness + 0.25 * marketVolume,
+  );
+
+  const recommendation: BidScore['recommendation'] = score >= 65 ? 'bid'
+    : score >= 35 ? 'investigate'
+    : 'pass';
+
+  let rationale: string;
+  if (cannotMeetMargin) {
+    rationale = 'Cost structure cannot support a profitable bid at any competitive discount.';
+  } else if (marginFloorBreached) {
+    rationale = `Margin floor is below market median — bid sits above ${100 - positioningPct}% of past winners. Winning is unlikely without an incumbency advantage.`;
+  } else if (recommendation === 'bid') {
+    rationale = `Viable margin at ${positioningPct}th-pct positioning. Benchmark covers ${comparableN} comparable tenders. Proceed.`;
+  } else if (recommendation === 'investigate') {
+    const weak = marginViability < 60 ? 'thin margin at competitive discount'
+      : competitiveness < 40          ? 'soft positioning — bid may sit above most past winners'
+      :                                  'limited comparable history — benchmark uncertain';
+    rationale = `Mixed signals: ${weak}. Review before committing bid resources.`;
+  } else {
+    rationale = `Score ${score}/100 below threshold. Insufficient margin, poor positioning, or inadequate comparable history.`;
+  }
+
+  return { score, recommendation, signals: { marginViability, competitiveness, marketVolume }, rationale };
+}
+
 // ─── Main Output Types ───────────────────────────────────────────────────────
 
 export interface BidRecommendation {
@@ -203,6 +300,9 @@ export interface BidRecommendation {
   scope:                    string;
   fallbackUsed:             boolean;
   benchmarkSource:          string;
+
+  // Bid/no-bid recommendation
+  bidScore:                 BidScore;
 
   // Honesty flag — always shown
   note: string;
@@ -251,13 +351,23 @@ export function recommendBid(
       )
     : 50;
 
-  const label = positioningLabel(positionPct);
+  const label      = positioningLabel(positionPct);
+  const roundedMargin = Math.round(actualMargin * 10) / 10;
+  const comparableN   = bench?.n ?? 0;
+  const bidScore = computeBidScore(
+    cannotMeetMargin,
+    marginFloorBreached,
+    roundedMargin,
+    positionPct,
+    comparableN,
+    targetMarginPct,
+  );
 
   return {
     recommendedBid:       Math.round(bid * 10) / 10,
     recommendedDiscount:  Math.round(targetDiscount * 10) / 10,
     marketMedianDiscount: benchMedian,
-    expectedMargin:       Math.round(actualMargin * 10) / 10,
+    expectedMargin:       roundedMargin,
     marginFloorBreached,
     cannotMeetMargin,
 
@@ -272,10 +382,11 @@ export function recommendBid(
       p75:    bench?.p75    ?? 0,
       p90:    bench?.p90    ?? 0,
     },
-    comparableN:    bench?.n     ?? 0,
+    comparableN,
     scope:          source,
     fallbackUsed:   !benchmark,
     benchmarkSource: source,
+    bidScore,
 
     note: 'Positioning percentile is not a win probability. It shows where this bid sits relative to historical winners, not P(this bid wins). True win probability requires knowing how many firms will bid — which is unknowable at bid time.',
   };

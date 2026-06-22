@@ -197,6 +197,132 @@ def competitiveness_band(your_discount, profile, tables, min_n=8):
 
 
 
+def bid_score(ref_price, cost, profile, tables,
+              market_intel=None, target_margin_pct=10.0, target_win_prob=0.6):
+    """Composite bid/no-bid score (0–100) with recommendation.
+
+    Signals
+    -------
+    margin_viability (40% w/o intel, 30% with)
+        Can we make money at a competitive discount?
+    competitiveness  (35% w/o intel, 25% with)
+        Where does our bid sit vs. past winners?
+    market_volume    (25% w/o intel, 20% with)
+        How much history backs the benchmark (richness proxy)?
+    market_openness  (0% w/o intel, 25% with)
+        Is this market concentrated or genuinely competitive?
+        Derived from HHI + near_ceiling_rate in market_intel dict.
+
+    Parameters
+    ----------
+    market_intel : dict, output of market_summary() — adds HHI + ncr signals.
+                   Pass None to run on pricing signals alone.
+
+    Returns
+    -------
+    dict: score (0–100), recommendation ('bid'|'investigate'|'pass'),
+          signals, rationale, and the underlying rec + band dicts.
+    """
+    rec  = recommend_bid(ref_price, cost, profile, tables,
+                         target_margin_pct=target_margin_pct,
+                         target_win_prob=target_win_prob)
+    band = competitiveness_band(rec['recommended_discount_pct'], profile, tables)
+
+    cannot_meet  = rec['cannot_meet_margin']
+    floor_breach = rec['margin_floor_breached']
+    exp_margin   = rec['expected_margin_pct']
+    pct          = band['your_percentile']
+    n            = band['comparable_n']
+
+    # ── Signal 1: Margin viability ──────────────────────────────────────────
+    if cannot_meet:
+        margin_sig = 0
+    elif floor_breach:
+        margin_sig = 20
+    else:
+        margin_sig = min(100, round(exp_margin / max(target_margin_pct, 1) * 100))
+
+    # ── Signal 2: Competitiveness ────────────────────────────────────────────
+    comp_sig = round(pct * 0.4) if floor_breach else pct
+
+    # ── Signal 3: Market volume ──────────────────────────────────────────────
+    if n >= 200:   vol_sig = 100
+    elif n >= 50:  vol_sig = round(70 + (n - 50)  / 150 * 30)
+    elif n >= 20:  vol_sig = round(50 + (n - 20)  / 30  * 20)
+    elif n >= 8:   vol_sig = round(30 + (n - 8)   / 12  * 20)
+    else:          vol_sig = 20
+
+    # ── Signal 4: Market openness (only when market_intel available) ─────────
+    open_sig = None
+    if market_intel and not market_intel.get('error'):
+        hhi = market_intel.get('winner_hhi')
+        ncr = float(market_intel.get('near_ceiling_rate') or 0.0)
+        if hhi is not None:
+            hhi_s    = max(0, round((1 - hhi  / 0.4) * 100))
+            ncr_s    = max(0, round((1 - ncr  / 0.7) * 100))
+            open_sig = round((hhi_s + ncr_s) / 2)
+        else:
+            # No HHI — use ncr alone, capped at 75 to reflect uncertainty
+            open_sig = min(75, max(0, round((1 - ncr / 0.7) * 100)))
+
+    # ── Weighted composite ───────────────────────────────────────────────────
+    if open_sig is not None:
+        score = round(0.30 * margin_sig + 0.25 * comp_sig + 0.20 * vol_sig + 0.25 * open_sig)
+    else:
+        score = round(0.40 * margin_sig + 0.35 * comp_sig + 0.25 * vol_sig)
+
+    recommendation = 'bid' if score >= 65 else ('investigate' if score >= 35 else 'pass')
+
+    # ── Rationale ────────────────────────────────────────────────────────────
+    if cannot_meet:
+        rationale = 'Cost structure cannot support a profitable bid at any competitive discount.'
+    elif floor_breach:
+        rationale = (
+            f'Margin floor is below market median — bid sits above {100 - pct}% of past winners. '
+            'Winning is unlikely without an incumbency advantage.'
+        )
+    elif recommendation == 'bid':
+        market_note = (
+            f' Market openness score {open_sig}/100.' if open_sig is not None else ''
+        )
+        rationale = (
+            f'Viable margin at {pct}th-pct positioning. '
+            f'Benchmark covers {n} comparable tenders.{market_note} Proceed.'
+        )
+    elif recommendation == 'investigate':
+        if margin_sig < 60:
+            weak = 'thin margin at competitive discount'
+        elif comp_sig < 40:
+            weak = 'soft positioning — bid may sit above most past winners'
+        elif open_sig is not None and open_sig < 40:
+            weak = 'concentrated market — incumbent advantage likely'
+        else:
+            weak = 'limited comparable history — benchmark uncertain'
+        rationale = f'Mixed signals: {weak}. Review before committing bid resources.'
+    else:
+        rationale = (
+            f'Score {score}/100 below threshold. '
+            'Insufficient margin, poor positioning, or highly concentrated market.'
+        )
+
+    signals = {
+        'margin_viability': margin_sig,
+        'competitiveness':  comp_sig,
+        'market_volume':    vol_sig,
+    }
+    if open_sig is not None:
+        signals['market_openness'] = open_sig
+
+    return {
+        'score':          score,
+        'recommendation': recommendation,
+        'signals':        signals,
+        'rationale':      rationale,
+        'rec':            rec,
+        'band':           band,
+    }
+
+
 if __name__ == '__main__':
     import argparse, json, sys
 

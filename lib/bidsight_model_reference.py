@@ -56,7 +56,7 @@ def benchmark(profile, tables, target_win_prob=0.6):
     elif c in tables['category'].index:
         row, src = tables['category'].loc[c], 'category'
     if row is not None:
-        median, sigma = row['q50'], (row['sigma'] if not np.isnan(row['sigma']) else 12.0)
+        median, sigma = row['q50'], (row['sigma'] if not np.isnan(row['sigma']) else 13.9)
         qcols = {0.1:'q10',0.25:'q25',0.5:'q50',0.75:'q75',0.8:'q80',0.9:'q90'}
         # pick the historical quantile closest to the requested win prob
         nearest = min(qcols, key=lambda q: abs(q - target_win_prob))
