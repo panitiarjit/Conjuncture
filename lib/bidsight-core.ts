@@ -16,8 +16,6 @@
  * Out-of-time R² ≈ 0.03 (correct: bidder count unknowable pre-bid).
  */
 
-import type { AwardedContract } from './types';
-
 // Global fallback constants (from 29,750 e-bidding tenders FY2559–2568)
 export const GLOBAL_MEDIAN  = 18.5;
 export const GLOBAL_SIGMA   = 12.0;
@@ -69,24 +67,43 @@ function computeQuantileTable(discounts: number[], source: string): QuantileTabl
 
 // ─── Benchmark Tables ────────────────────────────────────────────────────────
 
-export function buildBenchmarkTables(contracts: AwardedContract[]): {
+// Minimal contract shape needed for benchmark computation.
+// AwardedContract satisfies this; so does the field-masked BenchmarkContract.
+type ContractRow = {
+  procurementMethod?: string | null;
+  procurementMethodGroup?: string | null;
+  discountFromReference: number | null;
+  projectType: string;
+  agency?: string;
+};
+
+// Competitive bidding methods: e-bidding (Thai) + selective + traditional auction.
+// Sole-source (เฉพาะเจาะจง) is excluded — no competition means discount distribution is meaningless.
+// We also accept the synthetic 'e-bidding' tag used in backward-test fixtures.
+const COMPETITIVE_RE = /ประกวดราคา|คัดเลือก|e-bidding/i;
+
+export function buildBenchmarkTables(contracts: ContractRow[]): {
   agencyCategory: Map<string, QuantileTable>;
   category:       Map<string, QuantileTable>;
   global:         QuantileTable;
 } {
   const ebidding = contracts.filter(
-    (c) =>
-      c.procurementMethodGroup === 'e-bidding' &&
-      c.discountFromReference != null &&
-      c.discountFromReference > 0 &&
-      c.discountFromReference < 100,
+    (c) => {
+      const method = c.procurementMethod ?? c.procurementMethodGroup ?? '';
+      return (
+        COMPETITIVE_RE.test(method) &&
+        c.discountFromReference != null &&
+        c.discountFromReference > 0 &&
+        c.discountFromReference < 100
+      );
+    },
   );
 
   const agCatMap = new Map<string, number[]>();
   const catMap   = new Map<string, number[]>();
 
   for (const c of ebidding) {
-    const key = `${c.agency}|${c.projectType}`;
+    const key = `${c.agency ?? ''}|${c.projectType}`;
     if (!agCatMap.has(key)) agCatMap.set(key, []);
     agCatMap.get(key)!.push(c.discountFromReference!);
 

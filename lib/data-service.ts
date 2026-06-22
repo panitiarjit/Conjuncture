@@ -159,6 +159,47 @@ export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Pr
   }
 }
 
+// Minimal contract shape for benchmark computation (field-masked fetch)
+type BenchmarkContract = Pick<AwardedContract, 'procurementMethod' | 'discountFromReference' | 'projectType'>;
+
+const BENCHMARK_FIELDS = ['procurementMethod', 'discountFromReference', 'projectType'];
+
+const fetchBenchmarkContractsFromFirestore = unstable_cache(
+  async (): Promise<BenchmarkContract[]> => {
+    const { restGetCollectionPage } = await import('./firestore-rest');
+    const all: BenchmarkContract[] = [];
+    let cursor: string | undefined;
+    // Fetch up to 10,000 docs with field mask — small payload, fast to parse
+    do {
+      const { docs, nextPageToken } = await restGetCollectionPage<BenchmarkContract>(
+        'cgd_contracts',
+        300,
+        cursor,
+        BENCHMARK_FIELDS,
+      );
+      all.push(...docs);
+      cursor = nextPageToken;
+    } while (cursor && all.length < 10_000);
+    return all;
+  },
+  ['benchmark_contracts'],
+  { revalidate: 21600, tags: ['cgd_contracts'] },
+);
+
+export async function getContractsForBenchmark(): Promise<BenchmarkContract[]> {
+  if (!hasFirestoreCredentials()) return [];
+  const cacheKey = 'benchmark_contracts';
+  const cached = memGet<BenchmarkContract[]>(cacheKey);
+  if (cached) return cached;
+  try {
+    const contracts = await fetchBenchmarkContractsFromFirestore();
+    memSet(cacheKey, contracts, 6 * 60 * 60 * 1000);
+    return contracts;
+  } catch {
+    return [];
+  }
+}
+
 /** Paginated fetch — used by /api/cgd-csv for Google Sheets IMPORTDATA chaining. */
 export async function getAwardedContractsPage(
   pageSize = 2_000,
