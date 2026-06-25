@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!name.trim()) { setError('Please enter your name.'); return; }
+    if (!name.trim()) { setError('Please enter a username.'); return; }
     setError(null);
     setIsLoading(true);
 
@@ -50,16 +50,16 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="name" className="text-xs font-medium text-[#717171]">Full name</label>
+              <label htmlFor="name" className="text-xs font-medium text-[#717171]">Username</label>
               <input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="ชื่อ-นามสกุล / Full name"
+                placeholder="Username"
                 required
                 className="input"
-                autoComplete="name"
+                autoComplete="username"
                 autoFocus
               />
             </div>
