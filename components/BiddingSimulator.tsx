@@ -675,17 +675,19 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     <>ส่วนลดกลางตลาด{" "}
                     <span className="font-semibold text-amber-600">−{benchDiscount}%</span>
                     {marketN > 0 && <> จาก {marketN.toLocaleString()} โครงการ e-bidding</>}
-                    {" "}กำไร {targetMarginPct}% รองรับได้ถึง −{marginMaxDiscount.toFixed(1)}% ✓ — เสนอ ฿{optimalBid.toFixed(1)}M{" "}
-                    (เปอร์เซ็นไทล์ที่ <span className={`font-semibold ${positionColor}`}>{positioningPct}</span>
-                    {" "}· <span className={`font-semibold ${positionColor} lang-th`}>{positioningLabelTh}</span>)
-                    กำไร <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}%</span></>
+                    {" "}— ด้วยกำไร {targetMarginPct}% คุณยังคงได้กำไรแม้ลดราคาถึง −{marginMaxDiscount.toFixed(1)}% ✓
+                    {" "}ราคาแนะนำ ฿{optimalBid.toFixed(1)}M อยู่อันดับที่{" "}
+                    <span className={`font-semibold ${positionColor}`}>{positioningPct}</span>
+                    {" "}ของตลาด · <span className={`font-semibold ${positionColor} lang-th`}>{positioningLabelTh}</span>
+                    {" "}กำไรที่คาดการณ์ <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}%</span></>
                   ) : (
                     <>Market median{" "}
                     <span className="font-semibold text-amber-600">−{benchDiscount}%</span>
-                    {marketN > 0 && <> across {marketN.toLocaleString()} e-bidding tenders</>}.
-                    {" "}Your {targetMarginPct}% margin allows up to −{marginMaxDiscount.toFixed(1)}% ✓ — bid ฿{optimalBid.toFixed(1)}M{" "}
-                    (<span className={`font-semibold ${positionColor}`}>{positioningPct}th %ile</span>
-                    {" "}· <span className={`font-semibold ${positionColor}`}>{positioningLabelEn.split(" — ")[0]}</span>),{" "}
+                    {marketN > 0 && <> across {marketN.toLocaleString()} e-bidding tenders</>}
+                    {" "}— with a {targetMarginPct}% margin you stay profitable even at −{marginMaxDiscount.toFixed(1)}% discount ✓.
+                    {" "}Recommended bid ฿{optimalBid.toFixed(1)}M —{" "}
+                    <span className={`font-semibold ${positionColor}`}>{positioningPct}th percentile</span>
+                    {" "}· <span className={`font-semibold ${positionColor}`}>{positioningLabelEn.split(" — ")[0]}</span>,{" "}
                     <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}% estimated margin</span>.</>
                   )}
                 </p>

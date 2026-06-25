@@ -117,7 +117,7 @@ export default function CaseStudy({ lang }: CaseStudyProps) {
               </p>
               <p className={`text-xs text-emerald-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
                 {isTh
-                  ? "เมื่อมีผลการประมูล 20+ รายการในหมวดเดียวกัน โมเดลจะเริ่มผสมข้อมูลชุมชนเข้ากับข้อมูล e-GP ที่ 30+ รายการ โมเดลจะประมาณความน่าจะเป็นในการชนะได้จริง"
+                  ? "ยิ่งมีผู้ใช้แชร์ผลประมูลมากขึ้น ระบบยิ่งแม่นยำขึ้น — เมื่อมีข้อมูล 20+ รายการในหมวดเดียวกัน ระบบจะปรับการประมาณส่วนลดให้ละเอียดขึ้น และเมื่อถึง 30+ รายการ จะสามารถคาดการณ์โอกาสชนะได้"
                   : "At 20+ outcomes per agency×category, the model blends community data with e-GP benchmarks. At 30+ matched pairs, it estimates real win probability — not just positioning."}
               </p>
             </div>
