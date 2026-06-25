@@ -72,7 +72,7 @@ export default function Hero({ lang }: HeroProps) {
         <div className="fade-up d5 flex flex-wrap justify-center gap-10 text-center border-t border-slate-100 pt-10">
           {(isTh ? [
             { value: "251,000+", label: "สัญญาในฐานข้อมูล" },
-            { value: "218×", label: "การแข่งขันราคาลดลงในหกปี" },
+            { value: "218×", label: "การแข่งขันราคาลดลงไปในหกปี" },
             { value: "77", label: "จังหวัดทั่วประเทศ" },
             { value: "121×", label: "ช่องว่างระหว่างจังหวัด" },
           ] : [
