@@ -21,12 +21,10 @@ export default function Navbar({ lang, setLang }: NavbarProps) {
   const links = isTh ? [
     { label: "ผลการวิจัย", href: "#findings" },
     { label: "จำลองราคา", href: "#simulator" },
-    { label: "รายงานวิจัย", href: "/research" },
     { label: "รายงาน", href: "/report" },
   ] : [
     { label: "Findings", href: "#findings" },
     { label: "Simulator", href: "#simulator" },
-    { label: "Research", href: "/research" },
     { label: "Report", href: "/report" },
   ];
 
