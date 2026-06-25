@@ -38,7 +38,7 @@ const FINDINGS_EN = [
   },
   {
     n: '03',
-    stat: '121×',
+    stat: '97%',
     title: 'One person. Four child development centers. 97% discount.',
     body: 'In FY2567, the same individual won procurement contracts from four separate child development centers, all with the same ฿308,700 reference price, all at 96–97% discount.',
     table: [
