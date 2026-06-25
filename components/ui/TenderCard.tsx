@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Building2, MapPin } from 'lucide-react';
+import { Building2, MapPin, Bookmark, BookmarkCheck } from 'lucide-react';
 import type { Tender } from '@/lib/types';
 import { getTenderPresentation } from '@/lib/tender-presentation';
 import StatusPill from './StatusPill';
 import { useLanguage } from '@/lib/language-context';
+import { useBookmarks } from '@/lib/use-bookmarks';
 
 interface TenderCardProps {
   tender: Tender;
@@ -15,10 +16,12 @@ interface TenderCardProps {
 export default function TenderCard({ tender }: TenderCardProps) {
   const { t } = useLanguage();
   const p = getTenderPresentation(tender, t);
+  const { isBookmarked, toggle } = useBookmarks();
+  const saved = isBookmarked(tender.id);
 
   return (
     <article className="card-hover flex flex-col gap-4">
-      {/* Top row: category + type badges left, status right */}
+      {/* Top row: category + type badges left, status + bookmark right */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5 items-center min-w-0">
           <span className="badge">{p.categoryLabel}</span>
@@ -26,7 +29,18 @@ export default function TenderCard({ tender }: TenderCardProps) {
             {p.typeBadgeLabel}
           </span>
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => toggle(tender.id)}
+            aria-label={saved ? 'Remove bookmark' : 'Bookmark this tender'}
+            className={`p-1.5 rounded-lg transition-colors duration-150 ${
+              saved
+                ? 'text-[#1E3A5F] bg-[#EFF6FF] hover:bg-[#DBEAFE]'
+                : 'text-[#717171] hover:text-[#111111] hover:bg-[#F7F7F7]'
+            }`}
+          >
+            {saved ? <BookmarkCheck size={15} /> : <Bookmark size={15} />}
+          </button>
           <StatusPill status={p.status} />
         </div>
       </div>

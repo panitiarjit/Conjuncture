@@ -51,10 +51,6 @@ export async function GET(req: NextRequest) {
     'รหัสโครงการ': c.projectId,
     'ปีงบประมาณ': c.fiscalYear ?? '',
     'DBD Lookup': c.winnerBusinessId ? DBD_URL(c.winnerBusinessId) : '',
-    'ข้อความติดต่อ': buildOutreachMessage(c),
-    'ติดต่อแล้ว': '',
-    'ตอบกลับ': '',
-    'หมายเหตุ': '',
   }));
 
   const wb = XLSX.utils.book_new();
@@ -76,17 +72,17 @@ export async function GET(req: NextRequest) {
     { wch: 16 }, // รหัสโครงการ
     { wch: 12 }, // ปีงบประมาณ
     { wch: 40 }, // DBD
-    { wch: 70 }, // ข้อความติดต่อ
-    { wch: 12 }, // ติดต่อแล้ว
-    { wch: 12 }, // ตอบกลับ
-    { wch: 30 }, // หมายเหตุ
   ];
 
-  XLSX.utils.book_append_sheet(wb, ws, 'Prospects');
+  XLSX.utils.book_append_sheet(wb, ws, 'Contracts');
 
   const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-  const filename = `prospects-${keyword}-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  // ASCII-only filename — Thai characters in Content-Disposition headers crash Node.js HTTP
+  const date = new Date().toISOString().slice(0, 10);
+  const safeKeyword = keyword.replace(/[^a-zA-Z0-9\-_]/g, '').slice(0, 20) || 'contracts';
+  const filename = `contracts-${safeKeyword}-${date}.xlsx`;
+
   return new NextResponse(buffer as unknown as BodyInit, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

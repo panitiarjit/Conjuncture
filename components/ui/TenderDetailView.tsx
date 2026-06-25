@@ -1,15 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Building2, MapPin, CheckSquare, FileText, Info,
-  ArrowLeft, ExternalLink, Hash, Trophy, Users, TrendingDown,
+  ArrowLeft, ExternalLink, Hash, Trophy, Users, TrendingDown, Eye,
 } from 'lucide-react';
 import type { Tender, AwardedContract } from '@/lib/types';
 import StatusPill from './StatusPill';
 import { useLanguage } from '@/lib/language-context';
 import { resolveProcurementType } from '@/lib/procurement';
+import type { EnvelopeBuyersResponse } from '@/app/api/envelope-buyers/[id]/route';
 
 interface Props {
   tender: Tender | null;
@@ -30,6 +31,15 @@ function relativeDate(deadlineStr: string, offsetDays: number, locale: string): 
 export default function TenderDetailView({ tender, tenderStatus, awardedContract }: Props) {
   const { t, lang } = useLanguage();
   const locale = lang === 'th' ? 'th-TH' : 'en-US';
+  const [buyers, setBuyers] = useState<EnvelopeBuyersResponse | null>(null);
+
+  useEffect(() => {
+    if (!tender?.id) return;
+    fetch(`/api/envelope-buyers/${encodeURIComponent(tender.id)}`)
+      .then((r) => r.json())
+      .then((d: EnvelopeBuyersResponse) => setBuyers(d))
+      .catch(() => null);
+  }, [tender?.id]);
 
   const REQUIRED_DOCUMENTS = [
     t('td.doc.registration'),
@@ -138,6 +148,50 @@ export default function TenderDetailView({ tender, tenderStatus, awardedContract
                   </li>
                 ))}
               </ul>
+            </section>
+
+            {/* Document Buyers — P7: Envelope Purchase Tracking */}
+            <section className="mb-8" aria-labelledby="buyers-heading">
+              <div className="flex items-center gap-2 mb-3">
+                <Eye size={15} className="text-[#717171]" aria-hidden="true" />
+                <h2 id="buyers-heading" className="text-base font-semibold text-[#111111]">
+                  Competitors Watching This Tender
+                </h2>
+              </div>
+              {buyers === null ? (
+                <div className="h-10 bg-[#F7F7F7] rounded-lg animate-pulse" />
+              ) : buyers.available ? (
+                <ul className="flex flex-col gap-2">
+                  {buyers.buyers.map((b, i) => (
+                    <li key={i} className="flex items-center justify-between gap-2 p-3 bg-[#F7F7F7] rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-[#111111]">{b.name}</div>
+                        {b.purchaseDate && (
+                          <div className="text-xs text-[#717171]">Purchased: {b.purchaseDate}</div>
+                        )}
+                      </div>
+                      {b.businessId && (
+                        <a
+                          href={`https://www.dbd.go.th/main.php?filename=index&search=${encodeURIComponent(b.businessId)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-[#3B6EA5] hover:underline flex items-center gap-0.5 flex-shrink-0"
+                        >
+                          DBD <ExternalLink size={11} />
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="flex items-start gap-2.5 p-3 bg-[#F7F7F7] border border-[#E0E0E0] rounded-lg">
+                  <Eye size={14} className="text-[#B0B0B0] flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#717171]">
+                    Document buyers (ผู้ซื้อซอง) data is fetched from the e-GP portal per tender.
+                    Tracking is enabled for tenders in active bidding stage.
+                  </p>
+                </div>
+              )}
             </section>
 
             {/* Official Reference */}
