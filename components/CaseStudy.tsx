@@ -26,7 +26,7 @@ export default function CaseStudy({ lang }: CaseStudyProps) {
       icon: FileText,
       n: "3",
       title: "รายงานผลใน 2 นาที",
-      body: "ไม่ว่าจะชนะหรือแพ้ การรายงานผลของคุณช่วยให้โมเดลเรียนรู้ว่าส่วนลดไหนชนะจริง — ไม่ใช่แค่ส่วนลดที่เคยชนะในอดีต",
+      body: "ไม่ว่าจะชนะหรือแพ้ การรายงานผลของคุณช่วยให้ระบบเรียนรู้ว่าราคาระดับใดที่ชนะจริง ไม่ใช่แค่จากข้อมูลในอดีต",
     },
   ] : [
     {
@@ -69,7 +69,7 @@ export default function CaseStudy({ lang }: CaseStudyProps) {
             </h2>
             <p className={`mt-5 text-slate-500 leading-relaxed ${isTh ? "lang-th text-base" : "text-lg"}`}>
               {isTh
-                ? "ข้อมูล e-GP บันทึกเฉพาะผู้ชนะ ไม่มีข้อมูลผู้แพ้ ดังนั้นเราไม่สามารถคำนวณความน่าจะเป็นในการชนะได้จากข้อมูลสาธารณะอย่างเดียว เมื่อคุณรายงานผลประมูล — ทั้งชนะและแพ้ — โมเดลจะเรียนรู้ว่าส่วนลดไหนชนะจริงในตลาดของคุณ"
+                ? "ข้อมูล e-GP บันทึกเฉพาะผู้ชนะ ไม่มีข้อมูลผู้แพ้ ทำให้คำนวณโอกาสชนะจากข้อมูลสาธารณะอย่างเดียวไม่ได้ เมื่อคุณรายงานผลประมูลทั้งชนะและแพ้ ระบบจะเรียนรู้ว่าราคาระดับใดที่ชนะจริงในตลาดของคุณ"
                 : "The e-GP database records only winners. There is no losing-bid data. To calculate real win probability — not just percentile positioning — we need matched outcome data. When you report your bid result, the model learns what actually wins in your market segment."}
             </p>
 
@@ -117,7 +117,7 @@ export default function CaseStudy({ lang }: CaseStudyProps) {
               </p>
               <p className={`text-xs text-emerald-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
                 {isTh
-                  ? "ยิ่งมีผู้ใช้แชร์ผลประมูลมากขึ้น ระบบยิ่งแม่นยำขึ้น — เมื่อมีข้อมูล 20+ รายการในหมวดเดียวกัน ระบบจะปรับการประมาณส่วนลดให้ละเอียดขึ้น และเมื่อถึง 30+ รายการ จะสามารถคาดการณ์โอกาสชนะได้"
+                  ? "ยิ่งมีผู้ใช้แชร์ผลประมูลมากขึ้น ระบบยิ่งแม่นยำขึ้น เมื่อมีข้อมูล 20+ รายการในหมวดเดียวกัน ระบบจะประมาณราคาได้ละเอียดขึ้น และเมื่อถึง 30+ รายการ จะสามารถคาดการณ์โอกาสชนะได้จริง"
                   : "At 20+ outcomes per agency×category, the model blends community data with e-GP benchmarks. At 30+ matched pairs, it estimates real win probability — not just positioning."}
               </p>
             </div>

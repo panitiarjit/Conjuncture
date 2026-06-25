@@ -9,8 +9,8 @@ const FINDINGS_EN = [
   {
     number: "01",
     stat: "218×",
-    label: "Discount collapse in 6 years",
-    body: "Median discount in FY2561: 13.12%. By FY2567: 0.06%. Same contract types, same agencies. Whether this reflects better reference pricing, reduced competition, or something else is an open question the data cannot answer alone.",
+    label: "Price competition collapsed in 6 years",
+    body: "In FY2561, winning bids averaged 13.12% below reference price. By FY2567: 0.06%. Same contract types, same agencies. The market changed dramatically. Why is still an open question.",
     tag: "Year-on-year trend",
     color: "border-rose-100",
     tagColor: "bg-rose-50 text-rose-600",
@@ -18,8 +18,8 @@ const FINDINGS_EN = [
   {
     number: "02",
     stat: "36.1%",
-    label: "of e-bidding contracts won within 1% of reference",
-    body: "Of 1,070 e-bidding contracts analyzed, 36% ended within 0.5% of the reference price. A method designed for competition — producing the same outcome as a fixed-price purchase.",
+    label: "of e-bidding contracts won within 1% of reference price",
+    body: "Of 1,070 e-bidding contracts analyzed, 36% were won within 0.5% of the reference price. A method designed to force competitive pricing. It produced the same result as a fixed-price purchase in more than a third of cases.",
     tag: "Method analysis",
     color: "border-amber-100",
     tagColor: "bg-amber-50 text-amber-600",
@@ -28,7 +28,7 @@ const FINDINGS_EN = [
     number: "03",
     stat: "121×",
     label: "Gap between least and most competitive provinces",
-    body: "Saraburi median discount: 0.09%. Phichit: 10.91%. Same procurement law, same contract types. Geography determines the competitive environment more than project category.",
+    body: "Saraburi: winning bids averaged 0.09% below reference. Phichit: 10.91%. Same procurement law, same contract types. Geography shapes the competitive environment more than project category.",
     tag: "Provincial data",
     color: "border-blue-100",
     tagColor: "bg-blue-50 text-blue-600",
@@ -37,7 +37,7 @@ const FINDINGS_EN = [
     number: "04",
     stat: "57%",
     label: "of agencies bought from only one vendor",
-    body: "Of 4,003 agencies with winner data, 2,275 had a single winning vendor across all analyzed contracts. Not always a red flag — but combined with near-zero discounts, it creates a pattern worth examining.",
+    body: "Of 4,003 agencies with winner data, 2,275 had a single winning vendor across all analyzed contracts. Not always a red flag. But combined with near-zero price undercutting, it creates a pattern worth examining.",
     tag: "Concentration",
     color: "border-violet-100",
     tagColor: "bg-violet-50 text-violet-600",
@@ -45,8 +45,8 @@ const FINDINGS_EN = [
   {
     number: "05",
     stat: "3.28%",
-    label: "Median discount for ฿1M–10M projects vs 1.01% for ฿100M+",
-    body: "The conventional assumption — larger contracts attract more competition — does not hold. Medium-sized projects face the most competitive pricing. Micro and mega projects converge near zero.",
+    label: "Below-reference average for ฿1M–10M projects vs 1.01% for ฿100M+",
+    body: "Larger contracts do not attract more competition. Medium-sized projects (฿1M–10M) see the most competitive pricing. Both micro projects (under ฿100k) and mega projects (over ฿100M) cluster near the reference price.",
     tag: "Budget tier",
     color: "border-emerald-100",
     tagColor: "bg-emerald-50 text-emerald-600",
@@ -55,7 +55,7 @@ const FINDINGS_EN = [
     number: "06",
     stat: "812",
     label: "Statistical anomaly flags across 19,773 contracts",
-    body: "Contracts with Z-score > 3 versus the agency's own median. Includes a ฿46M construction contract awarded for ฿461K (99% discount) and one person winning 4 child-development center contracts at 97% discount each.",
+    body: "Contracts with Z-score > 3 versus the agency's own median. Includes a ฿46M construction contract awarded for ฿461K (99% below reference) and one person winning 4 child-development center contracts at 97% below reference each.",
     tag: "Anomaly detection",
     color: "border-slate-100",
     tagColor: "bg-slate-50 text-slate-600",
@@ -66,8 +66,8 @@ const FINDINGS_TH = [
   {
     number: "01",
     stat: "218×",
-    label: "ส่วนลดลดลงในหกปี",
-    body: "ส่วนลดมัธยฐานปีงบประมาณ 2561: 13.12% ถึงปีงบประมาณ 2567: 0.06% ประเภทสัญญาเดิม หน่วยงานเดิม ข้อมูลบอกว่า 'เปลี่ยนแปลง' ไม่ใช่ 'เพราะอะไร'",
+    label: "การแข่งขันราคาหายไปในหกปี",
+    body: "ปีงบประมาณ 2561 ราคาที่ชนะต่ำกว่ากลางเฉลี่ย 13.12% ปี 2567 เหลือเพียง 0.06% ประเภทสัญญาเดิม หน่วยงานเดิม ตลาดเปลี่ยนไปชัดเจน แต่สาเหตุที่แท้จริงยังเป็นคำถามเปิด",
     tag: "แนวโน้มรายปี",
     color: "border-rose-100",
     tagColor: "bg-rose-50 text-rose-600",
@@ -75,8 +75,8 @@ const FINDINGS_TH = [
   {
     number: "02",
     stat: "36.1%",
-    label: "ของ e-bidding ชนะด้วยส่วนลดน้อยกว่า 1%",
-    body: "จาก 1,070 สัญญา e-bidding ที่วิเคราะห์ 36% จบที่ส่วนลดน้อยกว่า 0.5% จากราคากลาง วิธีที่ออกแบบมาเพื่อการแข่งขัน — ผลลัพธ์ไม่ต่างกับการตั้งราคาตายตัว",
+    label: "ของ e-bidding ชนะในราคาใกล้เต็มราคากลาง",
+    body: "จาก 1,070 สัญญา e-bidding ที่วิเคราะห์ 36% ชนะในราคาที่ต่ำกว่ากลางไม่ถึง 0.5% วิธีที่ออกแบบมาเพื่อการแข่งขัน แต่ผลลัพธ์ไม่ต่างกับการตั้งราคาตายตัว",
     tag: "วิธีการจัดซื้อ",
     color: "border-amber-100",
     tagColor: "bg-amber-50 text-amber-600",
@@ -85,7 +85,7 @@ const FINDINGS_TH = [
     number: "03",
     stat: "121×",
     label: "ช่องว่างระหว่างจังหวัดที่มีการแข่งขันต่ำสุดและสูงสุด",
-    body: "สระบุรี ส่วนลดมัธยฐาน 0.09% พิจิตร 10.91% กฎหมายเดียวกัน ประเภทสัญญาเดียวกัน ภูมิภาคกำหนดสภาพแวดล้อมการแข่งขันได้มากกว่าประเภทโครงการ",
+    body: "สระบุรี ราคาที่ชนะต่ำกว่ากลางเฉลี่ย 0.09% พิจิตร 10.91% กฎหมายเดียวกัน ประเภทสัญญาเดียวกัน แต่ภูมิภาคกำหนดสภาพตลาดได้มากกว่าประเภทโครงการ",
     tag: "ข้อมูลจังหวัด",
     color: "border-blue-100",
     tagColor: "bg-blue-50 text-blue-600",
@@ -94,7 +94,7 @@ const FINDINGS_TH = [
     number: "04",
     stat: "57%",
     label: "ของหน่วยงานซื้อจากผู้ขายรายเดียวตลอด",
-    body: "จาก 4,003 หน่วยงานที่มีข้อมูลผู้ชนะ 2,275 รายมีผู้ชนะรายเดียวในทุกสัญญาที่วิเคราะห์ ไม่ได้หมายความว่ามีปัญหาเสมอ แต่เมื่อรวมกับส่วนลดใกล้ศูนย์ รูปแบบนี้ควรตรวจสอบ",
+    body: "จาก 4,003 หน่วยงานที่มีข้อมูลผู้ชนะ 2,275 รายมีผู้ชนะรายเดียวในทุกสัญญาที่วิเคราะห์ ไม่ได้หมายความว่ามีปัญหาเสมอ แต่เมื่อรวมกับการเสนอราคาใกล้เต็มราคากลาง รูปแบบนี้ควรตรวจสอบ",
     tag: "ความเข้มข้นตลาด",
     color: "border-violet-100",
     tagColor: "bg-violet-50 text-violet-600",
@@ -102,8 +102,8 @@ const FINDINGS_TH = [
   {
     number: "05",
     stat: "3.28%",
-    label: "ส่วนลดมัธยฐานโครงการ 1–10 ล้าน vs 1.01% สำหรับโครงการ 100 ล้านขึ้นไป",
-    body: "ความเชื่อทั่วไปว่าโครงการใหญ่ดึงดูดการแข่งขันมากกว่า — ไม่จริง โครงการขนาดกลางมีส่วนลดสูงสุด โครงการเล็กมากและใหญ่มากต่างมาบรรจบกันที่ส่วนลดใกล้ศูนย์",
+    label: "ราคาที่ชนะต่ำกว่ากลางเฉลี่ยในโครงการ 1–10 ล้าน เทียบ 1.01% ในโครงการ 100 ล้านขึ้นไป",
+    body: "โครงการใหญ่ไม่ได้มีการแข่งขันมากกว่าเสมอไป โครงการขนาด 1–10 ล้านบาทมีการต่อราคาสูงที่สุด ส่วนโครงการเล็กมาก (ต่ำกว่า 1 แสนบาท) และโครงการใหญ่มาก (เกิน 100 ล้านบาท) ต่างเสนอราคาใกล้เต็มราคากลาง",
     tag: "ขนาดวงเงิน",
     color: "border-emerald-100",
     tagColor: "bg-emerald-50 text-emerald-600",
@@ -112,7 +112,7 @@ const FINDINGS_TH = [
     number: "06",
     stat: "812",
     label: "สัญญาผิดปกติทางสถิติจาก 19,773 รายการ",
-    body: "สัญญาที่มี Z-score > 3 เทียบกับค่ามัธยฐานของหน่วยงานตัวเอง รวมถึงสัญญาก่อสร้าง ฿46 ล้าน ที่ชนะในราคา ฿461,000 (ส่วนลด 99%) และบุคคลหนึ่งชนะ 4 ศูนย์พัฒนาเด็กเล็ก ส่วนลด 97% ต่อสัญญา",
+    body: "สัญญาที่มี Z-score > 3 เทียบกับค่ากลางของหน่วยงานตัวเอง รวมถึงสัญญาก่อสร้าง ฿46 ล้าน ที่ชนะในราคา ฿461,000 (ต่ำกว่ากลาง 99%) และบุคคลหนึ่งชนะ 4 ศูนย์พัฒนาเด็กเล็ก ต่ำกว่ากลาง 97% ต่อสัญญา",
     tag: "ตรวจจับความผิดปกติ",
     color: "border-slate-100",
     tagColor: "bg-slate-50 text-slate-600",
@@ -169,7 +169,7 @@ export default function Features({ lang }: FeaturesProps) {
               {isTh ? "ข้อมูลพร้อมใช้งานแล้ว" : "The data is ready."}
             </h3>
             <p className={`text-slate-400 text-sm mt-1 ${isTh ? "lang-th" : ""}`}>
-              {isTh ? "ดูว่าราคาของคุณอยู่ที่เปอร์เซ็นไทล์ไหนในตลาดจริง" : "See exactly where your bid stands in the real distribution."}
+              {isTh ? "ดูว่าราคาของคุณอยู่ระดับใดในตลาดจริง" : "See exactly where your bid stands in the real distribution."}
             </p>
           </div>
           <Link
