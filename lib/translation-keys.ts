@@ -1,3 +1,4 @@
+import insights from './translations/insights';
 import nav from './translations/nav';
 import auth from './translations/auth';
 import common from './translations/common';
@@ -18,6 +19,7 @@ import tenderDetail from './translations/tenderDetail';
 import type { ProjectCategory } from './types';
 
 export type TranslationKey =
+  | keyof typeof insights.en
   | keyof typeof nav.en
   | keyof typeof auth.en
   | keyof typeof common.en

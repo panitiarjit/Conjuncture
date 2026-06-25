@@ -57,26 +57,40 @@ If costs are too high, marginMaxDiscount ≤ 0 → **no profitable bid possible*
 
 **Fallback chain (priority order):**
 ```javascript
-if (agency && category && agencyCategory.has(key) && n >= 8) {
+if (agency && category && agencyCategory.has(key)) {
   benchmark = agencyCategory[agency+"|"+category]
-  source = "agency×category"
+  source = "agency×category"           // fallbackUsed = false
+} else if (province && category && provinceCategory.has(key)) {
+  benchmark = provinceCategory[province+"|"+category]
+  source = "province×category"         // fallbackUsed = true
 } else if (category && category.has(projectType)) {
   benchmark = category[projectType]
-  source = "category"
+  source = "category"                  // fallbackUsed = true
 } else {
-  benchmark = global   // median=6.1, from 27,954 positive-discount e-bidding tenders
-  source = "global"
+  benchmark = global
+  source = "global"                    // fallbackUsed = true
 }
 ```
+
+`fallbackUsed = false` only when agency×category matches. All other tiers set `fallbackUsed = true`.
 
 **QuantileTable fields:**
 ```javascript
 {
-  discounts: number[],   // sorted raw values — for empirical CDF
+  discounts: number[],          // sorted raw values — for empirical CDF
   p10, p25, median, p75, p90: number,
-  sigma: number,         // stdev (informational only, not used in recommendations)
+  sigma: number,                // stdev (informational only, not used in recommendations)
   n: number,
-  source: string
+  source: string,
+  // 95% CI on median (Conover order statistics, no distributional assumption — set when n ≥ 4)
+  medianCI?: { lo: number; hi: number },
+  // Market concentration (DOJ antitrust scale, set at category level when n ≥ 10 winner IDs)
+  hhi?: number,                 // Herfindahl-Hirschman Index (0–10000)
+  eNoc?: number,                // effective number of competitors = 10000 / HHI
+  marketConcentrationN?: number,// number of winnerBusinessId values used
+  // Competition density (CoST subset only — sparse)
+  medianBidderCount?: number,
+  bidderCountN?: number,
 }
 ```
 
@@ -161,18 +175,28 @@ Below p25: you are above most past winners. Above p75: thinner margins, check th
 **When:** API call on first request, then cached for 1 hour.
 
 ```javascript
+// Matches competitive procurement methods by Thai name or English tag.
+// Sole-source (เฉพาะเจาะจง) is excluded — no competition, so discounts are meaningless.
+const COMPETITIVE_RE = /ประกวดราคา|คัดเลือก|e-bidding/i
+
 function buildBenchmarkTables(contracts) {
-  // Filter to e-bidding only with valid discounts
+  // Filter to competitive methods with valid discounts.
+  // >= 0 includes zero-discount awards (real data); negatives are data errors.
   ebidding = contracts.filter(c =>
-    c.procurementMethodGroup === 'e-bidding' &&
-    c.discountFromReference > 0 &&
+    COMPETITIVE_RE.test(c.procurementMethod ?? c.procurementMethodGroup ?? '') &&
+    c.discountFromReference >= 0 &&
     c.discountFromReference < 100
   )
 
-  // Group raw discounts by agency×category and category
+  // Group raw discounts by agency×category, province×category, and category
   for (contract of ebidding) {
     agCatMap[agency+"|"+projectType].push(contract.discountFromReference)
+    provCatMap[province+"|"+projectType].push(contract.discountFromReference)
     catMap[projectType].push(contract.discountFromReference)
+    catBusinessIds[projectType].push(contract.winnerBusinessId)   // for HHI
+    if (contract.bidders?.length > 0) {
+      catBidderCounts[projectType].push(contract.bidders.length)  // for density (CoST only)
+    }
   }
 
   // Build QuantileTables — include raw sorted discounts for empirical CDF
@@ -181,12 +205,20 @@ function buildBenchmarkTables(contracts) {
       agencyCategory[key] = computeQuantileTable(vals, "agency×category")
     }
   }
+  for ([key, vals] of provCatMap) {
+    if (vals.length >= MIN_N) {
+      provinceCategory[key] = computeQuantileTable(vals, "province×category")
+    }
+  }
   for ([cat, vals] of catMap) {
-    category[cat] = computeQuantileTable(vals, "category")
+    const qt   = computeQuantileTable(vals, "category")
+    const conc = computeHHI(catBusinessIds[cat])          // undefined if n < 10
+    const dens = computeDensity(catBidderCounts[cat])     // undefined if n < 5
+    category[cat] = { ...qt, ...conc, ...dens }
   }
 
   global = computeQuantileTable(allDiscounts, "global")
-  return { agencyCategory, category, global }
+  return { agencyCategory, provinceCategory, category, global }
 }
 
 function computeQuantileTable(discounts, source) {
@@ -221,7 +253,81 @@ function computeQuantileTable(discounts, source) {
 
 ---
 
-## Part 4: Forward-Walk Backtest
+## Part 4: Market Intelligence Signals
+
+These are attached to the category-level (and propagated to the API response) as extra context.
+They do not enter recommendation logic — they're display-only.
+
+### 95% CI on the Median (`medianCI`)
+
+Uses order statistics with normal approximation of the binomial (Conover 1999, §3.2).
+No distributional assumption — reads directly from the sorted array.
+
+```javascript
+spread = 1.96 × √n / 2
+j = max(0,   floor(n/2 - spread) - 1)
+k = min(n-1, ceil(n/2  + spread) - 1)
+medianCI = { lo: sorted[j], hi: sorted[k] }
+```
+
+A wide CI means sparse or dispersed data. Only computed when n ≥ 4.
+
+### HHI and ENoc (`hhi`, `eNoc`)
+
+```javascript
+// Uses winnerBusinessId — unique juristic ID, no name-normalisation needed
+counts = groupBy(winnerBusinessIds)
+hhi  = sum((count_i / total)² for each winner) × 10000
+eNoc = 10000 / hhi   // effective number of competitors
+```
+
+**DOJ/FTC thresholds:**
+| HHI | Market structure |
+|-----|-----------------|
+| < 1500 | Competitive |
+| 1500–2500 | Moderately concentrated |
+| > 2500 | Highly concentrated |
+
+Only computed when n ≥ 10 valid IDs.
+
+### Competition Density (`medianBidderCount`)
+
+```javascript
+// bidders[] is present only in CoST-tagged contracts (--all-bidders flag)
+bidderCounts = contracts.filter(c => c.bidders?.length > 0).map(c => c.bidders.length)
+medianBidderCount = median(bidderCounts)  // computed when n ≥ 5
+```
+
+When present, this cross-checks ENoc (HHI-derived). When absent, ENoc is the sole proxy.
+
+---
+
+## Part 5: Bid Signals
+
+Three raw signals — no composite score. Calibrating weights/thresholds requires loser
+bid data that does not exist in `cgd_contracts` (winner-only dataset).
+
+```javascript
+// Signal 1: Margin viability (pure math)
+// Note: when floor is breached, actualMargin = targetMarginPct exactly (by definition of the
+// floor), so marginViability = 100. The strategic risk is expressed through Signal 2.
+marginViability = cannotMeetMargin ? 0 : min(100, actualMargin / targetMarginPct × 100)
+
+// Signal 2: Competitiveness (empirical CDF position)
+competitiveness = marginFloorBreached
+  ? round(positioningPct × 0.4)   // penalise: bid forced above market by cost floor
+  : positioningPct
+
+// Signal 3: Market volume (benchmark data richness, piecewise linear)
+// n=8→30, n=20→50, n=50→70, n≥200→100
+marketVolume = piecewiseLinear(n)
+```
+
+These are shown as three separate progress bars in the UI, not aggregated.
+
+---
+
+## Part 6: Forward-Walk Backtest
 
 **Purpose:** Validate baseline model performance (MAE, R²) without data leakage.
 
@@ -269,17 +375,23 @@ A median-only model correctly achieves ~3% R². If R² > 0.3, there is data leak
 
 ---
 
-## Part 5: Backward Test (Per-Tender Validation)
+## Part 7: Backward Test (Per-Tender Validation)
 
 **Purpose:** For each awarded contract, compare model recommendation vs. actual outcome.
 Used for sanity checks, not for model tuning (would be circular — winners-only data).
 
 ```javascript
+// Uses real Firestore data; tables built from full dataset (in-sample — forward-test handles OOT)
+tables = buildBenchmarkTables(allContracts)
+
 for (contract of testContracts) {
-  estimatedCost = contract.referencePrice * 0.8   // assumed 80% cost ratio
-  rec = recommendBid(contract.referencePrice, estimatedCost, targetMargin=10)
+  estimatedCost = contract.referencePrice * 0.8   // assumed 80% cost ratio (no actual cost data)
+  bench = getBenchmarkFromTables(contract.agency, contract.projectType, tables, contract.province)
+  rec = recommendBid(contract.referencePrice, estimatedCost, targetMargin=10, bench)
 
   error = rec.recommendedDiscount - contract.discountFromReference
+  // "wouldHaveWon" = our recommended bid ≤ actual winner's price.
+  // Necessary but NOT sufficient for winning: we'd also need to beat every other bidder.
   wouldHaveWon = rec.recommendedBid <= contract.agreedPrice
 
   if (wouldHaveWon) {
@@ -289,14 +401,15 @@ for (contract of testContracts) {
 ```
 
 **Observed results:**
-- Average error: ~7.4pp (model is slightly conservative — recommends less discount than actual winners)
-- Would-have-won rate: ~13.3% (model bids conservatively, loses to more aggressive winners)
-- Profitable wins: ~100% (margin guard correctly filters unprofitable bids)
+- Average error: ~7–9pp (model predicts near category median; actual winners are higher-variance)
+- Bid ≤ winner price rate: varies by category (conservative model beats winner price rarely)
+- Profitable margin guard: ~100% (cost-floor check correctly blocks unprofitable bids)
 
-**Note on "86.7% accuracy":** The previous version claimed "win probability accuracy = 86.7%".
-This was circular: comparing predicted win probability against winner-only outcomes
-(every row in the data won, by definition). The metric was measuring tautology, not accuracy.
-It has been removed.
+**What changed from v1:**
+- Uses real Firestore data, not synthetic contracts
+- No `predictedWinProb` — removed entirely (winner-only data cannot calibrate win probability)
+- Uses `positioningPct` + `positioningLabel` instead
+- Benchmark lookup uses full fallback chain (agency×category → province×category → category → global)
 
 ---
 

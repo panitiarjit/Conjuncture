@@ -53,7 +53,7 @@ const PROCUREMENT_PATH = path.join(__dirname, '../lib/procurement.ts');
 const procurementSrc = fs.readFileSync(PROCUREMENT_PATH, 'utf8');
 
 function currentMapEntries(): Set<string> {
-  const match = procurementSrc.match(/const METHOD_ID_MAP[^{]*\{([^}]+)\}/s);
+  const match = procurementSrc.match(/const METHOD_ID_MAP[^{]*\{([^}]+)\}/);
   if (!match) return new Set();
   const entries = [...match[1].matchAll(/'(\d+)':/g)];
   return new Set(entries.map((m) => m[1]));
@@ -68,7 +68,7 @@ function patchMethodIdMap(toAdd: Array<{ id: string; known: KnownCode }>): void 
     .join('\n');
 
   const patched = procurementSrc.replace(
-    /^(const METHOD_ID_MAP[^{]*\{[^}]+)(};)/ms,
+    /^(const METHOD_ID_MAP[^{]*\{[^}]+)(};)/m,
     (_, body, closing) => `${body}${lines}\n${closing}`,
   );
 

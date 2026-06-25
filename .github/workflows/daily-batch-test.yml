@@ -1,0 +1,39 @@
+name: BidSight Daily Batch Test
+
+on:
+  schedule:
+    - cron: '30 8 * * *'  # 08:30 UTC = 15:30 BKK, 30 min after main scrape cron
+  workflow_dispatch:       # allow manual trigger
+
+env:
+  FIREBASE_ADMIN_PROJECT_ID: ${{ secrets.FIREBASE_ADMIN_PROJECT_ID }}
+  FIREBASE_ADMIN_CLIENT_EMAIL: ${{ secrets.FIREBASE_ADMIN_CLIENT_EMAIL }}
+  FIREBASE_ADMIN_PRIVATE_KEY: ${{ secrets.FIREBASE_ADMIN_PRIVATE_KEY }}
+
+jobs:
+  batch-test:
+    runs-on: self-hosted
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run batch test
+        run: npx ts-node --project tsconfig.scripts.json scripts/run-batch-tests.ts
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          git add .batch-state.json scripts/test-results/
+          git diff --staged --quiet || git commit -m "chore: bidsight batch test $(date -u +%Y-%m-%d) batch-$(jq .currentBatch .batch-state.json)"
+          git push origin main

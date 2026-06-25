@@ -1,4 +1,4 @@
-import type { Tender, Project, Vendor, Category } from './types';
+import type { Tender, Project, Vendor, Category, SoeTender } from './types';
 
 export async function getTenders(): Promise<Tender[]> {
   const r = await fetch('/api/tenders');
@@ -32,6 +32,12 @@ export async function getVendorById(id: string): Promise<Vendor | undefined> {
 
 export async function getCategories(): Promise<Category[]> {
   const r = await fetch('/api/categories');
+  if (!r.ok) return [];
+  return r.json();
+}
+
+export async function getSoeTenders(): Promise<SoeTender[]> {
+  const r = await fetch('/api/soe-tenders');
   if (!r.ok) return [];
   return r.json();
 }

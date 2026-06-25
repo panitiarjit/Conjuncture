@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import fs from 'fs';
 import path from 'path';
 import { TENDERS, PROJECTS, VENDORS, CATEGORIES } from './mock-data';
-import type { Tender, Project, Vendor, Category, AwardedContract } from './types';
+import type { Tender, Project, Vendor, Category, AwardedContract, SoeTender } from './types';
 
 // Module-level in-memory cache — persists across requests on the same warm Worker instance.
 // Without R2/KV configured, unstable_cache has no persistent backend in Cloudflare Workers,
@@ -52,12 +52,12 @@ const fetchTendersFromFirestore = unstable_cache(
     // firebase-admin uses eval() which is blocked in Cloudflare Workers.
     // Use the REST client (Web Crypto + fetch) instead — works everywhere.
     const { restGetCollection } = await import('./firestore-rest');
-    const tenders = await restGetCollection<Tender>('tenders');
+    const tenders = await restGetCollection<Tender>('tenders', 2000);
     saveToDisk(tenders);
     return tenders;
   },
   ['tenders'],
-  { revalidate: 3600, tags: ['tenders'] },
+  { revalidate: 21600, tags: ['tenders'] },
 );
 
 export async function getTenders(): Promise<Tender[]> {
@@ -66,7 +66,7 @@ export async function getTenders(): Promise<Tender[]> {
   if (cached) return cached;
   try {
     const tenders = await fetchTendersFromFirestore();
-    memSet('tenders', tenders, 60 * 60 * 1000); // 1h
+    memSet('tenders', tenders, 6 * 60 * 60 * 1000); // 6h
     return tenders;
   } catch (err) {
     console.warn('[data-service] Firestore unavailable, serving disk/mock fallback:', (err as Error).message);
@@ -140,9 +140,9 @@ const fetchAwardedContractsFromFirestore = unstable_cache(
     return all.filter((c) => c.projectName.toLowerCase().includes(kw));
   },
   ['cgd_contracts'],
-  // 6h revalidate: cgd_contracts only changes once/day (fetch-historical at 15:00).
-  // Keeps daily Firestore reads from this path to ≤4 revalidations × 2k docs = 8k reads/day.
-  { revalidate: 21600, tags: ['cgd_contracts'] },
+  // 24h revalidate: cgd_contracts only changes once/day (fetch-historical at 15:00).
+  // Keeps daily Firestore reads from this path to 1 revalidation × 5k docs = 5k reads/day.
+  { revalidate: 86400, tags: ['cgd_contracts'] },
 );
 
 export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Promise<AwardedContract[]> {
@@ -152,7 +152,7 @@ export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Pr
   if (cached) return cached;
   try {
     const contracts = await fetchAwardedContractsFromFirestore(keyword, maxDocs);
-    memSet(cacheKey, contracts, 6 * 60 * 60 * 1000); // 6h matches KV revalidate
+    memSet(cacheKey, contracts, 24 * 60 * 60 * 1000); // 24h: cgd_contracts changes once/day
     return contracts;
   } catch {
     return [];
@@ -163,17 +163,26 @@ export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Pr
 // agency and province are required to build the agency×category and province×category
 // fallback tiers — omitting them silently collapses both tiers to category/global.
 type BenchmarkContract = Pick<AwardedContract,
-  'procurementMethod' | 'discountFromReference' | 'projectType' | 'agency' | 'province'
->;
+  'procurementMethod' | 'discountFromReference' | 'projectType' | 'agency' | 'province' | 'winnerBusinessId'
+  | 'fiscalYear' | 'referencePrice' | 'announceDate'
+> & { bidders?: string[] };
 
-const BENCHMARK_FIELDS = ['procurementMethod', 'discountFromReference', 'projectType', 'agency', 'province'];
+// procurementMethodGroup is NOT fetched: in the CGD dataset it is always the same generic
+// label ("วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง") on every contract —
+// useless for filtering. procurementMethod carries the actual method name.
+const BENCHMARK_FIELDS = [
+  'procurementMethod', 'discountFromReference', 'projectType', 'agency', 'province',
+  'winnerBusinessId', 'bidders', 'fiscalYear', 'referencePrice', 'announceDate',
+];
 
 const fetchBenchmarkContractsFromFirestore = unstable_cache(
   async (): Promise<BenchmarkContract[]> => {
     const { restGetCollectionPage } = await import('./firestore-rest');
     const all: BenchmarkContract[] = [];
     let cursor: string | undefined;
-    // Fetch up to 10,000 docs with field mask — small payload, fast to parse
+    // Cap at 10k docs: field-masked fetch is cheap per-doc (~150 bytes) but Firestore
+    // still charges one read per document. 10k × 1 refresh/day = 10k reads/day.
+    // Test scripts mirror this cap so validation reflects production behaviour.
     do {
       const { docs, nextPageToken } = await restGetCollectionPage<BenchmarkContract>(
         'cgd_contracts',
@@ -187,7 +196,7 @@ const fetchBenchmarkContractsFromFirestore = unstable_cache(
     return all;
   },
   ['benchmark_contracts'],
-  { revalidate: 21600, tags: ['cgd_contracts'] },
+  { revalidate: 86400, tags: ['cgd_contracts'] },
 );
 
 export async function getContractsForBenchmark(): Promise<BenchmarkContract[]> {
@@ -197,8 +206,32 @@ export async function getContractsForBenchmark(): Promise<BenchmarkContract[]> {
   if (cached) return cached;
   try {
     const contracts = await fetchBenchmarkContractsFromFirestore();
-    memSet(cacheKey, contracts, 6 * 60 * 60 * 1000);
+    memSet(cacheKey, contracts, 24 * 60 * 60 * 1000);
     return contracts;
+  } catch {
+    return [];
+  }
+}
+
+// ── SOE tenders (soe_tenders Firestore collection) ───────────────────────────
+
+const fetchSoeTendersFromFirestore = unstable_cache(
+  async (): Promise<SoeTender[]> => {
+    const { restGetCollection } = await import('./firestore-rest');
+    return restGetCollection<SoeTender>('soe_tenders', 1000);
+  },
+  ['soe_tenders'],
+  { revalidate: 21600, tags: ['soe_tenders'] },
+);
+
+export async function getSoeTenders(): Promise<SoeTender[]> {
+  if (!hasFirestoreCredentials()) return [];
+  const cached = memGet<SoeTender[]>('soe_tenders');
+  if (cached) return cached;
+  try {
+    const tenders = await fetchSoeTendersFromFirestore();
+    memSet('soe_tenders', tenders, 6 * 60 * 60 * 1000);
+    return tenders;
   } catch {
     return [];
   }

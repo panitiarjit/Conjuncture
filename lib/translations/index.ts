@@ -1,3 +1,4 @@
+import insights from './insights';
 import nav from './nav';
 import auth from './auth';
 import common from './common';
@@ -26,6 +27,7 @@ function merge(...namespaces: NS[]): NS {
 }
 
 export default merge(
+  insights,
   nav,
   auth,
   common,

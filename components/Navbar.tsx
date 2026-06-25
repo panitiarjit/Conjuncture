@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { TrendingUp, Menu, X } from "lucide-react";
-import { t, type Lang } from "@/lib/landing-translations";
+import { type Lang } from "@/lib/landing-translations";
 
 interface NavbarProps { lang: Lang; setLang: (l: Lang) => void; }
 
 export default function Navbar({ lang, setLang }: NavbarProps) {
-  const tx = t[lang].nav;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const isTh = lang === "th";
@@ -18,10 +18,16 @@ export default function Navbar({ lang, setLang }: NavbarProps) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const links = [
-    { label: tx.features, href: "#features" },
-    { label: tx.simulator, href: "#simulator" },
-    { label: tx.caseStudy, href: "#case-study" },
+  const links = isTh ? [
+    { label: "ผลการวิจัย", href: "#findings" },
+    { label: "จำลองราคา", href: "#simulator" },
+    { label: "รายงานวิจัย", href: "/research" },
+    { label: "รายงาน", href: "/report" },
+  ] : [
+    { label: "Findings", href: "#findings" },
+    { label: "Simulator", href: "#simulator" },
+    { label: "Research", href: "/research" },
+    { label: "Report", href: "/report" },
   ];
 
   return (
@@ -34,16 +40,23 @@ export default function Navbar({ lang, setLang }: NavbarProps) {
             <div className="w-7 h-7 rounded-lg bg-black flex items-center justify-center">
               <TrendingUp className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
             </div>
-            <span className="font-black text-black text-lg tracking-tight">{tx.logo}</span>
+            <span className="font-black text-black text-lg tracking-tight">CONJUNCTURE</span>
           </a>
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-1">
             {links.map(l => (
-              <a key={l.href} href={l.href}
-                className={`px-4 py-2 text-sm font-medium text-slate-500 hover:text-black rounded-lg hover:bg-slate-50 transition-colors ${isTh ? "lang-th" : ""}`}>
-                {l.label}
-              </a>
+              l.href.startsWith("#") ? (
+                <a key={l.href} href={l.href}
+                  className={`px-4 py-2 text-sm font-medium text-slate-500 hover:text-black rounded-lg hover:bg-slate-50 transition-colors ${isTh ? "lang-th" : ""}`}>
+                  {l.label}
+                </a>
+              ) : (
+                <Link key={l.href} href={l.href}
+                  className={`px-4 py-2 text-sm font-medium text-slate-500 hover:text-black rounded-lg hover:bg-slate-50 transition-colors ${isTh ? "lang-th" : ""}`}>
+                  {l.label}
+                </Link>
+              )
             ))}
           </div>
 
@@ -59,10 +72,18 @@ export default function Navbar({ lang, setLang }: NavbarProps) {
               ))}
             </div>
 
-            <a href="mailto:panitiarjit@gmail.com?subject=Demo%20Request&body=Hi%2C%0A%0AI%27d%20like%20to%20request%20a%20demo%20of%20Conjuncture."
-              className={`hidden md:inline-flex px-4 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors ${isTh ? "lang-th" : ""}`}>
-              {tx.requestDemo}
-            </a>
+            <Link
+              href="/login"
+              className={`hidden md:inline-flex px-4 py-2 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 hover:text-black transition-colors ${isTh ? "lang-th" : ""}`}
+            >
+              {isTh ? "เข้าสู่ระบบ" : "Login"}
+            </Link>
+            <Link
+              href="/register"
+              className={`hidden md:inline-flex px-4 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors ${isTh ? "lang-th" : ""}`}
+            >
+              {isTh ? "ลงทะเบียน" : "Register"}
+            </Link>
 
             <button className="md:hidden p-2 text-slate-500 hover:text-black" onClick={() => setOpen(!open)}>
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -72,18 +93,37 @@ export default function Navbar({ lang, setLang }: NavbarProps) {
       </div>
 
       {/* Mobile menu */}
-      <div className={`md:hidden border-t border-slate-100 bg-white overflow-hidden transition-all duration-200 ${open ? "max-h-64" : "max-h-0"}`}>
+      <div className={`md:hidden border-t border-slate-100 bg-white overflow-hidden transition-all duration-200 ${open ? "max-h-72" : "max-h-0"}`}>
         <div className="px-6 py-4 space-y-1">
           {links.map(l => (
-            <a key={l.href} href={l.href} onClick={() => setOpen(false)}
-              className={`block px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-black rounded-lg hover:bg-slate-50 ${isTh ? "lang-th" : ""}`}>
-              {l.label}
-            </a>
+            l.href.startsWith("#") ? (
+              <a key={l.href} href={l.href} onClick={() => setOpen(false)}
+                className={`block px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-black rounded-lg hover:bg-slate-50 ${isTh ? "lang-th" : ""}`}>
+                {l.label}
+              </a>
+            ) : (
+              <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
+                className={`block px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-black rounded-lg hover:bg-slate-50 ${isTh ? "lang-th" : ""}`}>
+                {l.label}
+              </Link>
+            )
           ))}
-          <a href="mailto:panitiarjit@gmail.com?subject=Demo%20Request&body=Hi%2C%0A%0AI%27d%20like%20to%20request%20a%20demo%20of%20Conjuncture."
-            className={`mt-2 block text-center px-4 py-2.5 bg-black text-white text-sm font-semibold rounded-lg ${isTh ? "lang-th" : ""}`}>
-            {tx.requestDemo}
-          </a>
+          <div className="mt-2 flex gap-2">
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className={`flex-1 text-center px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 ${isTh ? "lang-th" : ""}`}
+            >
+              {isTh ? "เข้าสู่ระบบ" : "Login"}
+            </Link>
+            <Link
+              href="/register"
+              onClick={() => setOpen(false)}
+              className={`flex-1 text-center px-4 py-2.5 bg-black text-white text-sm font-semibold rounded-lg ${isTh ? "lang-th" : ""}`}
+            >
+              {isTh ? "ลงทะเบียน" : "Register"}
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: '/admin', destination: '/login', permanent: false },
+    ];
+  },
   typescript: { ignoreBuildErrors: true },
   serverExternalPackages: ['firebase-admin', 'google-auth-library', '@google-cloud/firestore', 'playwright', 'playwright-core', 'fsevents'],
   // Prevent Next.js file tracing from copying playwright/chromium-bidi into

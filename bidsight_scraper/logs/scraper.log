@@ -1,0 +1,417 @@
+2026-06-22 18:36:31,749 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-22 18:36:32,158 [BMA] INFO BMA session cookie established
+2026-06-22 18:36:32,283 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-22 18:36:48,611 [BMA] INFO BMA: 255860 total projects, 5118 pages
+2026-06-22 18:36:48,611 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-22 18:36:55,386 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:37:05,954 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:37:16,019 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:37:27,311 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:37:37,319 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:37:47,029 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:37:57,258 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:38:08,699 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:38:10,475 [BMA] WARNING BMA: build_record failed for 010d6441-417d-4455-af24-316e742b10c9: 'NoneType' object has no attribute 'upper'
+2026-06-22 18:38:19,089 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:38:28,897 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:38:30,422 [BMA] WARNING BMA: build_record failed for da149fd1-e9f9-4c71-8bf9-b95c95d2d03c: 'NoneType' object has no attribute 'upper'
+2026-06-22 18:38:39,215 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:38:49,624 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:38:58,008 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:39:29,271 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:39:40,022 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:39:52,006 [BMA] WARNING BMA: build_record failed for d3406361-5743-4619-93ed-4211887f6eba: 'NoneType' object has no attribute 'upper'
+2026-06-22 18:39:58,754 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:40:08,204 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:40:18,349 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:40:27,736 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 18:40:30,404 [BMA] INFO BMA: reached cutoff 2026-06-15, stopping
+2026-06-22 18:40:30,404 [BMA] INFO BMA: 19 records scraped (22 unique IDs)
+2026-06-22 18:40:30,404 [BMA] INFO === Done: BMA — 19 records ===
+2026-06-22 19:15:50,418 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-22 19:16:00,612 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-22 19:16:02,612 [MEA] INFO MEA: 825 total records (fetching from newest)
+2026-06-22 19:16:51,171 [MEA] INFO MEA: reached cutoff 2026-06-15 at 2026-06-14, stopping
+2026-06-22 19:16:51,172 [MEA] INFO MEA: 23 records scraped
+2026-06-22 19:16:51,172 [MEA] INFO === Done: MEA — 23 records ===
+2026-06-22 19:17:05,830 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-22 19:17:06,938 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-22 19:17:28,680 [PEA] INFO PEA: 9 records scraped across 1 pages
+2026-06-22 19:17:28,680 [PEA] INFO === Done: PEA — 9 records ===
+2026-06-22 19:17:28,681 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-22 19:17:28,957 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-22 19:17:34,190 [PWA] INFO PWA: 25 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-22 19:17:34,190 [PWA] INFO === Done: PWA — 25 records ===
+2026-06-22 19:17:34,191 [MWA] INFO === Starting scrape: MWA (https://www.mwa.or.th) ===
+2026-06-22 19:17:34,191 [MWA] WARNING MWA: not implemented or site unreachable (MWA DNS fails as of 2026-06-22)
+2026-06-22 19:17:34,191 [MWA] INFO === Done: MWA — 0 records ===
+2026-06-22 19:39:01,983 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 19:39:03,415 [EGAT] INFO EGAT: 0 records in last 7 days
+2026-06-22 19:39:03,415 [EGAT] INFO === Done: EGAT — 0 records ===
+2026-06-22 19:39:03,586 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-22 19:39:22,982 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 19:39:25,295 [EGAT] INFO EGAT: 0 records in last 30 days
+2026-06-22 19:39:25,296 [EGAT] INFO === Done: EGAT — 0 records ===
+2026-06-22 19:41:23,725 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 19:41:25,280 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-22 19:42:00,673 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 19:59:48,086 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-22 22:26:56,817 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 22:27:31,032 [EGAT] INFO EGAT: 148 records in last 30 days
+2026-06-22 22:27:31,033 [EGAT] INFO === Done: EGAT — 148 records ===
+2026-06-22 22:27:32,041 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-22 22:27:49,631 [PTT] INFO PTT: 236 records in last 14 days
+2026-06-22 22:27:49,632 [PTT] INFO === Done: PTT — 236 records ===
+2026-06-22 22:27:50,642 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-22 22:27:50,642 [MRTA] WARNING MRTAScraper: site requires JS rendering (Cloudflare WAF blocks HTTP-only requests). Returning 0 records. Add Playwright support to enable.
+2026-06-22 22:27:50,642 [MRTA] INFO === Done: MRTA — 0 records ===
+2026-06-22 22:27:51,644 [GPO] INFO === Starting scrape: GPO (https://www.gpo.or.th) ===
+2026-06-22 22:27:51,644 [GPO] WARNING GPOScraper: site is a Next.js SPA — tender data is fetched client-side. Internal API URL not exposed in initial HTML. Returning 0 records. Inspect browser network tab to find the API endpoint.
+2026-06-22 22:27:51,644 [GPO] INFO === Done: GPO — 0 records ===
+2026-06-22 22:29:58,512 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 22:30:33,121 [EGAT] INFO EGAT: 148 records in last 30 days
+2026-06-22 22:30:33,121 [EGAT] INFO === Done: EGAT — 148 records ===
+2026-06-22 22:30:33,137 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-22 22:30:33,137 [MRTA] WARNING MRTAScraper: site requires JS rendering (Cloudflare WAF blocks HTTP-only requests). Returning 0 records. Add Playwright support to enable.
+2026-06-22 22:30:33,137 [MRTA] INFO === Done: MRTA — 0 records ===
+2026-06-22 22:30:33,137 [GPO] INFO === Starting scrape: GPO (https://www.gpo.or.th) ===
+2026-06-22 22:30:33,137 [GPO] WARNING GPOScraper: site is a Next.js SPA — tender data is fetched client-side. Internal API URL not exposed in initial HTML. Returning 0 records. Inspect browser network tab to find the API endpoint.
+2026-06-22 22:30:33,137 [GPO] INFO === Done: GPO — 0 records ===
+2026-06-22 22:30:33,137 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-22 22:31:05,538 [PTT] INFO PTT: 364 records in last 30 days
+2026-06-22 22:31:05,539 [PTT] INFO === Done: PTT — 364 records ===
+2026-06-22 22:32:32,995 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-22 22:32:35,236 [BMA] INFO BMA session cookie established
+2026-06-22 22:32:35,363 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-22 22:32:43,252 [BMA] INFO BMA: 255869 total projects, 5118 pages
+2026-06-22 22:32:43,252 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-22 22:32:50,797 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:33:01,549 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:33:11,971 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:33:22,184 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:33:31,684 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:33:41,276 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:33:51,309 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:34:01,465 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:34:03,890 [BMA] WARNING BMA: build_record failed for 010d6441-417d-4455-af24-316e742b10c9: 'NoneType' object has no attribute 'upper'
+2026-06-22 22:34:11,937 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:34:21,090 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:34:22,997 [BMA] WARNING BMA: build_record failed for da149fd1-e9f9-4c71-8bf9-b95c95d2d03c: 'NoneType' object has no attribute 'upper'
+2026-06-22 22:34:29,951 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:34:39,344 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:34:49,920 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:35:21,197 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:35:31,687 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:35:43,518 [BMA] WARNING BMA: build_record failed for d3406361-5743-4619-93ed-4211887f6eba: 'NoneType' object has no attribute 'upper'
+2026-06-22 22:35:51,739 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:36:02,187 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:36:13,969 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:36:23,197 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-22 22:36:25,853 [BMA] INFO BMA: reached cutoff 2026-06-08, stopping
+2026-06-22 22:36:25,853 [BMA] INFO BMA: 19 records scraped (22 unique IDs)
+2026-06-22 22:36:25,854 [BMA] INFO === Done: BMA — 19 records ===
+2026-06-22 22:36:25,863 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-22 22:36:36,728 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-22 22:36:38,911 [MEA] INFO MEA: 825 total records (fetching from newest)
+2026-06-22 22:38:04,356 [MEA] INFO MEA: reached cutoff 2026-06-08 at 2026-06-07, stopping
+2026-06-22 22:38:04,358 [MEA] INFO MEA: 42 records scraped
+2026-06-22 22:38:04,358 [MEA] INFO === Done: MEA — 42 records ===
+2026-06-22 22:38:04,363 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-22 22:38:08,467 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-22 22:38:08,720 [PEA] INFO PEA: 0 records scraped across 1 pages
+2026-06-22 22:38:08,720 [PEA] INFO === Done: PEA — 0 records ===
+2026-06-22 22:38:08,720 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-22 22:38:09,155 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-22 22:38:14,389 [PWA] INFO PWA: 25 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-22 22:38:14,389 [PWA] INFO === Done: PWA — 25 records ===
+2026-06-22 22:38:14,392 [MWA] INFO === Starting scrape: MWA (https://www.mwa.or.th) ===
+2026-06-22 22:38:14,392 [MWA] WARNING MWA: not implemented or site unreachable (MWA DNS fails as of 2026-06-22)
+2026-06-22 22:38:14,392 [MWA] INFO === Done: MWA — 0 records ===
+2026-06-22 22:38:14,392 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-22 22:38:51,448 [EGAT] INFO EGAT: 148 records in last 30 days
+2026-06-22 22:38:51,449 [EGAT] INFO === Done: EGAT — 148 records ===
+2026-06-22 22:38:51,459 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-22 22:38:51,459 [MRTA] WARNING MRTAScraper: site requires JS rendering (Cloudflare WAF blocks HTTP-only requests). Returning 0 records. Add Playwright support to enable.
+2026-06-22 22:38:51,459 [MRTA] INFO === Done: MRTA — 0 records ===
+2026-06-22 22:38:51,459 [GPO] INFO === Starting scrape: GPO (https://www.gpo.or.th) ===
+2026-06-22 22:38:51,460 [GPO] WARNING GPOScraper: site is a Next.js SPA — tender data is fetched client-side. Internal API URL not exposed in initial HTML. Returning 0 records. Inspect browser network tab to find the API endpoint.
+2026-06-22 22:38:51,460 [GPO] INFO === Done: GPO — 0 records ===
+2026-06-22 22:38:51,460 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-22 22:39:21,485 [PTT] INFO PTT: 364 records in last 30 days
+2026-06-22 22:39:21,487 [PTT] INFO === Done: PTT — 364 records ===
+2026-06-22 22:53:42,575 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-22 22:53:42,823 [MRTA] INFO MRTA: scraping category 126 (e-bidding)
+2026-06-22 22:54:01,241 [MRTA] INFO MRTA: scraping category 37 (e-market)
+2026-06-22 22:54:05,143 [MRTA] INFO MRTA: scraping category 39 (consultant)
+2026-06-22 22:54:17,651 [MRTA] INFO MRTA: scraping category 125 (quotation)
+2026-06-22 22:54:22,323 [MRTA] INFO MRTA: 6 records scraped
+2026-06-22 22:54:22,323 [MRTA] INFO === Done: MRTA — 6 records ===
+2026-06-22 22:59:43,113 [GPO] INFO === Starting scrape: GPO (https://www.gpo.or.th) ===
+2026-06-22 22:59:43,113 [GPO] WARNING GPOScraper: /th/tender-list throws a 500 server error (Strapi returns empty data). Playwright renders only nav/footer — no tender listings. GPO tenders are on the national e-GP system. Returning 0 records.
+2026-06-22 22:59:43,114 [GPO] INFO === Done: GPO — 0 records ===
+2026-06-22 22:59:43,114 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-22 22:59:43,379 [MRTA] INFO MRTA: scraping category 126 (e-bidding)
+2026-06-22 22:59:53,078 [MRTA] INFO MRTA: scraping category 37 (e-market)
+2026-06-22 22:59:58,188 [MRTA] INFO MRTA: scraping category 39 (consultant)
+2026-06-22 23:00:17,124 [MRTA] INFO MRTA: scraping category 125 (quotation)
+2026-06-22 23:00:21,451 [MRTA] INFO MRTA: 6 records scraped
+2026-06-22 23:00:21,451 [MRTA] INFO === Done: MRTA — 6 records ===
+2026-06-23 13:37:11,573 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-23 13:37:12,188 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-06-23 13:37:22,538 [MRTA] INFO MRTA: 10 records scraped
+2026-06-23 13:37:22,539 [MRTA] INFO === Done: MRTA — 10 records ===
+2026-06-23 13:37:25,952 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-23 13:37:26,804 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-23 13:38:04,403 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-06-23 13:38:04,403 [PEA] INFO === Done: PEA — 20 records ===
+2026-06-23 13:38:09,714 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-23 13:38:10,160 [BMA] INFO BMA session cookie established
+2026-06-23 13:38:10,278 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-23 13:38:27,801 [BMA] INFO BMA: 255993 total projects, 5120 pages
+2026-06-23 13:38:27,802 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-23 13:38:38,884 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:38:53,576 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:39:28,125 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:39:59,482 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:40:17,034 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:40:42,468 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:41:04,177 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:41:27,307 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:42:08,065 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:42:26,526 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:42:28,306 [BMA] WARNING BMA: build_record failed for e4975b47-50fd-43c8-9ce3-b0bd152c2400: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:42:48,409 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:42:50,285 [BMA] WARNING BMA: build_record failed for c8055245-ef02-4324-aa05-2efd60d527e9: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:43:08,992 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:43:11,700 [BMA] WARNING BMA: build_record failed for 8af56802-fa3b-4c32-aa32-ebfd4f990478: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:43:26,554 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:43:43,667 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:44:08,992 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:44:24,271 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:44:45,863 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:45:04,186 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:45:21,351 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:45:41,423 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:46:08,285 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:46:42,863 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:46:44,371 [BMA] WARNING BMA: build_record failed for 010d6441-417d-4455-af24-316e742b10c9: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:47:01,773 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:47:22,696 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:47:44,275 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:47:46,248 [BMA] WARNING BMA: build_record failed for da149fd1-e9f9-4c71-8bf9-b95c95d2d03c: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:48:07,840 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:48:46,310 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:50:03,936 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:50:23,913 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:50:49,278 [BMA] WARNING BMA: build_record failed for d3406361-5743-4619-93ed-4211887f6eba: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:51:03,018 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:51:24,148 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:51:50,262 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:52:06,589 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:52:54,839 [BMA] WARNING BMA: build_record failed for 7ea49b95-9ecc-47f9-a0ae-15249ad2441a: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:53:26,045 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:53:47,983 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:53:48,796 [BMA] WARNING BMA: build_record failed for 83fa3d7c-c0b6-407e-88cc-027cd76990a4: 'NoneType' object has no attribute 'upper'
+2026-06-23 13:54:06,320 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:54:41,790 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:55:04,629 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:55:32,389 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:55:49,428 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 13:56:10,168 [BMA] INFO BMA: reached cutoff 2026-05-24, stopping
+2026-06-23 13:56:10,169 [BMA] INFO BMA: 40 records scraped (48 unique IDs)
+2026-06-23 13:56:10,169 [BMA] INFO === Done: BMA — 40 records ===
+2026-06-23 13:56:10,184 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-23 13:56:20,642 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-23 13:56:22,969 [MEA] INFO MEA: 823 total records (fetching from newest)
+2026-06-23 13:58:52,917 [MEA] INFO MEA: reached cutoff 2026-05-24 at 2026-05-21, stopping
+2026-06-23 13:58:52,918 [MEA] INFO MEA: 76 records scraped
+2026-06-23 13:58:52,918 [MEA] INFO === Done: MEA — 76 records ===
+2026-06-23 13:58:52,923 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-23 13:58:53,763 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-23 13:59:35,002 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-06-23 13:59:35,002 [PEA] INFO === Done: PEA — 20 records ===
+2026-06-23 13:59:35,006 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-23 13:59:35,307 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-23 13:59:40,963 [PWA] INFO PWA: 24 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-23 13:59:40,964 [PWA] INFO === Done: PWA — 24 records ===
+2026-06-23 13:59:40,968 [MWA] INFO === Starting scrape: MWA (https://www.mwa.or.th) ===
+2026-06-23 13:59:40,968 [MWA] WARNING MWA: not implemented or site unreachable (MWA DNS fails as of 2026-06-22)
+2026-06-23 13:59:40,968 [MWA] INFO === Done: MWA — 0 records ===
+2026-06-23 13:59:40,968 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-23 14:00:23,957 [EGAT] INFO EGAT: 154 records in last 30 days
+2026-06-23 14:00:23,958 [EGAT] INFO === Done: EGAT — 154 records ===
+2026-06-23 14:00:23,969 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-23 14:00:24,343 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-06-23 14:00:36,353 [MRTA] INFO MRTA: 10 records scraped
+2026-06-23 14:00:36,353 [MRTA] INFO === Done: MRTA — 10 records ===
+2026-06-23 14:00:36,356 [GPO] INFO === Starting scrape: GPO (https://www.gpo.or.th) ===
+2026-06-23 14:00:36,356 [GPO] WARNING GPOScraper: /th/tender-list throws a 500 server error (Strapi returns empty data). Playwright renders only nav/footer — no tender listings. GPO tenders are on the national e-GP system. Returning 0 records.
+2026-06-23 14:00:36,356 [GPO] INFO === Done: GPO — 0 records ===
+2026-06-23 14:00:36,356 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-23 14:01:00,291 [PTT] INFO PTT: 364 records in last 30 days
+2026-06-23 14:01:00,292 [PTT] INFO === Done: PTT — 364 records ===
+2026-06-23 16:20:42,857 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-23 16:20:44,518 [BMA] INFO BMA session cookie established
+2026-06-23 16:20:44,727 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-23 16:20:51,962 [BMA] INFO BMA: 256107 total projects, 5123 pages
+2026-06-23 16:20:51,962 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-23 16:20:58,910 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:21:10,057 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:21:12,400 [BMA] WARNING BMA: build_record failed for 5b25ad7e-f1fb-445a-9818-46d8c11f7da6: 'NoneType' object has no attribute 'upper'
+2026-06-23 16:21:49,148 [BMA] WARNING Request error attempt 1/3: HTTPSConnectionPool(host='egp2.bangkok.go.th', port=443): Read timed out. (read timeout=30)
+2026-06-23 16:21:52,444 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:22:02,554 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:22:13,125 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:22:22,985 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:22:33,784 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:22:43,720 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:22:52,911 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:23:02,719 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:23:13,233 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:23:22,778 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:23:34,718 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:23:42,018 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:23:51,177 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:24:02,562 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:24:12,330 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-23 16:24:14,961 [BMA] INFO BMA: reached cutoff 2026-06-16, stopping
+2026-06-23 16:24:14,962 [BMA] INFO BMA: 16 records scraped (17 unique IDs)
+2026-06-23 16:24:14,962 [BMA] INFO === Done: BMA — 16 records ===
+2026-06-23 16:24:14,977 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-23 16:24:16,423 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-23 16:24:18,718 [MEA] INFO MEA: 824 total records (fetching from newest)
+2026-06-23 16:25:00,459 [MEA] INFO MEA: reached cutoff 2026-06-16 at 2026-06-15, stopping
+2026-06-23 16:25:00,460 [MEA] INFO MEA: 21 records scraped
+2026-06-23 16:25:00,460 [MEA] INFO === Done: MEA — 21 records ===
+2026-06-23 16:25:00,464 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-23 16:25:01,788 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-23 16:25:41,143 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-06-23 16:25:41,144 [PEA] INFO === Done: PEA — 20 records ===
+2026-06-23 16:25:41,147 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-23 16:25:41,491 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-23 16:25:47,873 [PWA] INFO PWA: 25 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-23 16:25:47,873 [PWA] INFO === Done: PWA — 25 records ===
+2026-06-23 16:25:47,876 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-23 16:26:00,239 [EGAT] INFO EGAT: 42 records in last 7 days
+2026-06-23 16:26:00,239 [EGAT] INFO === Done: EGAT — 42 records ===
+2026-06-23 16:26:00,245 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-23 16:26:00,756 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-06-23 16:26:17,671 [MRTA] INFO MRTA: 6 records scraped
+2026-06-23 16:26:17,671 [MRTA] INFO === Done: MRTA — 6 records ===
+2026-06-23 16:26:17,674 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-23 16:26:23,722 [PTT] INFO PTT: 78 records in last 7 days
+2026-06-23 16:26:23,722 [PTT] INFO === Done: PTT — 78 records ===
+2026-06-24 20:31:56,370 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-24 20:31:57,640 [BMA] INFO BMA session cookie established
+2026-06-24 20:31:57,858 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-24 20:32:27,866 [BMA] WARNING Request error attempt 1/3: HTTPSConnectionPool(host='egp2.bangkok.go.th', port=443): Read timed out. (read timeout=30)
+2026-06-24 20:32:55,392 [BMA] INFO BMA: 256456 total projects, 5130 pages
+2026-06-24 20:32:55,394 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-24 20:33:02,186 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-24 20:33:04,156 [BMA] WARNING BMA: build_record failed for 9ab4dc56-5cf6-4ac6-896d-56ae1b673280: 'NoneType' object has no attribute 'upper'
+2026-06-24 20:33:04,169 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-24 20:33:14,720 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-24 20:33:16,997 [MEA] INFO MEA: 826 total records (fetching from newest)
+2026-06-24 20:34:00,082 [MEA] INFO MEA: reached cutoff 2026-06-17 at 2026-06-16, stopping
+2026-06-24 20:34:00,082 [MEA] INFO MEA: 22 records scraped
+2026-06-24 20:34:00,083 [MEA] INFO === Done: MEA — 22 records ===
+2026-06-24 20:34:00,094 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-24 20:34:01,692 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-24 20:34:44,634 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-06-24 20:34:44,634 [PEA] INFO === Done: PEA — 20 records ===
+2026-06-24 20:34:44,637 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-24 20:34:45,108 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-24 20:34:50,003 [PWA] INFO PWA: 23 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-24 20:34:50,004 [PWA] INFO === Done: PWA — 23 records ===
+2026-06-24 20:34:50,007 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-24 20:35:01,534 [EGAT] INFO EGAT: 45 records in last 7 days
+2026-06-24 20:35:01,535 [EGAT] INFO === Done: EGAT — 45 records ===
+2026-06-24 20:35:01,539 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-24 20:35:05,320 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-06-24 20:35:13,934 [MRTA] INFO MRTA: 6 records scraped
+2026-06-24 20:35:13,935 [MRTA] INFO === Done: MRTA — 6 records ===
+2026-06-24 20:35:13,938 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-24 20:35:26,935 [PTT] INFO PTT: 78 records in last 7 days
+2026-06-24 20:35:26,935 [PTT] INFO === Done: PTT — 78 records ===
+2026-06-25 09:11:35,362 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-25 09:11:35,367 [BMA] WARNING Session init failed (non-fatal): HTTPSConnectionPool(host='egp2.bangkok.go.th', port=443): Max retries exceeded with url: /api/cookies/useragent (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1099da760>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2026-06-25 09:11:35,368 [BMA] WARNING Could not load robots.txt (https://egp2.bangkok.go.th/robots.txt): HTTPSConnectionPool(host='egp2.bangkok.go.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1099da850>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-25 09:11:35,369 [BMA] WARNING robots.txt disallows: https://egp2.bangkok.go.th/appapi/api/Projects/GetProjectFromFilter
+2026-06-25 09:11:35,369 [BMA] ERROR BMA: failed to fetch first page
+2026-06-25 09:11:35,369 [BMA] INFO === Done: BMA — 0 records ===
+2026-06-25 09:11:35,369 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-25 09:11:35,369 [MEA] WARNING Could not load robots.txt (https://procurement.mea.or.th/robots.txt): HTTPSConnectionPool(host='procurement.mea.or.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1099dab80>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-25 09:11:35,370 [MEA] WARNING robots.txt disallows: https://procurement.mea.or.th/Procurement/Index
+2026-06-25 09:11:35,370 [MEA] ERROR MEA: failed to reach site
+2026-06-25 09:11:35,370 [MEA] INFO === Done: MEA — 0 records ===
+2026-06-25 09:11:35,370 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-25 09:11:35,371 [PEA] WARNING Could not load robots.txt (https://bidding.pea.co.th/robots.txt): HTTPSConnectionPool(host='bidding.pea.co.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1099dadf0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-25 09:11:35,371 [PEA] WARNING robots.txt disallows: https://bidding.pea.co.th/procurement/list
+2026-06-25 09:11:35,371 [PEA] WARNING PEA: page 0 failed, stopping
+2026-06-25 09:11:35,371 [PEA] INFO PEA: 0 records scraped across 1 pages
+2026-06-25 09:11:35,371 [PEA] INFO === Done: PEA — 0 records ===
+2026-06-25 09:11:35,371 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-25 09:11:35,372 [PWA] WARNING Could not load robots.txt (https://eprocurement.pwa.co.th/robots.txt): HTTPSConnectionPool(host='eprocurement.pwa.co.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1099f90a0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-25 09:11:35,372 [PWA] WARNING robots.txt disallows: https://eprocurement.pwa.co.th/report/conclude-type-1
+2026-06-25 09:11:35,372 [PWA] ERROR PWA: failed to reach site
+2026-06-25 09:11:35,372 [PWA] INFO === Done: PWA — 0 records ===
+2026-06-25 09:11:35,372 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-25 09:11:35,381 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-25 09:11:35,382 [MRTA] WARNING Could not load robots.txt (https://www.mrta.co.th/robots.txt): HTTPSConnectionPool(host='www.mrta.co.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x1099f9610>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-25 09:11:35,382 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-25 09:11:35,382 [MRTA] WARNING MRTA: category 126 page 1 failed
+2026-06-25 09:11:35,382 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-25 09:11:35,382 [MRTA] WARNING MRTA: category 37 page 1 failed
+2026-06-25 09:11:35,382 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-25 09:11:35,382 [MRTA] WARNING MRTA: category 39 page 1 failed
+2026-06-25 09:11:35,382 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-25 09:11:35,382 [MRTA] WARNING MRTA: category 125 page 1 failed
+2026-06-25 09:11:35,382 [MRTA] INFO MRTA: 0 records scraped
+2026-06-25 09:11:35,382 [MRTA] INFO === Done: MRTA — 0 records ===
+2026-06-25 09:11:35,382 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-25 14:31:00,128 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-25 14:31:00,992 [BMA] INFO BMA session cookie established
+2026-06-25 14:31:01,357 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-25 14:31:09,629 [BMA] INFO BMA: 256650 total projects, 5133 pages
+2026-06-25 14:31:09,630 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-25 14:31:37,652 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:31:48,226 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:31:57,689 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:32:10,514 [BMA] WARNING BMA: build_record failed for 1fd4eafa-c321-40cf-82f9-c7d08b0edbaa: 'NoneType' object has no attribute 'upper'
+2026-06-25 14:32:17,715 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:32:18,547 [BMA] WARNING BMA: build_record failed for 46e4a8e4-68ee-4ff6-8df6-f96caaa0e76c: 'NoneType' object has no attribute 'upper'
+2026-06-25 14:32:36,840 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:32:38,992 [BMA] WARNING BMA: build_record failed for 276575d4-45ca-4b57-b0c0-62469dd0f2fc: 'NoneType' object has no attribute 'upper'
+2026-06-25 14:32:56,685 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:33:06,029 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:33:08,433 [BMA] WARNING BMA: build_record failed for f31b1776-1ec1-4e74-85dc-d1bc608f4ce5: 'NoneType' object has no attribute 'upper'
+2026-06-25 14:33:17,083 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:33:18,456 [BMA] WARNING BMA: build_record failed for 67c11daa-6572-4229-bf7e-ad205717bc00: 'NoneType' object has no attribute 'upper'
+2026-06-25 14:33:47,814 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-25 14:33:49,201 [BMA] INFO BMA: reached cutoff 2026-06-18, stopping
+2026-06-25 14:33:49,202 [BMA] INFO BMA: 11 records scraped (16 unique IDs)
+2026-06-25 14:33:49,202 [BMA] INFO === Done: BMA — 11 records ===
+2026-06-25 14:33:49,217 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-25 14:33:59,446 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-25 14:34:02,136 [MEA] INFO MEA: 828 total records (fetching from newest)
+2026-06-25 14:34:43,290 [MEA] INFO MEA: reached cutoff 2026-06-18 at 2026-06-17, stopping
+2026-06-25 14:34:43,291 [MEA] INFO MEA: 22 records scraped
+2026-06-25 14:34:43,291 [MEA] INFO === Done: MEA — 22 records ===
+2026-06-25 14:34:43,295 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-25 14:34:44,275 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-25 14:35:29,007 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-06-25 14:35:29,007 [PEA] INFO === Done: PEA — 20 records ===
+2026-06-25 14:35:29,011 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-25 14:35:29,280 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-25 14:35:33,568 [PWA] INFO PWA: 22 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-25 14:35:33,568 [PWA] INFO === Done: PWA — 22 records ===
+2026-06-25 14:35:33,572 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-25 14:35:44,228 [EGAT] INFO EGAT: 40 records in last 7 days
+2026-06-25 14:35:44,228 [EGAT] INFO === Done: EGAT — 40 records ===
+2026-06-25 14:35:44,234 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-25 14:35:44,566 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-06-25 14:35:54,686 [MRTA] INFO MRTA: 3 records scraped
+2026-06-25 14:35:54,687 [MRTA] INFO === Done: MRTA — 3 records ===
+2026-06-25 14:35:54,689 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-25 14:36:00,961 [PTT] INFO PTT: 80 records in last 7 days
+2026-06-25 14:36:00,962 [PTT] INFO === Done: PTT — 80 records ===

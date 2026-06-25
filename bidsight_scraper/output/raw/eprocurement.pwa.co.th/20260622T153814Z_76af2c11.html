@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>ผลการดำเนินการจัดซื้อจัดจ้างตามแบบ สขร.1</title>
+
+    <link href="https://cdn-1.pwa.co.th/images/favicon.png?17820612005" rel="shortcut icon">
+    <!-- font-awesome -->
+    <link href="https://cdn-2.pwa.co.th/css/font-awesome.css?17820612005" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn-1.pwa.co.th/css/bootstrap.min.css?17820612005" rel="stylesheet">
+    <!--[if lt IE 9]>
+      <script src="https://cdn-1.pwa.co.th/js/html5shiv.js"></script>
+      <script src="https://cdn-2.pwa.co.th/js/respond.js"></script>
+    <![endif]-->
+
+    <!-- datetimepicker -->
+    <link href="/css/bootstrap-datetimepicker.min.css?17820612005" rel="stylesheet"><!-- Stylesheet -->
+    <link href="/css/stylesheet.css?17820612005" rel="stylesheet">
+
+    <style>
+      #filterForm .selectContainer .form-control-feedback,
+      #projectForm .selectContainer .form-control-feedback {
+        /* Adjust feedback icon position */
+        right: -15px;
+      }
+    </style>
+
+  </head>
+
+  <body role="document">
+    <div class="wrap">
+
+      <div class="jumbotron-f">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12 pull-left">
+              <img src="/images/pwa-logo.png" alt="จัดซื้อจัดจ้าง การประปาส่วนภูมิภาค">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div class="content">
+
+      <div class="container">
+
+        <ol class="breadcrumb">
+                              <li><a href="/" title="หน้าหลัก"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> หน้าหลัก</a></li>
+                                        <li class="active"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> ผลการดำเนินการจัดซื้อจัดจ้างตามแบบ สขร.1</li>
+                            </ol>
+
+        <div class="page-header">
+          <h1><span class="glyphicon glyphicon-th-list"></span> ผลการดำเนินการจัดซื้อจัดจ้างตามแบบ สขร.1 (494 รายการ)</h1>
+        </div>
+      </div>
+
+      <div class="container">
+
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title text-center">กรองและค้นหาข้อมูล</h3>
+          </div>
+          <div class="panel-body">
+            <form id="filterForm" method="post" enctype="multipart/form-data" class="form-horizontal" action="/report/conclude-type-1" role="form">
+
+              <div class="form-group">
+                <label for="method" class="col-sm-4 control-label">วิธีการจัดหา :</label>
+                <div class="col-sm-4 selectContainer">
+                  <select name="method" class="form-control">
+                    <option value="all">เลือกทั้งหมด</option>
+                                        <option value="quatation">
+                      สอบราคา
+                    </option>
+                                        <option value="e-market">
+                      ตลาดอิเล็กทรอนิกส์ (e-market)
+                    </option>
+                                        <option value="e-bidding">
+                      ประกวดราคาอิเล็กทรอนิกส์ (e-bidding)
+                    </option>
+                                        <option value="select">
+                      คัดเลือก
+                    </option>
+                                        <option value="specific">
+                      เฉพาะเจาะจง
+                    </option>
+                                        <option value="hire-1-general">
+                      จ้างที่ปรึกษาโดยวิธีประกาศเชิญชวนทั่วไป
+                    </option>
+                                        <option value="hire-1-select">
+                      จ้างที่ปรึกษาโดยวิธีคัดเลือก
+                    </option>
+                                        <option value="hire-1-specific">
+                      จ้างที่ปรึกษาโดยวิธีเฉพาะเจาะจง
+                    </option>
+                                        <option value="hire-2-general">
+                      จ้างออกแบบหรือควบคุมงานก่อสร้างโดยวิธีประกาศเชิญชวนทั่วไป
+                    </option>
+                                        <option value="hire-2-select">
+                      จ้างออกแบบหรือควบคุมงานก่อสร้างดยวิธีคัดเลือก
+                    </option>
+                                        <option value="hire-2-specific">
+                      จ้างออกแบบหรือควบคุมงานก่อสร้างดยวิธีเฉพาะเจาะจง
+                    </option>
+                                        <option value="hire-2-design">
+                      จ้างออกแบบหรือควบคุมงานก่อสร้างโดยวิธีประกวดแบบ
+                    </option>
+                                        <option value="public-auction">
+                      วิธีทอดตลาด
+                    </option>
+                                      </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="date_start" class="col-sm-4 control-label">ช่วงวันที่ :</label>
+                <div class="col-sm-4 selectContainer">
+                  <div class="input-group date" id="date_start">
+                    <input class="form-control" size="10" name="date_start" type="text" value="2026-05-22">
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="date_end" class="col-sm-4 control-label">ถึง :</label>
+                <div class="col-sm-4 selectContainer">
+                  <div class="input-group date" id="date_end">
+                    <input class="form-control" size="10" name="date_end" type="text" value="2026-06-22" aria-describedby="helpdateBlock">
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+                  <span id="helpdateBlock" class="help-block">(ระบุ ปี-เดือน-วัน)</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="q" class="col-sm-4 control-label">คำค้น :</label>
+                <div class="col-sm-4">
+                  <input type="text" class="form-control" name="q" placeholder="คำค้น" maxlength="255">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-sm-8 col-sm-offset-4">
+                  <button type="submit" class="btn btn-primary" name="filter" value="Filter">ตกลง</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>เลขที่ประกาศ</th>
+                  <th>ชื่อโครงการ</th>
+                  <th>วงเงินงบประมาณ</th>
+                  <th>ราคากลาง</th>
+                  <th>วิธีการจัดหา</th>
+                  <th>รายชื่อผู้เสนอราคา</th>
+                  <th>ผู้ที่ได้รับการคัดเลือก</th>
+                  <th>เหตุผลที่คัดเลือก</th>
+                  <th>เลขที่สัญญา</th>
+                  <th class="text-center">วันที่เผยแพร่</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr>
+                  <td class="text-center">1/2569</td>
+                  <td><a href="/winner/view/43910" title="โครงการ งานปรับปรุงมาตรวัดน้ำหลัก ชนิด Electromagnetic ขนาด 250 มม. สถานีจ่ายน้ำท่าฉาง กปภ.สาขาไชยา บริเวณตำบลท่าฉาง">งานปรับปรุงมาตรวัดน้ำหลัก ชนิด Electromagnetic ขนาด 250 มม. สถานีจ่ายน้ำท่าฉาง กปภ.สาขาไชยา บริเวณตำบลท่าฉาง</a></td>
+                  <td class="text-center">577,800.00</td>
+                  <td class="text-center">572,450.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">บจก. ไบนารี่พลัส                     ราคาที่เสนอ 537,140.00 บาท<br />
+หจก.นาลานทักษิณก่อสร้าง      ราคาที่เสนอ 568,000.00 บาท</td>
+                  <td class="text-center">บจก.ไบนารี่พลัส  ตกลงจ้างในราคา 537,140.00 บาท</td>
+                  <td class="text-center">เสนอราคาต่ำสุด และคุณสมบัติถูกต้องตามประกาศ</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48452" title="โครงการ จัดซื้อน้ำประปาเพื่อสำนักงานประปาภูเก็ต">จัดซื้อน้ำประปาเพื่อสำนักงานประปาภูเก็ต</a></td>
+                  <td class="text-center">23,615,955.00</td>
+                  <td class="text-center">23,362,020.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center"> บริษัท อาร์.อี.คิว.วอเตอร์ เซอร์วิสเซส จำกัด  ราคาที่เสนอ  ๒๓,๓๖๒,๐๒๐.๐๐ บาท</td>
+                  <td class="text-center">บริษัท อาร์.อี.คิว.วอเตอร์ เซอร์วิสเซส จำกัด  ราคาตกลงจัดซื้อ  ๒๓,๓๖๒,๐๒๐.๐๐ บาท</td>
+                  <td class="text-center">คุณสมบัติถูกต้อง ครบถ้วน และราคาที่เสนอไม่สูงกว่าวงเงินในการจัดซื้อ</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48606" title="โครงการ งานซื้อน้ำประปาจากเอกชนในพื้นที่ กปภ.สาขาภูเก็ต บริเวณสถานีผลิตน้ำบางวาด">งานซื้อน้ำประปาจากเอกชนในพื้นที่ กปภ.สาขาภูเก็ต บริเวณสถานีผลิตน้ำบางวาด</a></td>
+                  <td class="text-center">9,856,037.61</td>
+                  <td class="text-center">9,746,921.60</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1. บริษัท ซุปเปอร์ วอเตอร์ จำกัด ราคาที่เสนอ 9,746,921.60 บาท</td>
+                  <td class="text-center">บริษัท ซุปเปอร์ วอเตอร์ จำกัด ราคาที่ตกลงซื้อ 9,746,921.60 บาท</td>
+                  <td class="text-center">มีคุณสมบัติครบถ้วน ถูกต้องตามเงื่อนไขในการยื่นซองเสนอราคาฯ และเสนอราคาต่ำกว่าวงเงินงบประมาณ </td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">68089506116</td>
+                  <td><a href="/winner/view/44515" title="โครงการ งานบำรุงรักษาเชิงป้องกัน (PM) ซ่อมแซมมอเตอร์และเครื่องสูบน้ำ RVM04NP ">งานบำรุงรักษาเชิงป้องกัน (PM) ซ่อมแซมมอเตอร์และเครื่องสูบน้ำ RVM04NP </a></td>
+                  <td class="text-center">421,580.00</td>
+                  <td class="text-center">421,580.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">บริษัท วายเนท จำกัด ราคาที่เสนอ 421,580 บาท</td>
+                  <td class="text-center">บริษัท วายเนท จำกัด ราคาที่เสนอ 421,580 บาท</td>
+                  <td class="text-center">เป็นผู้ที่เสนอราคาต่ำสุด                                                                                                                                                                                                                                             </td>
+                  <td class="text-center">กปภ.ข.10- กพ./3/2569 ลว. 20 ธ.ค. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ข.6/50/2569</td>
+                  <td><a href="/winner/view/47058" title="โครงการ งานวางท่อประปาเพื่อแก้ปัญหา เนื่องจากผลกระทบอุทกภัยบริเวณบ้านผักหนาม ตำบลหนองกุงใหญ่ อำเภอกระนวน จังหวัดขอนแก่น การประปาส่วนภูมิภาคสาขากระนวน">งานวางท่อประปาเพื่อแก้ปัญหา เนื่องจากผลกระทบอุทกภัยบริเวณบ้านผักหนาม ตำบลหนองกุงใหญ่ อำเภอกระนวน จังหวัดขอนแก่น การประปาส่วนภูมิภาคสาขากระนวน</a></td>
+                  <td class="text-center">1,890,690.00</td>
+                  <td class="text-center">1,890,690.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1.ห้างหุ้นส่วนจำกัด ขอนแก่นวอเตอร์ซัพพลาย ราคาที่เสนอ 1,550,000.00 บาท<br />
+2.ห้างหุ้นส่วนจำกัด บี.เอ็ม.สุวรรณะชัย	 ราคาที่เสนอ 1,588,950.00 บาท<br />
+3.ห้างหุ้นส่วนจำกัด พี.เอส.เอ็นจิเนียริ่ง(1984)  ราคาที่เสนอ 1,660,000.00 บาท	</td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด ขอนแก่นวอเตอร์ซัพพลาย ราคาที่ตกลงจ้าง 1,550,000.00 บาท</td>
+                  <td class="text-center">เป็นผู้มีคุณสมบัติเหมาะสมและเสนอราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ข.6/49/2569</td>
+                  <td><a href="/winner/view/47060" title="โครงการ งานวางท่อประปาเพื่อแก้ปัญหา เนื่องจากผลกระทบอุทกภัยบริเวณทางหลวงหมายเลข 2268 กม.ที่ 42+511 ถึง กม.ที่ 42+954 ตำบลหนองใหญ่ อำเภอหนองกุงศรี จังหวัดกาฬสินธุ์ การประปาส่วนภูมิภาคสาขากระนวน (น.หนองกุงศรี)">งานวางท่อประปาเพื่อแก้ปัญหา เนื่องจากผลกระทบอุทกภัยบริเวณทางหลวงหมายเลข 2268 กม.ที่ 42+511 ถึง กม.ที่ 42+954 ตำบลหนองใหญ่ อำเภอหนองกุงศรี จังหวัดกาฬสินธุ์ การประปาส่วนภูมิภาคสาขากระนวน (น.หนองกุงศรี)</a></td>
+                  <td class="text-center">1,219,800.00</td>
+                  <td class="text-center">1,219,800.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1.ห้างหุ้นส่วนจำกัด พี.เอส.เอ็นจิเนียริ่ง(1984)  ราคาที่เสนอ 975,000.00 บาท<br />
+2. ห้างหุ้นส่วนจำกัด บี.เอ็ม.สุวรรณะชัย  ราคาที่เสนอ  989,750.00	บาท<br />
+3. ห้างหุ้นส่วนจำกัด ขอนแก่นวอเตอร์ซัพพลาย  ราคาที่เสนอ 1,050,000.00 บาท<br />
+4. ห้างหุ้นส่วนจำกัด สุพรรณเซฟตี้อินเตอร์เทรด ราคาที่เสนอ 1,171,200.00 บาท		</td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด พี.เอส.เอ็นจิเนียริ่ง(1984)  ราคาที่ตกลงจ้าง 975,000.00 บาท</td>
+                  <td class="text-center">เป็นผู้มีคุณสมบัติเหมาะสมและเสนอราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">00</td>
+                  <td><a href="/winner/view/48449" title="โครงการ ทำงาน   งานวางท่อขยายเขตจำหน่ายน้ำ  เทศบาลตำบลเวียงกาหลง  บริเวณบ้านแม่ห่างเหนือ ซอย 1 และซอย 2  หมู่ที่ 10  ตำบลเวียงกาหลง  อำเภอเวียงป่าเป้า  จังหวัดเชียงราย">ทำงาน   งานวางท่อขยายเขตจำหน่ายน้ำ  เทศบาลตำบลเวียงกาหลง  บริเวณบ้านแม่ห่างเหนือ ซอย 1 และซอย 2  หมู่ที่ 10  ตำบลเวียงกาหลง  อำเภอเวียงป่าเป้า  จังหวัดเชียงราย</a></td>
+                  <td class="text-center">410,114.00</td>
+                  <td class="text-center">410,114.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center"> บริษัท เอ ที วอเตอร์ เวิร์ค จำกัด ราคาที่เสนอ 410,114.00  บาท</td>
+                  <td class="text-center">บริษัท เอ ที วอเตอร์ เวิร์ค จำกัด</td>
+                  <td class="text-center">ราคาที่เสนอเท่ากับราคากลาง</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48519" title="โครงการ งานติดตั้งมาตรวัดน้ำ ขนาด 2 นิ้ว ให้กับ บจ.บี เอ็น เอ็น เรสเตอรองท์ กรุ๊ป หมู่ 2 ถนนศรีวิชัย อำเภอเมืองสุราษฎร์ธานี จังหวัดสุราษฎร์ธานี การประปาส่วนภูมิภาคสาขาสุราษฎร์ธานี (ชั้นพิเศษ)">งานติดตั้งมาตรวัดน้ำ ขนาด 2 นิ้ว ให้กับ บจ.บี เอ็น เอ็น เรสเตอรองท์ กรุ๊ป หมู่ 2 ถนนศรีวิชัย อำเภอเมืองสุราษฎร์ธานี จังหวัดสุราษฎร์ธานี การประปาส่วนภูมิภาคสาขาสุราษฎร์ธานี (ชั้นพิเศษ)</a></td>
+                  <td class="text-center">229,511.00</td>
+                  <td class="text-center">103,700.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด ภุชงค์โปรเซอร์วิส 103,500.00 บาท</td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด ภุชงค์โปรเซอร์วิส 103,500.00 บาท</td>
+                  <td class="text-center">เป็นผู้มีคุณสมบัติและข้อเสนอทางเทคนิคถูกต้องครบถ้วนและเป็นผู้เสนอราคาต่ำสุด</td>
+                  <td class="text-center">กปภ.ข.4-สฎ./51/2569 ลว. 22 มิ.ย. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">2/2569</td>
+                  <td><a href="/winner/view/48567" title="โครงการ งานย้ายแนวท่อหลบการก่อสร้างถนนเทศบาลหมายเลข 3146 ท่าแฉลบ บริเวณตำบลตลาด อำเภอเมืองจันทบุรี จังหวัดจันทบุรี การประปาส่วนภูมิภาคสาขาจันทบุรี">งานย้ายแนวท่อหลบการก่อสร้างถนนเทศบาลหมายเลข 3146 ท่าแฉลบ บริเวณตำบลตลาด อำเภอเมืองจันทบุรี จังหวัดจันทบุรี การประปาส่วนภูมิภาคสาขาจันทบุรี</a></td>
+                  <td class="text-center">1,709,860.00</td>
+                  <td class="text-center">1,709,860.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1. หจก.ส.สมหมาย เสนอราคา 1,705,000.00 บาท <br />
+2. หจก.ปานะโชค พานิช เสนอราคา 1,709,000.00 บาท <br />
+3. หจก.เอส เค อาร์ วอเตอร์ เสนอราคา 1,709500.00 บาท</td>
+                  <td class="text-center">1. หจก.ส.สมหมาย เสนอราคา 1,705,000.00 บาท</td>
+                  <td class="text-center">คัดเลือกเกณฑ์ราคา เป็นผู้เสนอราคาที่มีคุณสมบัติครบถ้วนและเสนอราคาต่ำสุด</td>
+                  <td class="text-center">กปภ.ข.1-จบ./10/2569 ลว. 12 มี.ค. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48572" title="โครงการ วางท่อขยายเขตจำหน่ายน้ำประปา ให้  องค์การบริหารส่วนตำบลโสธร บริเวณถนนโสธรพัฒนา 3/2 (ผู้ใหญ่กิตติ) หมูที่ 3 ตำบลโสธร  อำเภอเมืองฉะเชิงเทรา จังหวัดฉะเชิงเทรา">วางท่อขยายเขตจำหน่ายน้ำประปา ให้  องค์การบริหารส่วนตำบลโสธร บริเวณถนนโสธรพัฒนา 3/2 (ผู้ใหญ่กิตติ) หมูที่ 3 ตำบลโสธร  อำเภอเมืองฉะเชิงเทรา จังหวัดฉะเชิงเทรา</a></td>
+                  <td class="text-center">296,794.40</td>
+                  <td class="text-center">296,743.92</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">บริษัท วรรณศิริการโยธา จำกัด ราคาที่เสนอ 296,000.-บาท</td>
+                  <td class="text-center">บริษัท วรรณศิริการโยธา จำกัด ราคาที่ตกลงจ้าง 296,000.-บาท</td>
+                  <td class="text-center">เป็นผู้มีคุณสมบัติครบถ้วน และเสนอราคาต่ำสุด</td>
+                  <td class="text-center">กปภ.ข.1-ฉช./1/2569 ลว. 21 ม.ค. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ฉช.5/2568</td>
+                  <td><a href="/winner/view/48573" title="โครงการ งานวางท่อขยายเขตจำหน่ายน้ำประปาบริเวณ หมู่ที่ 1,4,6 ตำบลหนามแดง  อำเภอเมืองฉะเชิงเทรา จังหวัดฉะเชิงเทรา ">งานวางท่อขยายเขตจำหน่ายน้ำประปาบริเวณ หมู่ที่ 1,4,6 ตำบลหนามแดง  อำเภอเมืองฉะเชิงเทรา จังหวัดฉะเชิงเทรา </a></td>
+                  <td class="text-center">614,000.00</td>
+                  <td class="text-center">614,476.54</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1.บริษัท ปานะโชค พานิช จำกัด ราคาที่เสนอ 614,000.-บาท 2. บริษัท วันวารินทร์โชค จำกัด ราคาที่เสนอ 610,000.- บาท</td>
+                  <td class="text-center"> บริษัท วันวารินทร์โชค จำกัด ราคาที่เสนอ 610,000.-บาท</td>
+                  <td class="text-center">เป็นผู้มีคุณสมบัติครบถ้วน และเสนอราคาต่ำสุด </td>
+                  <td class="text-center">กปภ.ข.1-ฉช./2/2569 ลว. 22 ม.ค. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48592" title="โครงการ โครงการขยายเขตประปาส่วนภูมิภาค ภายในชุมชนบ้านหนองห้าตะวันออก ตั้งแต่บ้านเลขที่ 583 จนถึงบ้านเลขที่ 622 หมู่ที่ 7 ตำบลพระบาท อำเภอเมือง จังหวัดลำปาง">โครงการขยายเขตประปาส่วนภูมิภาค ภายในชุมชนบ้านหนองห้าตะวันออก ตั้งแต่บ้านเลขที่ 583 จนถึงบ้านเลขที่ 622 หมู่ที่ 7 ตำบลพระบาท อำเภอเมือง จังหวัดลำปาง</a></td>
+                  <td class="text-center">320,125.00</td>
+                  <td class="text-center">320,124.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">หจก.รักษ์น้ำลำปาง ราคาที่เสนอ 320,000.00 บาท</td>
+                  <td class="text-center">หจก.รักษ์น้ำลำปาง ราคาที่ตกลงจ้าง 320,000.00 บาท</td>
+                  <td class="text-center">ตามมาตรา 56(2) ข้อ ข. พรบ.จัดซื้อจัดจ้างฯ</td>
+                  <td class="text-center">กปภ.ข.9-ลป./15/2569 ลว. 26 พ.ค. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">53/2569</td>
+                  <td><a href="/winner/view/48608" title="โครงการ งานจ้างวางท่อขยายเขตจำหน่ายน้ำให้ บจ.พีดับบลิว ไลฟ์ บริเวณซอยหนองตาเมือง ตำบลนาป่า อำเภอเมืองชลบุรี จังหวัดชลบุรี">งานจ้างวางท่อขยายเขตจำหน่ายน้ำให้ บจ.พีดับบลิว ไลฟ์ บริเวณซอยหนองตาเมือง ตำบลนาป่า อำเภอเมืองชลบุรี จังหวัดชลบุรี</a></td>
+                  <td class="text-center">158,276.00</td>
+                  <td class="text-center">158,276.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1.ห้างหุ้นส่วนจำกัด หนองมนวิศวกรรม (1992) ราคา 158,276 บาท</td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด หนองมนวิศวกรรม (1992) ราคา 158,276 บาท</td>
+                  <td class="text-center">ราคาต่ำสุดคุณสมบัติตรงตามเงื่อนไข</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">3/69</td>
+                  <td><a href="/winner/view/47970" title="โครงการ โครงการจัดการน้ำสะอาด ( WSP ) กำจัดตะกอนอย่างเป็นระบบ ปีงบประมาณ 2569 การประปาส่วนภูมิภาคสาขาสกลนคร (แม่ข่าย) ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ ( e-bidding )">โครงการจัดการน้ำสะอาด ( WSP ) กำจัดตะกอนอย่างเป็นระบบ ปีงบประมาณ 2569 การประปาส่วนภูมิภาคสาขาสกลนคร (แม่ข่าย) ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ ( e-bidding )</a></td>
+                  <td class="text-center">861,409.92</td>
+                  <td class="text-center">861,409.92</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">บริษัท เวิลด์ แมชชีน แอนด์อีควิปเม้นท์ จำกัด/612,406.10 บาท</td>
+                  <td class="text-center">บริษัท เวิลด์ แมชชีน แอนด์อีควิปเม้นท์ จำกัด</td>
+                  <td class="text-center">สมบัติครบถ้วนถูกต้อง</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48357" title="โครงการ จ้างงานโครงการจัดการน้ำสะอาด (WSP) งานกำจัดตะกอน สถานีผลิตน้ำวัฒนานคร">จ้างงานโครงการจัดการน้ำสะอาด (WSP) งานกำจัดตะกอน สถานีผลิตน้ำวัฒนานคร</a></td>
+                  <td class="text-center">260,010.00</td>
+                  <td class="text-center">260,010.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด เกษสกุล คอนสตรัคชั่น ราคาที่เสนอ 260,010 บาท</td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด เกษสกุล คอนสตรัคชั่น ราคาที่ตกลง 260,010 บาท</td>
+                  <td class="text-center">ราคาต่ำสุด</td>
+                  <td class="text-center">กปภ.ข.1-วน./18/2569 ลว. 10 มิ.ย. 2569</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">2190/2569</td>
+                  <td><a href="/winner/view/48612" title="โครงการ จ้างซ่อมท่อ HDPE ขนาด 315 มม. บริเวณหน้าที่ดินโฉนดเลขที่ 204519 ตำบลท่าข้าม อำเภอหาดใหญ่ จังหวัดสงขลา (จุดที่ 1)">จ้างซ่อมท่อ HDPE ขนาด 315 มม. บริเวณหน้าที่ดินโฉนดเลขที่ 204519 ตำบลท่าข้าม อำเภอหาดใหญ่ จังหวัดสงขลา (จุดที่ 1)</a></td>
+                  <td class="text-center">105,048.32</td>
+                  <td class="text-center">105,048.32</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">หจก.วัฒนะวิศวการโยธา 96 ราคาที่เสนอ   105,048.32 บาท  รวมภาษีมูลค่าเพิ่ม</td>
+                  <td class="text-center">หจก.วัฒนะวิศวการโยธา 96</td>
+                  <td class="text-center">ราคาเท่ากับราคากลาง มีคุณสมบัตครบถ้วน</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">2171/2569</td>
+                  <td><a href="/winner/view/48614" title="โครงการ ซ่อมท่อประปา  HDPE ขนาด 160 มม. บริเวณหน้าที่ดินโฉนดเลขที่ 204519 ตำบลท่าข้าม อำเภอหาดใหญ่ จังหวัดสงขลา (จุดที่ 2)">ซ่อมท่อประปา  HDPE ขนาด 160 มม. บริเวณหน้าที่ดินโฉนดเลขที่ 204519 ตำบลท่าข้าม อำเภอหาดใหญ่ จังหวัดสงขลา (จุดที่ 2)</a></td>
+                  <td class="text-center">38,431.19</td>
+                  <td class="text-center">38,431.19</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">หจก.วัฒนะวิศวการโยธา 96  ราคาที่เสนอ  38,431.19 บาท  รวมภาษีมูลค่าเพิ่ม<br />
+</td>
+                  <td class="text-center">หจก.วัฒนะวิศวการโยธา 96</td>
+                  <td class="text-center">ราคาที่เสนอเท่ากับราคากลาง  และผู้รับจ้างมีคุณสมบัติครบถ้วน</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">13/2569</td>
+                  <td><a href="/winner/view/48619" title="โครงการ งานขุดวางท่อกาลักน้ำ เพื่อแก้ไขปีญหาภัยแล้ง (ชั่วคราว) ">งานขุดวางท่อกาลักน้ำ เพื่อแก้ไขปีญหาภัยแล้ง (ชั่วคราว) </a></td>
+                  <td class="text-center">219,350.00</td>
+                  <td class="text-center">205,000.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">หจก.เคซีบี เสนอราคา 219,350.00 รวมภาษีมูลค่าเพิ่มแล้ว</td>
+                  <td class="text-center">หจก.เคซีบี เสนอราคา 219,350.00 รวมภาษีมูลค่าเพิ่มแล้ว</td>
+                  <td class="text-center">มีความพร้อมในการปฏิบัติงาน และเสร็จตรงเวลาที่จัดจ้าง</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">-</td>
+                  <td><a href="/winner/view/48620" title="โครงการ จ้างเหมาสูบทอยน้ำอ่างเก็บน้ำคลองใหญ่เติมอ่างเก็บน้ำหนองปลาไหล เพื่อเตรียมความพร้อมรับมือสถานการณ์ภัยแล้ง กปภ.สาขาพัทยา(พ)">จ้างเหมาสูบทอยน้ำอ่างเก็บน้ำคลองใหญ่เติมอ่างเก็บน้ำหนองปลาไหล เพื่อเตรียมความพร้อมรับมือสถานการณ์ภัยแล้ง กปภ.สาขาพัทยา(พ)</a></td>
+                  <td class="text-center">2,174,240.00</td>
+                  <td class="text-center">2,170,174.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1. บริษัท พี ดับเบิลยู พี เอ็นจิเนียริ่ง จำกัด 2,169,500 บาท<br />
+2. บริษัท วงษ์สยามก่อสร้าง จำกัด 2,170,100 บาท</td>
+                  <td class="text-center">1. บริษัท พี ดับเบิลยู พี เอ็นจิเนียริ่ง จำกัด 2,169,500 บาท</td>
+                  <td class="text-center">ถูกต้องตามเงื่อนไขและเสนอราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">69069416518</td>
+                  <td><a href="/winner/view/48623" title="โครงการ โครงการจัดการน้ำสะอาด (WSP) งานกำจัดตะกอนอย่างเป็นระบบ กปภ.สาขาปากท่อ ปีงบประมาณ 2569">โครงการจัดการน้ำสะอาด (WSP) งานกำจัดตะกอนอย่างเป็นระบบ กปภ.สาขาปากท่อ ปีงบประมาณ 2569</a></td>
+                  <td class="text-center">378,780.00</td>
+                  <td class="text-center">378,780.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">หจก.ยิ่งรุ่ง ดีเวลลอปเม้นท์ เสนอราคา 378,780.00 บาท</td>
+                  <td class="text-center">หจก.ยิ่งรุ่ง ดีเวลลอปเม้นท์ เสนอราคา 378,780.00 บาท</td>
+                  <td class="text-center">คุณสมบัติครบถ้วน และ ราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">22 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ข.6/48/2569</td>
+                  <td><a href="/winner/view/47128" title="โครงการ งานวางท่อขยายเขตจำหน่ายน้ำบ้านโคกศรี หมู่ ๕ ตำบลหนองปลิง อำเภอเมืองมหาสารคาม จังหวัดมหาสารคาม">งานวางท่อขยายเขตจำหน่ายน้ำบ้านโคกศรี หมู่ ๕ ตำบลหนองปลิง อำเภอเมืองมหาสารคาม จังหวัดมหาสารคาม</a></td>
+                  <td class="text-center">5,926,730.00</td>
+                  <td class="text-center">5,926,730.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1.ห้างหุ้นส่วนจำกัด บี.เอ็ม.สุวรรณะชัย ราคาที่เสนอ 5,889,280.00 บาท<br />
+2. บริษัท หาดใหญ่นครก่อสร้าง จำกัด ราคาที่เสนอ 5,926,730.00	บาท</td>
+                  <td class="text-center">1.ห้างหุ้นส่วนจำกัด บี.เอ็ม.สุวรรณะชัย ราคาที่เสนอ 5,889,280.00 บาท</td>
+                  <td class="text-center">เป็นผู้มีคุณสมบัติเหมาะสมและเสนอราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">19 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ข.7/102/2569</td>
+                  <td><a href="/winner/view/47410" title="โครงการ งานวางท่อขยายเขตจำหน่ายน้ำ ซอยข้างคลังสินค้าเริ่มอุดม ตำบลหนองบัว อำเภอเมืองอุดรธานี จังหวัดอุดรธานี">งานวางท่อขยายเขตจำหน่ายน้ำ ซอยข้างคลังสินค้าเริ่มอุดม ตำบลหนองบัว อำเภอเมืองอุดรธานี จังหวัดอุดรธานี</a></td>
+                  <td class="text-center">1,865,010.00</td>
+                  <td class="text-center">1,865,010.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด บุญธรรมะ ก่อสร้าง ราคา 1,354,555.00 บาท<br />
+ห้างหุ้นส่วนจำกัด บี.เอ็ม.สุวรรณะชัย ราคา 1,379,230.00 บ่าท<br />
+บริษัท ช.นครศรี ซีวิล จำกัด ราคา 1,380,000 บาท<br />
+บริษัท ดับเบิ้ล ดี วอเตอร์ จำกัด ราคา 1,388,499.00 บาท<br />
+ห้างหุ้นส่วนจำกัด ขอนแก่นวอเตอร์ซัพพลาย ราคา 1,400,000.00 บาท<br />
+ห้างหุ้นส่วนจำกัด สุพรรณเซฟตี้อินเตอร์เทรด ราคา 1,591,270.00 บาท</td>
+                  <td class="text-center">ห้างหุ้นส่วนจำกัด บุญธรรมะ ก่อสร้าง ราคา 1,354,555.00 บาท</td>
+                  <td class="text-center">เกณฑ์ราคา</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">19 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ข.7/105/2569</td>
+                  <td><a href="/winner/view/47803" title="โครงการ งานวางท่อขยายเขตจำหน่ายน้ำ บ้านไร่ม่วง หมู่ ๑ ตำบลน้ำหมาน อำเภอเมืองเลย จังหวัดเลย ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)">งานวางท่อขยายเขตจำหน่ายน้ำ บ้านไร่ม่วง หมู่ ๑ ตำบลน้ำหมาน อำเภอเมืองเลย จังหวัดเลย ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)</a></td>
+                  <td class="text-center">2,931,800.00</td>
+                  <td class="text-center">2,931,800.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">บจก. สยาม วอเตอร์เวิร์คแอนด์คอนสตรัคชั่น  2,100,000.-<br />
+หจก.บุญธรรมะ ก่อสร้าง 2,163,555.-<br />
+บจก.ส.บุญสุวรรณ์ 2,219,393.-<br />
+หจก.ขอนแก่นวอเตอร์ซัพพลาย 2,286,800.-<br />
+หจก.เพชรวิริยะ 2007  2,334,000.-<br />
+หจก.บี.เอ็ม.สุวรรณะชัย 2,479,190.-<br />
+หจก.สุพรรณเซฟตี้อินเตอร์เทรด 2,762,470.-</td>
+                  <td class="text-center">บจก. สยาม วอเตอร์เวิร์คแอนด์คอนสตรัคชั่น  2,100,000.-</td>
+                  <td class="text-center">เกณฑ์ราคา</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">19 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ยข.2/2569</td>
+                  <td><a href="/winner/view/47924" title="โครงการ งานย้ายแนวท่อเนื่องจากโครงการพัฒนาพื้นที่ชุมชนเทศบาลตำบลทุ่งกระบือ และพื้นที่ต่อเนื่อง อำเภอย่านตาขาว จังหวัดตรัง">งานย้ายแนวท่อเนื่องจากโครงการพัฒนาพื้นที่ชุมชนเทศบาลตำบลทุ่งกระบือ และพื้นที่ต่อเนื่อง อำเภอย่านตาขาว จังหวัดตรัง</a></td>
+                  <td class="text-center">601,340.00</td>
+                  <td class="text-center">601,340.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">หจก.โล่เพชรก่อสร้าง ราคาที่เสนอ 600,000.00 บาท (รวมภาษีมูลค่าเพิ่ม)</td>
+                  <td class="text-center">หจก.โล่เพชรก่อสร้าง</td>
+                  <td class="text-center">เป็นผู้ยื่นข้อเสนอราคาที่ไม่เกินราคากลางและเป็นราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">19 มิ.ย. 2569</td>
+                </tr>
+              <tr>
+                  <td class="text-center">กปภ.ข.7/106/2569</td>
+                  <td><a href="/winner/view/47975" title="โครงการ งานวางท่อขยายเขตจำหน่ายน้ำ บ้านบุญเพียง หมู่ 15 ตำบลค่ายบกหวาน อำเภอเมืองหนองคาย จังหวัดหนองคาย">งานวางท่อขยายเขตจำหน่ายน้ำ บ้านบุญเพียง หมู่ 15 ตำบลค่ายบกหวาน อำเภอเมืองหนองคาย จังหวัดหนองคาย</a></td>
+                  <td class="text-center">2,137,860.00</td>
+                  <td class="text-center">2,137,860.00</td>
+                  <td class="text-center"></td>
+                  <td class="text-center">1.หจก.บุญธรรมะ ก่อสร้าง  1,483,440 บาท<br />
+2.หจก.บี.เอ็ม.สุวรรณะชัย  1,489,440 บาท<br />
+3.บจก.สยาม วอเตอร์เวิร์ค แอนด์ คอนสตรัคชั่น  1,545,000 บาท<br />
+4.หจก.สุพรรณเซฟตี้อินเตอร์เทรด  1,633,670 บาท<br />
+5.บจก.ดับเบิ้ล ดี วอเตอร์  1,971,534 บาท</td>
+                  <td class="text-center">หจก.บุญธรรมะ ก่อสร้าง  1,483,440 บาท</td>
+                  <td class="text-center">เป็นผู้เสนอราคาต่ำสุด</td>
+                  <td class="text-center">รอทำสัญญา</td>
+                  <td class="text-center">19 มิ.ย. 2569</td>
+                </tr>
+                            </tbody>
+            </table>
+            <div class="text-center">
+              <ul class="pagination"><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/1">&laquo;<span class="sr-only">(first)</span></a></li><li class="active"><span>1</span></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/2">2</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/3">3</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/4">4</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/5">5</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/6">6</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/7">7</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/8">8</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/9">9</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/10">10</a></li><li class="disabled"><span>...</span></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/19">19</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/20">20</a></li><li><a href="/report/conclude-type-1/date_start=2026-05-22,date_end=2026-06-22/page/20">&raquo;<span class="sr-only">(last)</span></a></li></ul>
+            </div>
+            </div>
+        </div>
+      </div>
+
+    </div></div> <!-- /.wrap -->
+
+    
+    <!-- Footer -->
+    <div id="footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6 col-sm-6 col-xs-12 col-xs-small footer-left">
+            <div class="col-md-2 col-xs-2"><img src="/images/pwa-shortcut-icon.png" alt="pwa-shortcut-icon"></div>
+            <div class="col-md-10 col-xs-10 pull-left">
+              <span>Copyright © 2017</span><br>
+              <span>กองบริการสารสนเทศ การประปาส่วนภูมิภาค</span>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-6 col-xs-12 col-xs-small footer-right hidden-xs">
+            <br>
+            <span class="fa fa-map-marker fa-3"></span>
+            การประปาส่วนภูมิภาค เลขที่ 72 ถ.แจ้งวัฒนะ หลักสี่ กรุงเทพฯ 10210
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Footer -->
+
+    <script src="https://cdn-1.pwa.co.th/js/jquery.min.js?17820612005"></script>
+    <script src="https://cdn-2.pwa.co.th/js/bootstrap.min.js?17820612005"></script>
+    <!-- datetimepicker -->
+    <script src="/js/moment/min/moment-with-locales.min.js" type="text/javascript"></script>
+    <script src="/js/bootstrap-datetimepicker.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      $(function () {
+        $('.date').datetimepicker({
+          useCurrent: false,
+          locale: "th",
+          daysOfWeekDisabled: [0, 6],
+          format: "YYYY-MM-DD",
+          showClear: true
+        });
+      });
+    </script></body>
+</html>

@@ -180,3 +180,73 @@ export async function restGetDocument<T>(collection: string, id: string): Promis
   const { updatedAt: _u, ...fields } = parseFields(doc.fields);
   return { id: docId, ...fields } as T;
 }
+
+// ── Write helpers ─────────────────────────────────────────────────────────────
+
+function encodeValue(v: unknown): FirestoreValue {
+  if (v === null || v === undefined) return { nullValue: null };
+  if (typeof v === 'string') return { stringValue: v };
+  if (typeof v === 'boolean') return { booleanValue: v };
+  if (typeof v === 'number') {
+    return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+  }
+  if (v instanceof Date) return { stringValue: v.toISOString() };
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(encodeValue) } };
+  if (typeof v === 'object') {
+    const fields: Record<string, FirestoreValue> = {};
+    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+      if (val !== undefined) fields[k] = encodeValue(val);
+    }
+    return { mapValue: { fields } };
+  }
+  return { nullValue: null };
+}
+
+function encodeDocument(data: Record<string, unknown>): { fields: Record<string, FirestoreValue> } {
+  const fields: Record<string, FirestoreValue> = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (v !== undefined) fields[k] = encodeValue(v);
+  }
+  return { fields };
+}
+
+/** Create a document with auto-generated ID. Returns the new document ID. */
+export async function restAddDocument(
+  collection: string,
+  data: Record<string, unknown>,
+): Promise<string> {
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
+  const token = await getAccessToken();
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(encodeDocument(data)),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Firestore write ${res.status}: ${err.slice(0, 200)}`);
+  }
+  const doc = await res.json() as { name: string };
+  return doc.name.split('/').pop()!;
+}
+
+/** Create or overwrite a document with a known ID. */
+export async function restSetDocument(
+  collection: string,
+  docId: string,
+  data: Record<string, unknown>,
+): Promise<void> {
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
+  const token = await getAccessToken();
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(encodeDocument(data)),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Firestore set ${res.status}: ${err.slice(0, 200)}`);
+  }
+}

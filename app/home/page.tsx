@@ -1,246 +1,212 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import {
-  CheckCircle2,
-  Lock,
-  ShieldCheck,
-  EyeOff,
-  Scale,
-} from 'lucide-react';
+import { BarChart2, TrendingUp, FileText, Building2, ArrowRight, Map } from 'lucide-react';
+
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import TenderCard from '@/components/ui/TenderCard';
-import ProjectCard from '@/components/ui/ProjectCard';
-import { getTenders, getProjects } from '@/lib/data-service-client';
-import type { Tender, Project } from '@/lib/types';
+import { useAuth } from '@/lib/auth-context';
 import { useLanguage } from '@/lib/language-context';
+import ProcurementFeed from '@/components/ProcurementFeed';
+
+const QUICK_ACTIONS = [
+  {
+    icon: TrendingUp,
+    href: '/bidsight',
+    titleTh: 'Conjuncture',
+    titleEn: 'Conjuncture',
+    descTh: 'จำลองราคาประมูลและดูว่าคุณอยู่ที่เปอร์เซ็นไทล์ไหนของตลาด',
+    descEn: 'Simulate your bid and see where you stand in the real market distribution.',
+    accent: 'border-black bg-black text-white',
+    iconColor: 'text-white',
+  },
+  {
+    icon: BarChart2,
+    href: '/intelligence',
+    titleTh: 'ข้อมูลตลาด',
+    titleEn: 'Market Intelligence',
+    descTh: 'ส่วนลดมัธยฐาน ดัชนี HHI และโปรไฟล์หน่วยงาน',
+    descEn: 'Median discounts, HHI concentration index, and agency profiles.',
+    accent: 'border-slate-200 bg-white text-black',
+    iconColor: 'text-slate-700',
+  },
+  {
+    icon: Building2,
+    href: '/agency',
+    titleTh: 'ข้อมูลหน่วยงาน',
+    titleEn: 'Agency Intel',
+    descTh: 'ดูประวัติการจัดซื้อ ผู้ชนะซ้ำ และส่วนลดเฉลี่ยของแต่ละหน่วยงาน',
+    descEn: 'Procurement history, repeat winners, and average discounts per agency.',
+    accent: 'border-slate-200 bg-white text-black',
+    iconColor: 'text-slate-700',
+  },
+  {
+    icon: Map,
+    href: '/plans',
+    titleTh: 'แผนจัดซื้อ',
+    titleEn: 'Procurement Plans',
+    descTh: 'แผนจัดซื้อจัดจ้างล่วงหน้าของหน่วยงานภาครัฐ',
+    descEn: 'Upcoming procurement plans published by government agencies.',
+    accent: 'border-slate-200 bg-white text-black',
+    iconColor: 'text-slate-700',
+  },
+];
+
 
 export default function HomePage() {
-  const { t } = useLanguage();
-  const [featuredTenders, setFeaturedTenders] = useState<Tender[]>([]);
-  const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const { user } = useAuth();
+  const { lang } = useLanguage();
+  const isTh = lang === 'th';
 
-  useEffect(() => {
-    getTenders().then((d) => setFeaturedTenders(d.slice(0, 3)));
-    getProjects().then((d) => setFeaturedProjects(d.slice(0, 3)));
-  }, []);
-
-  const buyerSteps = [
-    { n: '1', h: t('how.buyers.s1.h'), d: t('how.buyers.s1.d') },
-    { n: '2', h: t('how.buyers.s2.h'), d: t('how.buyers.s2.d') },
-    { n: '3', h: t('how.buyers.s3.h'), d: t('how.buyers.s3.d') },
-  ];
-
-  const vendorSteps = [
-    { n: '1', h: t('how.vendors.s1.h'), d: t('how.vendors.s1.d') },
-    { n: '2', h: t('how.vendors.s2.h'), d: t('how.vendors.s2.d') },
-    { n: '3', h: t('how.vendors.s3.h'), d: t('how.vendors.s3.d') },
-  ];
-
-  const buyerFeatures = [
-    t('val.buyers.f1'),
-    t('val.buyers.f2'),
-    t('val.buyers.f3'),
-    t('val.buyers.f4'),
-  ];
-
-  const vendorFeatures = [
-    t('val.vendors.f1'),
-    t('val.vendors.f2'),
-    t('val.vendors.f3'),
-    t('val.vendors.f4'),
-  ];
-
-  const trustItems = [
-    { icon: <Lock size={22} aria-hidden="true" />, h: t('trust.escrow.h'), d: t('trust.escrow.d') },
-    { icon: <ShieldCheck size={22} aria-hidden="true" />, h: t('trust.verified.h'), d: t('trust.verified.d') },
-    { icon: <EyeOff size={22} aria-hidden="true" />, h: t('trust.sealed.h'), d: t('trust.sealed.d') },
-    { icon: <Scale size={22} aria-hidden="true" />, h: t('trust.dispute.h'), d: t('trust.dispute.d') },
-  ];
+  const firstName = user?.name?.split(' ')[0] ?? '';
 
   return (
     <>
       <Header />
+      <main className="min-h-screen bg-[#F7F7F7]">
+        <div className="container-app py-12">
 
-      <main>
-        {/* ── 1. HERO ─────────────────────────────────────────────────────── */}
-        <section className="section bg-white py-24 md:py-32">
-          <div className="container-app">
-            <div className="max-w-lg mx-auto flex flex-col items-center text-center gap-6">
-              <span className="badge">{t('waitlist.badge')}</span>
-              <h1 className="text-5xl md:text-6xl font-semibold tracking-tight text-[#111111] leading-[1.35]">
-                {(() => { const parts = t('waitlist.headline').split('\n'); return <>{parts[0]}{parts[1] && <><br />{parts[1]}</>}</>; })()}
-              </h1>
-              <p className="text-base text-[#717171] leading-relaxed max-w-md">
-                {t('waitlist.sub')}
-              </p>
-            </div>
+          {/* ── Welcome ── */}
+          <div className="mb-10">
+            <p className="text-sm text-[#717171] mb-1">
+              {isTh ? 'ยินดีต้อนรับกลับ' : 'Welcome back'}
+              {firstName ? `, ${firstName}` : ''}
+            </p>
+            <h1 className="text-2xl font-semibold text-[#111111] tracking-tight">
+              {isTh ? 'ข้อมูลพร้อมใช้งาน' : 'Your procurement intelligence'}
+            </h1>
           </div>
-        </section>
 
-        {/* ── 2. HOW IT WORKS ─────────────────────────────────────────────── */}
-        <section className="section bg-[#F7F7F7]">
-          <div className="container-app">
-            <h2 className="text-3xl font-semibold text-center text-[#111111] mb-12">
-              {t('how.title')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              <div className="card flex flex-col gap-6">
-                <div>
-                  <span className="badge mb-3">{t('how.buyers.badge')}</span>
-                  <h3 className="text-xl font-semibold text-[#111111]">{t('how.buyers.title')}</h3>
-                </div>
-                <ol className="flex flex-col gap-5">
-                  {buyerSteps.map((step) => (
-                    <li key={step.n} className="flex items-start gap-4">
-                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#111111] text-white text-sm font-semibold flex items-center justify-center">
-                        {step.n}
-                      </span>
-                      <div>
-                        <p className="font-medium text-[#111111] text-sm">{step.h}</p>
-                        <p className="text-sm text-[#717171] mt-0.5 leading-relaxed">{step.d}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              <div className="card flex flex-col gap-6">
-                <div>
-                  <span className="badge mb-3">{t('how.vendors.badge')}</span>
-                  <h3 className="text-xl font-semibold text-[#111111]">{t('how.vendors.title')}</h3>
-                </div>
-                <ol className="flex flex-col gap-5">
-                  {vendorSteps.map((step) => (
-                    <li key={step.n} className="flex items-start gap-4">
-                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#111111] text-white text-sm font-semibold flex items-center justify-center">
-                        {step.n}
-                      </span>
-                      <div>
-                        <p className="font-medium text-[#111111] text-sm">{step.h}</p>
-                        <p className="text-sm text-[#717171] mt-0.5 leading-relaxed">{step.d}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 3. VALUE PROPS ──────────────────────────────────────────────── */}
-        <section className="section bg-white">
-          <div className="container-app">
-            <h2 className="text-3xl font-semibold text-center text-[#111111] mb-12">
-              {t('val.title')}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <div className="rounded-[12px] p-8 flex flex-col gap-6" style={{ backgroundColor: '#111111' }}>
-                <div>
-                  <span className="inline-block px-2.5 py-1 text-xs font-medium rounded-full bg-white/10 text-white border border-white/20 mb-3">
-                    {t('val.buyers.badge')}
-                  </span>
-                  <h3 className="text-xl font-semibold text-white">{t('val.buyers.title')}</h3>
-                </div>
-                <ul className="flex flex-col gap-3">
-                  {buyerFeatures.map((point) => (
-                    <li key={point} className="flex items-start gap-3 text-sm text-white/90">
-                      <CheckCircle2 size={16} className="flex-shrink-0 mt-0.5" style={{ color: '#d8f3dc' }} aria-hidden="true" />
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="card flex flex-col gap-6">
-                <div>
-                  <span className="badge mb-3">{t('val.vendors.badge')}</span>
-                  <h3 className="text-xl font-semibold text-[#111111]">{t('val.vendors.title')}</h3>
-                </div>
-                <ul className="flex flex-col gap-3">
-                  {vendorFeatures.map((point) => (
-                    <li key={point} className="flex items-start gap-3 text-sm text-[#717171]">
-                      <CheckCircle2 size={16} className="text-[#2D6A4F] flex-shrink-0 mt-0.5" aria-hidden="true" />
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── 4. GOVERNMENT TENDERS ───────────────────────────────────────── */}
-        <section className="section bg-[#F7F7F7]">
-          <div className="container-app">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-semibold text-[#111111]">{t('tenders.title')}</h2>
-                <p className="text-[#717171] mt-2 max-w-xl text-sm leading-relaxed">{t('tenders.desc')}</p>
-              </div>
-              <Link
-                href="/tenders"
-                className="text-sm font-medium text-[#111111] hover:text-[#717171] transition-colors duration-150 flex-shrink-0 flex items-center gap-1"
-              >
-                {t('tenders.browseAll')}
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {featuredTenders.map((tender) => (
-                <TenderCard key={tender.id} tender={tender} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── 5. PRIVATE PROJECTS ─────────────────────────────────────────── */}
-        <section className="section bg-white">
-          <div className="container-app">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
-              <div>
-                <h2 className="text-3xl font-semibold text-[#111111]">{t('projects.title')}</h2>
-                <p className="text-[#717171] mt-2 max-w-xl text-sm leading-relaxed">{t('projects.desc')}</p>
-              </div>
-              <Link
-                href="/projects"
-                className="text-sm font-medium text-[#111111] hover:text-[#717171] transition-colors duration-150 flex-shrink-0 flex items-center gap-1"
-              >
-                {t('projects.browseAll')}
-                <span aria-hidden="true">→</span>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {featuredProjects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── 6. TRUST SIGNALS ────────────────────────────────────────────── */}
-        <section className="section bg-[#F7F7F7]">
-          <div className="container-app">
-            <h2 className="text-3xl font-semibold text-center text-[#111111] mb-10">
-              {t('trust.title')}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {trustItems.map((item) => (
-                <div key={item.h} className="card flex flex-col gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#111111] text-white flex items-center justify-center flex-shrink-0">
-                    {item.icon}
+          {/* ── Quick actions ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            {QUICK_ACTIONS.map((a) => {
+              const Icon = a.icon;
+              return (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className={`group flex flex-col gap-4 p-6 rounded-xl border-2 transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 ${a.accent}`}
+                >
+                  <Icon size={22} className={a.iconColor} />
+                  <div>
+                    <p className={`font-semibold text-sm mb-1 ${a.accent.includes('bg-black') ? 'text-white' : 'text-[#111111]'}`}>
+                      {isTh ? a.titleTh : a.titleEn}
+                    </p>
+                    <p className={`text-xs leading-relaxed ${a.accent.includes('bg-black') ? 'text-white/70' : 'text-[#717171]'} ${isTh ? 'lang-th' : ''}`}>
+                      {isTh ? a.descTh : a.descEn}
+                    </p>
                   </div>
-                  <h3 className="font-semibold text-[#111111] text-base">{item.h}</h3>
-                  <p className="text-sm text-[#717171] leading-relaxed">{item.d}</p>
+                  <ArrowRight size={14} className={`mt-auto self-end opacity-0 group-hover:opacity-100 transition-opacity ${a.accent.includes('bg-black') ? 'text-white' : 'text-[#111111]'}`} />
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* ── Two column ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {/* Live procurement feed — 2/3 */}
+            <div className="lg:col-span-2">
+              <ProcurementFeed />
+            </div>
+
+            {/* Report CTA — 1/3 */}
+            <div className="bg-black rounded-xl p-6 flex flex-col gap-5 justify-between">
+              {/* Header */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <FileText size={16} className="text-white/60" />
+                  <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">
+                    {isTh ? 'เครือข่ายข้อมูล' : 'Data network'}
+                  </span>
                 </div>
-              ))}
+                <h2 className={`font-bold text-white leading-snug mb-1.5 ${isTh ? 'lang-th text-base' : 'text-base'}`}>
+                  {isTh ? 'รายงานผลประมูลของคุณ' : 'Report your bid outcome'}
+                </h2>
+                <p className={`text-xs text-white/50 leading-relaxed ${isTh ? 'lang-th' : ''}`}>
+                  {isTh
+                    ? 'ข้อมูล e-GP บันทึกเฉพาะผู้ชนะ ข้อมูลผู้แพ้มีแค่คุณ'
+                    : 'e-GP records only winners. Only you have the losing-bid data.'}
+                </p>
+              </div>
+
+              {/* Loop progress */}
+              <div className="flex flex-col gap-5">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-white/30">
+                  Network loops
+                </p>
+                {[
+                  { n: 20,  label: isTh ? 'ต่อหมวด → blend benchmark' : 'per category → blend benchmark', pct: 4 },
+                  { n: 30,  label: isTh ? 'คู่ match → คาด P(win)' : 'matched pairs → P(win) model', pct: 2 },
+                  { n: 2,   label: isTh ? 'ต่อหน่วยงาน → flag anomaly' : 'per agency → anomaly flag', pct: 50 },
+                ].map((loop) => (
+                  <div key={loop.n}>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className={`text-sm text-white/70 ${isTh ? 'lang-th' : ''}`}>{loop.label}</span>
+                      <span className="text-xs font-bold text-white/40">{loop.n}</span>
+                    </div>
+                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-400 rounded-full transition-all"
+                        style={{ width: `${loop.pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-white/10" />
+
+              {/* Stats row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 rounded-xl px-4 py-5">
+                  <p className="text-3xl font-black text-white">0</p>
+                  <p className={`text-xs text-white/40 mt-1 ${isTh ? 'lang-th' : ''}`}>
+                    {isTh ? 'ผลที่รายงาน' : 'outcomes reported'}
+                  </p>
+                </div>
+                <div className="bg-white/5 rounded-xl px-4 py-5">
+                  <p className="text-3xl font-black text-white">–</p>
+                  <p className={`text-xs text-white/40 mt-1 ${isTh ? 'lang-th' : ''}`}>
+                    {isTh ? 'หมวดที่ใช้งาน' : 'active categories'}
+                  </p>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <Link
+                href="/report"
+                className={`w-full flex items-center justify-center gap-2 py-3.5 bg-white text-black text-sm font-bold rounded-xl hover:bg-slate-100 transition-colors ${isTh ? 'lang-th' : ''}`}
+              >
+                {isTh ? 'รายงานผลประมูล' : 'Report a bid outcome'}
+                <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
-        </section>
-      </main>
 
+          {/* ── Database stats strip ── */}
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {(isTh ? [
+              { value: '251,000+', label: 'สัญญาในฐานข้อมูล' },
+              { value: '1,117', label: 'หน่วยงานที่วิเคราะห์' },
+              { value: '77', label: 'จังหวัด' },
+              { value: '฿1.09T', label: 'มูลค่าสัญญารวม' },
+            ] : [
+              { value: '251,000+', label: 'contracts in database' },
+              { value: '1,117', label: 'agencies profiled' },
+              { value: '77', label: 'provinces' },
+              { value: '฿1.09T', label: 'total contract value' },
+            ]).map((s) => (
+              <div key={s.label} className="bg-white rounded-xl border border-[#E0E0E0] px-5 py-4">
+                <p className="text-xl font-black text-[#111111] tracking-tight">{s.value}</p>
+                <p className={`text-xs text-[#717171] mt-0.5 ${isTh ? 'lang-th' : ''}`}>{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
       <Footer />
     </>
   );

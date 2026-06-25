@@ -397,3 +397,82 @@ select.input {
 .animate-pulse-slow { animation: pulseSlow 2.5s ease-in-out infinite; }
 
 @layer utilities { .text-balance { text-wrap: balance; } }
+
+/* ── Dark-theme range slider (Bid Tool) ──────────────────────────── */
+input.dark-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: 3px;
+  background: #1A2B48;
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+}
+input.dark-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #3B82F6;
+  border: 2px solid #60A5FA;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+input.dark-range::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 5px rgba(59,130,246,0.28);
+}
+input.dark-range::-moz-range-track {
+  height: 5px;
+  background: #1A2B48;
+  border-radius: 3px;
+}
+input.dark-range::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #3B82F6;
+  border: 2px solid #60A5FA;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.18);
+  cursor: pointer;
+}
+
+input.dark-range-indigo {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 5px;
+  border-radius: 3px;
+  background: #1A2B48;
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+}
+input.dark-range-indigo::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #818CF8;
+  border: 2px solid #A5B4FC;
+  box-shadow: 0 0 0 3px rgba(129,140,248,0.18);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+input.dark-range-indigo::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 5px rgba(129,140,248,0.28);
+}
+input.dark-range-indigo::-moz-range-track {
+  height: 5px;
+  background: #1A2B48;
+  border-radius: 3px;
+}
+input.dark-range-indigo::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #818CF8;
+  border: 2px solid #A5B4FC;
+  box-shadow: 0 0 0 3px rgba(129,140,248,0.18);
+  cursor: pointer;
+}

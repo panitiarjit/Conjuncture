@@ -10,6 +10,8 @@ import React, {
 } from 'react';
 import {
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   signOut,
   onAuthStateChanged,
   type User as FirebaseUser,
@@ -34,6 +36,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string, role: UserRole) => Promise<boolean>;
+  register: (email: string, password: string, displayName: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
 }
 
@@ -82,6 +85,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const register = useCallback(
+    async (email: string, password: string, displayName: string): Promise<{ ok: boolean; error?: string }> => {
+      if (!auth) return { ok: false, error: 'Firebase not initialized' };
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(cred.user, { displayName });
+        return { ok: true };
+      } catch (err: unknown) {
+        const code = (err as { code?: string }).code ?? '';
+        if (code === 'auth/email-already-in-use') return { ok: false, error: 'Email already registered.' };
+        if (code === 'auth/weak-password') return { ok: false, error: 'Password must be at least 6 characters.' };
+        return { ok: false, error: 'Registration failed. Try again.' };
+      }
+    },
+    [],
+  );
+
   const logout = useCallback(() => {
     if (auth) signOut(auth);
   }, []);
@@ -91,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: user !== null,
     isLoading,
     login,
+    register,
     logout,
   };
 

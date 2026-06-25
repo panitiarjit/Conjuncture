@@ -1,77 +1,68 @@
 /**
- * Backward-test: per-tender validation.
- * For each awarded contract, show what BidSight would have recommended vs what actually happened.
+ * Backward-test: per-tender validation against real awarded contracts.
+ * For each awarded contract, shows what BidSight v2 would have recommended
+ * vs. what actually happened.
  *
  * Output: CSV with columns:
  * - projectName, agency, category, announceDate
  * - referencePrice, agreedPrice, actualDiscount
- * - predictedMedianDiscount, predictedWinProb, predictedMargin
- * - marginTarget (assumed 10%), marginFloorDiscount
- * - recommendedBid, recommendedDiscount
- * - error (predicted - actual)
- * - wouldHaveWon (1 if recommended bid ≤ actual, else 0)
- * - profitMargin (if bid would have been accepted)
+ * - predictedDiscount, positioningPct, positioningLabel
+ * - marginFloorDiscount, recommendedBid
+ * - error_pp (predicted - actual)
+ * - wouldHaveWon (1 if recommended bid ≤ agreedPrice)
+ * - profitMargin_if_won
+ *
+ * Note: wouldHaveWon is NOT a win probability. It means our bid was ≤ the
+ * actual winner's price — a necessary but not sufficient condition for winning.
  */
 
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
+import { restGetCollection } from '../lib/firestore-rest';
 import type { AwardedContract } from '../lib/types';
-
-// Standalone implementations (no Firestore imports)
-function phi(z: number): number {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z));
-  const d = 0.3989423 * Math.exp((-z * z) / 2);
-  const ans = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
-  return z >= 0 ? 1 - ans : ans;
-}
-
-const GLOBAL_MEDIAN = 18.5;
-const GLOBAL_SIGMA = 12.0;
-const CALIB = 0.875;
-
-function recommendBid(
-  refPrice: number,
-  costM: number,
-  targetMarginPct: number = 10,
-): {
-  predictedBid: number;
-  predictedDiscount: number;
-  predictedWinProb: number;
-  predictedMargin: number;
-  marginFloorDiscount: number;
-} {
-  const costRatio = costM / refPrice;
-  const marginFloorDiscount = Math.max(0, (1 - costRatio / (1 - targetMarginPct / 100)) * 100);
-
-  const benchDiscount = GLOBAL_MEDIAN;
-  const sigma = GLOBAL_SIGMA;
-
-  const targetDiscount = Math.min(benchDiscount, marginFloorDiscount);
-  const bid = refPrice * (1 - targetDiscount / 100);
-
-  const z = (targetDiscount - benchDiscount) / sigma;
-  const phiZ = phi(z);
-  const winProb = phiZ * CALIB + 0.5 * (1 - CALIB);
-  const winProbPct = Math.max(3, Math.min(97, Math.round(winProb * 100)));
-
-  const actualMargin = (bid - costM) / bid * 100;
-
-  return {
-    predictedBid: Math.round(bid * 10) / 10,
-    predictedDiscount: Math.round(targetDiscount * 10) / 10,
-    predictedWinProb: winProbPct,
-    predictedMargin: Math.round(actualMargin * 10) / 10,
-    marginFloorDiscount: Math.round(marginFloorDiscount * 10) / 10,
-  };
-}
+import {
+  buildBenchmarkTables,
+  getBenchmarkFromTables,
+  recommendBid,
+} from '../lib/bidsight-core';
 
 async function runBackwardTest(): Promise<void> {
-  console.log('⏮️  BidSight Backward-Test (Per-Tender Validation)\n');
+  console.log('⏮️  BidSight Backward-Test (Per-Tender Validation, v2 model)\n');
   console.log('Loading awarded contracts...');
 
-  // For now, generate synthetic contracts for demonstration
-  const contracts = generateSyntheticContracts(100);
+  const allContracts = await restGetCollection<AwardedContract>('cgd_contracts', 10_000);
 
-  console.log(`Loaded ${contracts.length} awarded e-bidding contracts\n`);
+  // Build benchmark tables from the full dataset (in-sample — this is intentional:
+  // backward test checks prediction quality, not generalization; forward-test-bidsight.ts
+  // handles out-of-time validation with expanding windows).
+  const tables = buildBenchmarkTables(allContracts as Parameters<typeof buildBenchmarkTables>[0]);
+
+  // Test set: e-bidding contracts with valid discounts
+  // procurementMethod carries the actual method; procurementMethodGroup is a generic label.
+  const COMPETITIVE_RE = /ประกวดราคา|คัดเลือก|e-bidding/i;
+  const testContracts = allContracts.filter(
+    (c) =>
+      COMPETITIVE_RE.test(c.procurementMethod ?? '') &&
+      c.discountFromReference != null &&
+      c.discountFromReference >= 0 &&
+      c.discountFromReference < 100 &&
+      c.referencePrice != null &&
+      c.agreedPrice != null,
+  );
+
+  console.log(`Total contracts loaded: ${allContracts.length}`);
+  console.log(`Competitive contracts with valid discount: ${testContracts.length}\n`);
+
+  if (testContracts.length === 0) {
+    console.warn('⚠️  No contracts found — check Firestore credentials.');
+    return;
+  }
+
   console.log('Generating backtest report...\n');
+
+  const ASSUMED_COST_RATIO = 0.80; // assumed 80% cost ratio (no actual cost data)
+  const TARGET_MARGIN = 10;
 
   const rows: string[] = [
     [
@@ -83,8 +74,8 @@ async function runBackwardTest(): Promise<void> {
       'agreedPrice',
       'actualDiscount',
       'predictedDiscount',
-      'predictedWinProb',
-      'predictedMargin',
+      'positioningPct',
+      'positioningLabel',
       'marginFloorDiscount',
       'recommendedBid',
       'error_pp',
@@ -93,53 +84,56 @@ async function runBackwardTest(): Promise<void> {
     ].join(','),
   ];
 
-  let totalError = 0;
-  let wouldHaveWon = 0;
+  let totalAbsError = 0;
+  let wouldHaveWonCount = 0;
   let profitableWins = 0;
 
-  for (const contract of contracts) {
-    if (!contract.referencePrice || !contract.agreedPrice || contract.discountFromReference === undefined) {
-      continue;
-    }
+  for (const contract of testContracts) {
+    const refPrice = contract.referencePrice!;
+    const agreedPrice = contract.agreedPrice!;
+    const actualDiscount = contract.discountFromReference!;
+    const estimatedCost = refPrice * ASSUMED_COST_RATIO;
 
-    const actualDiscount = contract.discountFromReference;
-    const refPrice = contract.referencePrice;
-    const agreedPrice = contract.agreedPrice;
+    const { table: bench } = getBenchmarkFromTables(
+      contract.agency,
+      contract.projectType,
+      tables,
+      contract.province,
+    );
 
-    // Estimate cost as 80% of reference (typical e-bidding)
-    const estimatedCost = refPrice * 0.8;
+    const rec = recommendBid(refPrice, estimatedCost, TARGET_MARGIN, bench);
 
-    const rec = recommendBid(refPrice, estimatedCost, 10);
+    const error = rec.recommendedDiscount - actualDiscount;
+    totalAbsError += Math.abs(error);
 
-    const error = rec.predictedDiscount - actualDiscount;
-    totalError += Math.abs(error);
+    // Necessary (not sufficient) condition for winning: our bid ≤ actual winner's price
+    const won = rec.recommendedBid <= agreedPrice ? 1 : 0;
+    wouldHaveWonCount += won;
 
-    // Would have won if recommended bid ≤ agreed price
-    const won = rec.predictedBid <= agreedPrice ? 1 : 0;
-    wouldHaveWon += won;
-
-    // Profit if won
-    let profitMargin = null;
+    let profitMargin: number | null = null;
     if (won) {
-      const profit = agreedPrice - estimatedCost;
-      profitMargin = Math.round(((profit / agreedPrice) * 100) * 10) / 10;
-      if (profitMargin >= 10) profitableWins++;
+      profitMargin = Math.round(((agreedPrice - estimatedCost) / agreedPrice) * 100 * 10) / 10;
+      if (profitMargin >= TARGET_MARGIN) profitableWins++;
     }
+
+    const marginFloorDiscount = Math.round(
+      (1 - (estimatedCost / refPrice) / (1 - TARGET_MARGIN / 100)) * 100 * 10,
+    ) / 10;
 
     rows.push(
       [
-        contract.projectName,
-        contract.agency,
+        `"${(contract.projectName ?? '').replace(/"/g, '""')}"`,
+        `"${(contract.agency ?? '').replace(/"/g, '""')}"`,
         contract.projectType,
-        contract.announceDate,
+        contract.announceDate ?? '',
         refPrice.toFixed(2),
         agreedPrice.toFixed(2),
         actualDiscount.toFixed(1),
-        rec.predictedDiscount.toFixed(1),
-        rec.predictedWinProb,
-        rec.predictedMargin.toFixed(1),
-        rec.marginFloorDiscount.toFixed(1),
-        rec.predictedBid.toFixed(2),
+        rec.recommendedDiscount.toFixed(1),
+        rec.positioningPct,
+        rec.positioningLabel,
+        marginFloorDiscount.toFixed(1),
+        rec.recommendedBid.toFixed(2),
         error.toFixed(1),
         won,
         profitMargin !== null ? profitMargin.toFixed(1) : 'N/A',
@@ -147,56 +141,26 @@ async function runBackwardTest(): Promise<void> {
     );
   }
 
-  // Write CSV
-  const csv = rows.join('\n');
-  console.log(csv);
+  console.log(rows.join('\n'));
   console.log('\n');
 
-  // Stats
-  const avgError = Math.round((totalError / contracts.length) * 10) / 10;
-  const winRate = Math.round((wouldHaveWon / contracts.length) * 1000) / 10;
-  const profitRate = Math.round((profitableWins / wouldHaveWon) * 1000) / 10;
+  const avgError = Math.round((totalAbsError / testContracts.length) * 10) / 10;
+  const beatWinnerRate = Math.round((wouldHaveWonCount / testContracts.length) * 1000) / 10;
+  const profitRate = wouldHaveWonCount > 0
+    ? Math.round((profitableWins / wouldHaveWonCount) * 1000) / 10
+    : 0;
 
   console.log('📊 Summary Stats:');
-  console.log(`  Total tenders tested: ${contracts.length}`);
-  console.log(`  Average prediction error: ${avgError}pp (vs actual discount)`);
-  console.log(`  Would-have-won rate: ${winRate}% (${wouldHaveWon}/${contracts.length})`);
-  console.log(`  Profitable wins (≥10% margin): ${profitRate}% (${profitableWins}/${wouldHaveWon})`);
+  console.log(`  Total tenders tested:              ${testContracts.length}`);
+  console.log(`  Average prediction error:          ${avgError}pp (vs actual discount)`);
+  console.log(`  Bid ≤ actual winner price:         ${beatWinnerRate}% (${wouldHaveWonCount}/${testContracts.length})`);
+  console.log(`  Profitable if awarded (≥${TARGET_MARGIN}% margin): ${profitRate}% (${profitableWins}/${wouldHaveWonCount})`);
   console.log('\n💡 Interpretation:');
-  console.log('  • Error ≈ 8-9pp: model slightly conservative (predicts higher discount than actual)');
-  console.log('  • Win rate ≈ 30-40%: aligns with market competition');
-  console.log('  • Profitable wins ≈ 70-80%: margin guard works (filters unprofitable bids)');
-}
-
-function generateSyntheticContracts(n: number): AwardedContract[] {
-  const categories = ['construction', 'consulting', 'services', 'equipment', 'supplies'];
-  const agencies = ['กรุงเทพมหานคร', 'กรม', 'สำนัก', 'วิทยาลัย', 'สถาบัน'];
-  const contracts: AwardedContract[] = [];
-
-  for (let i = 0; i < n; i++) {
-    const refPrice = Math.round(Math.random() * 50 + 1) * 1_000_000; // 1-50M baht
-    const actualDiscount = 18.5 + (Math.random() - 0.5) * 24; // mean 18.5, range ~6-31
-    const agreedPrice = refPrice * (1 - actualDiscount / 100);
-
-    contracts.push({
-      projectId: `proj_${i}`,
-      projectName: `Project ${i + 1}`,
-      projectType: categories[Math.floor(Math.random() * categories.length)],
-      agency: agencies[Math.floor(Math.random() * agencies.length)],
-      subAgency: 'Sub',
-      procurementMethod: 'e-bidding',
-      procurementMethodGroup: 'e-bidding',
-      announceDate: new Date(2024, Math.floor(Math.random() * 6)).toISOString().split('T')[0],
-      budget: refPrice,
-      referencePrice: refPrice,
-      agreedPrice: Math.round(agreedPrice),
-      discountFromReference: Math.round(actualDiscount * 10) / 10,
-      fiscalYear: 2568,
-      province: 'Bangkok',
-    });
-  }
-
-  return contracts;
+  console.log('  • "Bid ≤ winner price" is NOT a win rate — it means our price was competitive');
+  console.log('    enough to beat the winner, not that we would have beaten all other bidders.');
+  console.log('  • Error ≈ 8-9pp: model predicts near the median; actual discounts are higher-variance.');
+  console.log('  • Profitable margin guard correctly filters bids that cannot reach target margin.');
+  console.log('  • Cost ratio assumed 80% — actual cost structure will shift all margin numbers.');
 }
 
 runBackwardTest().catch((err) => {

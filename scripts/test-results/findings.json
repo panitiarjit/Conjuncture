@@ -1,0 +1,1780 @@
+{
+  "meta": {
+    "totalLoaded": 20000,
+    "validDiscountContracts": 19773,
+    "competitiveContracts": 16304,
+    "generatedAt": "2026-06-25T10:31:59.196Z"
+  },
+  "agencyDiscountProfiles": {
+    "totalAgenciesAnalyzed": 1117,
+    "lowestMedian5": [
+      {
+        "agency": "โรงพยาบาลพระมงกุฎเกล้า",
+        "n": 193,
+        "medianDiscount": 0,
+        "meanDiscount": 7.31,
+        "stddev": 17.76,
+        "min": 0,
+        "max": 75.92,
+        "p25": 0,
+        "p75": 0.14
+      },
+      {
+        "agency": "สำนักงานตำรวจแห่งชาติ",
+        "n": 185,
+        "medianDiscount": 0,
+        "meanDiscount": 1.78,
+        "stddev": 4.48,
+        "min": 0,
+        "max": 21.55,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "คณะแพทยศาสตร์ศิริราชพยาบาล มหาวิทยาลัยมหิดล",
+        "n": 142,
+        "medianDiscount": 0,
+        "meanDiscount": 10.31,
+        "stddev": 25.35,
+        "min": 0,
+        "max": 96.81,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "กองทัพบก",
+        "n": 134,
+        "medianDiscount": 0,
+        "meanDiscount": 2.27,
+        "stddev": 8.83,
+        "min": 0,
+        "max": 72.44,
+        "p25": 0,
+        "p75": 0.52
+      },
+      {
+        "agency": "โรงพยาบาลนครพิงค์",
+        "n": 127,
+        "medianDiscount": 0,
+        "meanDiscount": 5.83,
+        "stddev": 11.83,
+        "min": 0,
+        "max": 83.48,
+        "p25": 0,
+        "p75": 8.49
+      }
+    ],
+    "highestMedian5": [
+      {
+        "agency": "เทศบาลตำบลหนองควาย",
+        "n": 16,
+        "medianDiscount": 41.92,
+        "meanDiscount": 35.02,
+        "stddev": 16.73,
+        "min": 0,
+        "max": 47.14,
+        "p25": 39.97,
+        "p75": 43.99
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดสุพรรณบุรี",
+        "n": 10,
+        "medianDiscount": 38.84,
+        "meanDiscount": 26.85,
+        "stddev": 17.88,
+        "min": 0.05,
+        "max": 43.44,
+        "p25": 8.19,
+        "p75": 41.66
+      },
+      {
+        "agency": "มหาวิทยาลัยนวมินทราธิราช",
+        "n": 10,
+        "medianDiscount": 22.98,
+        "meanDiscount": 35.55,
+        "stddev": 34.85,
+        "min": 0,
+        "max": 86.58,
+        "p25": 0.8,
+        "p75": 58.36
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดกำแพงเพชร",
+        "n": 36,
+        "medianDiscount": 21.97,
+        "meanDiscount": 18.15,
+        "stddev": 11.32,
+        "min": 0.29,
+        "max": 35.16,
+        "p25": 6.78,
+        "p75": 25.97
+      },
+      {
+        "agency": "ธนาคารอาคารสงเคราะห์",
+        "n": 25,
+        "medianDiscount": 21.06,
+        "meanDiscount": 20.17,
+        "stddev": 17.06,
+        "min": 0,
+        "max": 62.98,
+        "p25": 1.18,
+        "p75": 31.67
+      }
+    ],
+    "highestVariance5": [
+      {
+        "agency": "มหาวิทยาลัยนวมินทราธิราช",
+        "n": 10,
+        "medianDiscount": 22.98,
+        "meanDiscount": 35.55,
+        "stddev": 34.85,
+        "min": 0,
+        "max": 86.58,
+        "p25": 0.8,
+        "p75": 58.36
+      },
+      {
+        "agency": "โรงพยาบาลระยอง",
+        "n": 22,
+        "medianDiscount": 0.77,
+        "meanDiscount": 15.61,
+        "stddev": 25.66,
+        "min": 0,
+        "max": 93.72,
+        "p25": 0,
+        "p75": 15.59
+      },
+      {
+        "agency": "คณะแพทยศาสตร์ศิริราชพยาบาล มหาวิทยาลัยมหิดล",
+        "n": 142,
+        "medianDiscount": 0,
+        "meanDiscount": 10.31,
+        "stddev": 25.35,
+        "min": 0,
+        "max": 96.81,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "โรงพยาบาลเจ้าพระยาอภัยภูเบศร",
+        "n": 33,
+        "medianDiscount": 3.33,
+        "meanDiscount": 14.24,
+        "stddev": 24.99,
+        "min": 0,
+        "max": 95.33,
+        "p25": 0.01,
+        "p75": 10.02
+      },
+      {
+        "agency": "กรมการแพทย์",
+        "n": 13,
+        "medianDiscount": 6.62,
+        "meanDiscount": 15.03,
+        "stddev": 24.92,
+        "min": 0,
+        "max": 98.49,
+        "p25": 3.16,
+        "p75": 14.12
+      }
+    ],
+    "lowestVariance5": [
+      {
+        "agency": "เทศบาลตำบลท่าโขลง",
+        "n": 57,
+        "medianDiscount": 0,
+        "meanDiscount": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "เทศบาลตำบลพระแท่นลำพระยา",
+        "n": 34,
+        "medianDiscount": 0,
+        "meanDiscount": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "เทศบาลตำบลมหาพราหมณ์",
+        "n": 24,
+        "medianDiscount": 0,
+        "meanDiscount": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "เทศบาลตำบลนาซอ",
+        "n": 19,
+        "medianDiscount": 0,
+        "meanDiscount": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "p25": 0,
+        "p75": 0
+      },
+      {
+        "agency": "โรงเรียนเทศบาลวัดด่านประชากร",
+        "n": 15,
+        "medianDiscount": 0,
+        "meanDiscount": 0,
+        "stddev": 0,
+        "min": 0,
+        "max": 0,
+        "p25": 0,
+        "p75": 0
+      }
+    ]
+  },
+  "vendorConcentration": {
+    "totalAgenciesWithVendorData": 4003,
+    "singleVendorCount": 2275,
+    "singleVendorPct": 56.83,
+    "top10HighConcentration": [
+      {
+        "agency": "โรงเรียนอนุบาลเมืองสุโขทัย",
+        "totalContracts": 7,
+        "uniqueVendors": 1,
+        "topVendor": "นางวิรัตน์  วันสอน",
+        "topVendorWins": 7,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "โรงพยาบาลสวนปรุง",
+        "totalContracts": 5,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 5,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "มหาวิทยาลัยสุโขทัยธรรมาธิราช",
+        "totalContracts": 6,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 6,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "โรงพยาบาลระนอง",
+        "totalContracts": 5,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 5,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "เทศบาลตำบลเจดีย์หลวง",
+        "totalContracts": 5,
+        "uniqueVendors": 1,
+        "topVendor": "20 ม.ค. 68",
+        "topVendorWins": 5,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "สำนักงานคณะกรรมการการอาชีวศึกษา",
+        "totalContracts": 5,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 5,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "สำนักงานพัฒนาพิงคนคร(องค์การมหาชน)",
+        "totalContracts": 5,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 5,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "สถาบันมะเร็งแห่งชาติ",
+        "totalContracts": 5,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 5,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "สำนักงานคณะกรรมการป้องกันและปราบปรามยาเสพติด",
+        "totalContracts": 29,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 29,
+        "topVendorShare": 100
+      },
+      {
+        "agency": "กรมการเปลี่ยนแปลงสภาพภูมิอากาศและสิ่งแวดล้อม",
+        "totalContracts": 8,
+        "uniqueVendors": 1,
+        "topVendor": "30 ก.ย. 68",
+        "topVendorWins": 8,
+        "topVendorShare": 100
+      }
+    ]
+  },
+  "topVendors": [
+    {
+      "name": "30 ก.ย. 68",
+      "wins": 2739,
+      "agencyCount": 404,
+      "medianDiscount": 1.26,
+      "stddevDiscount": 12.01
+    },
+    {
+      "name": "-",
+      "wins": 449,
+      "agencyCount": 13,
+      "medianDiscount": 4.91,
+      "stddevDiscount": 17.21
+    },
+    {
+      "name": "30 ก.ย. 69",
+      "wins": 129,
+      "agencyCount": 9,
+      "medianDiscount": 1.26,
+      "stddevDiscount": 28.5
+    },
+    {
+      "name": "31 ธ.ค. 67",
+      "wins": 122,
+      "agencyCount": 70,
+      "medianDiscount": 0.77,
+      "stddevDiscount": 13.95
+    },
+    {
+      "name": "30 ก.ย. 70",
+      "wins": 116,
+      "agencyCount": 16,
+      "medianDiscount": 6.11,
+      "stddevDiscount": 31.79
+    },
+    {
+      "name": "6 ก.พ. 68",
+      "wins": 111,
+      "agencyCount": 78,
+      "medianDiscount": 4.79,
+      "stddevDiscount": 12.54
+    },
+    {
+      "name": "1 ต.ค. 68",
+      "wins": 110,
+      "agencyCount": 42,
+      "medianDiscount": 0.69,
+      "stddevDiscount": 11.7
+    },
+    {
+      "name": "12 ก.พ. 68",
+      "wins": 104,
+      "agencyCount": 78,
+      "medianDiscount": 4.03,
+      "stddevDiscount": 11.3
+    },
+    {
+      "name": "5 ก.พ. 68",
+      "wins": 94,
+      "agencyCount": 63,
+      "medianDiscount": 3.48,
+      "stddevDiscount": 13.46
+    },
+    {
+      "name": "4 ก.พ. 68",
+      "wins": 91,
+      "agencyCount": 74,
+      "medianDiscount": 4.48,
+      "stddevDiscount": 12.21
+    },
+    {
+      "name": "14 ม.ค. 68",
+      "wins": 87,
+      "agencyCount": 60,
+      "medianDiscount": 4.61,
+      "stddevDiscount": 11.32
+    },
+    {
+      "name": "29 ม.ค. 68",
+      "wins": 86,
+      "agencyCount": 70,
+      "medianDiscount": 5.73,
+      "stddevDiscount": 11.45
+    },
+    {
+      "name": "30 ก.ย. 67",
+      "wins": 85,
+      "agencyCount": 64,
+      "medianDiscount": 0.27,
+      "stddevDiscount": 14.24
+    },
+    {
+      "name": "18 ก.พ. 68",
+      "wins": 81,
+      "agencyCount": 59,
+      "medianDiscount": 6.98,
+      "stddevDiscount": 11.91
+    },
+    {
+      "name": "5 ม.ค. 68",
+      "wins": 79,
+      "agencyCount": 58,
+      "medianDiscount": 1.79,
+      "stddevDiscount": 9.76
+    },
+    {
+      "name": "7 ม.ค. 68",
+      "wins": 78,
+      "agencyCount": 61,
+      "medianDiscount": 1.46,
+      "stddevDiscount": 9.33
+    },
+    {
+      "name": "20 ม.ค. 68",
+      "wins": 78,
+      "agencyCount": 56,
+      "medianDiscount": 7.04,
+      "stddevDiscount": 16.62
+    },
+    {
+      "name": "30 ธ.ค. 67",
+      "wins": 76,
+      "agencyCount": 57,
+      "medianDiscount": 1.06,
+      "stddevDiscount": 11.71
+    },
+    {
+      "name": "13 ม.ค. 68",
+      "wins": 76,
+      "agencyCount": 64,
+      "medianDiscount": 4.38,
+      "stddevDiscount": 13.28
+    },
+    {
+      "name": "8 ก.พ. 68",
+      "wins": 75,
+      "agencyCount": 54,
+      "medianDiscount": 2.3,
+      "stddevDiscount": 11.43
+    }
+  ],
+  "crossAgencyVendors": [
+    {
+      "name": "30 ก.ย. 68",
+      "agencyCount": 404,
+      "wins": 2739
+    },
+    {
+      "name": "12 ก.พ. 68",
+      "agencyCount": 78,
+      "wins": 104
+    },
+    {
+      "name": "6 ก.พ. 68",
+      "agencyCount": 78,
+      "wins": 111
+    },
+    {
+      "name": "4 ก.พ. 68",
+      "agencyCount": 74,
+      "wins": 91
+    },
+    {
+      "name": "29 ม.ค. 68",
+      "agencyCount": 70,
+      "wins": 86
+    },
+    {
+      "name": "31 ธ.ค. 67",
+      "agencyCount": 70,
+      "wins": 122
+    },
+    {
+      "name": "30 ก.ย. 67",
+      "agencyCount": 64,
+      "wins": 85
+    },
+    {
+      "name": "6 ม.ค. 68",
+      "agencyCount": 64,
+      "wins": 75
+    },
+    {
+      "name": "13 ม.ค. 68",
+      "agencyCount": 64,
+      "wins": 76
+    },
+    {
+      "name": "5 ก.พ. 68",
+      "agencyCount": 63,
+      "wins": 94
+    }
+  ],
+  "anomalies": {
+    "total": 812,
+    "positiveZ": 804,
+    "negativeZ": 8,
+    "top20": [
+      {
+        "agency": "กรมทางหลวงชนบท",
+        "projectName": "ประกวดราคาจ้างก่อสร้างปรับปรุงผิวจราจรเพื่อเพิ่มความเสียดทานพร้อมติดตั้งและปรับปรุงอุปกรณ์อำนวยความปลอดภัย ไฟฟ้าแสงสว่างและระบบตรวจสอบพร้อมแจ้งเตือน สป.2001 แยก ทล.34 (กม.ที่ 18+165) - บ้านลาดกระบัง อำเภอบางพลี และอำเภอบางเสาธง จังหวัดสมุทรปราการ จำนวน 1 แห่ง ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "จ้างก่อสร้าง",
+        "discount": 50.99,
+        "referencePrice": 19174994.54,
+        "zScore": 8.7,
+        "agencyMedian": 0.29,
+        "agencyStddev": 5.66,
+        "fiscalYear": 2568,
+        "province": "สมุทรปราการ",
+        "winnerName": "26 ก.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กองทัพบก",
+        "projectName": "ประกวดราคาซื้อสป.5 ฝึก สาย วศ. จำนวน 5 รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 72.44,
+        "referencePrice": 29701000,
+        "zScore": 7.95,
+        "agencyMedian": 0,
+        "agencyStddev": 8.83,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "1 พ.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "การรถไฟแห่งประเทศไทย",
+        "projectName": "จ้างควบคุมงานก่อสร้างโครงการก่อสร้างรถไฟทางคู่ ช่วงขอนแก่น-หนองคาย โดยวิธีคัดเลือก",
+        "projectType": "จ้างควบคุมงาน",
+        "discount": 81.48,
+        "referencePrice": 603997000,
+        "zScore": 7.73,
+        "agencyMedian": 0,
+        "agencyStddev": 10.07,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "31 มี.ค. 71",
+        "procurementMethod": "งานจ้างออกแบบและควบคุมงาน"
+      },
+      {
+        "agency": "กรมสรรพากร",
+        "projectName": "ประกวดราคาซื้อครุภัณฑ์ยานพาหนะและขนส่ง เพื่อทดแทนของเดิม ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 82.74,
+        "referencePrice": 4924000,
+        "zScore": 7.42,
+        "agencyMedian": 4.04,
+        "agencyStddev": 10.23,
+        "fiscalYear": 2568,
+        "province": "ชลบุรี",
+        "winnerName": "26 ม.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "สำนักงานปลัดกระทรวงสาธารณสุข",
+        "projectName": "ประกวดราคาซื้อซื้อครุภัณฑ์การแพทย์ จำนวน ๕ รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 87.29,
+        "referencePrice": 6160000,
+        "zScore": 6.84,
+        "agencyMedian": 0.42,
+        "agencyStddev": 11.94,
+        "fiscalYear": 2568,
+        "province": "ลำพูน",
+        "winnerName": "22 มี.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กรมทางหลวง",
+        "projectName": "ประกวดราคาจ้างก่อสร้างโครงการพัฒนาโครงข่ายคมนาคมอุตสาหกรรมและโลจิสติกส์เพื่อเชื่อมโยงถนนสายหลักสายรอง รองรับการบริการประชาชน และภาคธุรกิจ งานติดตั้งกำแพงกันเสียง ในทางหลวงหมายเลข 3256 ตอนบางพลี - กิ่งแก้ว ที่ กม.13+541 (บริเวณสะพานต่างระดับกิ่งแก้ว) ปริมาณงาน 642 เมตร ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "จ้างก่อสร้าง",
+        "discount": 50.62,
+        "referencePrice": 16116492.53,
+        "zScore": 6.75,
+        "agencyMedian": 0.11,
+        "agencyStddev": 7.16,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "16 พ.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "โรงพยาบาลนครพิงค์",
+        "projectName": "ประกวดราคาซื้อยาจำนวน 3 รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 83.48,
+        "referencePrice": 3878964,
+        "zScore": 6.57,
+        "agencyMedian": 0,
+        "agencyStddev": 11.83,
+        "fiscalYear": 2568,
+        "province": "เชียงใหม่",
+        "winnerName": "8 ต.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กรมโยธาธิการและผังเมือง",
+        "projectName": "จ้างที่ปรึกษาศึกษาการพังทลายและป้องกันตลิ่งริมแม่น้ำบางปะกง โดยวิธีคัดเลือก",
+        "projectType": "จ้างที่ปรึกษา",
+        "discount": 80.02,
+        "referencePrice": 30000000,
+        "zScore": 6.48,
+        "agencyMedian": 1,
+        "agencyStddev": 11.71,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "3 ส.ค. 69",
+        "procurementMethod": "งานจ้างที่ปรึกษา"
+      },
+      {
+        "agency": "เทศบาลเมืองกำแพงเพชร",
+        "projectName": "ประกวดราคาจ้างก่อสร้างโครงการเสริมผิวจราจรลาดยางแอสฟัลท์ติกคอนกรีตพร้อมคูระบายน้ำ สายทางหลวงหมายเลข 4287-น้ำตกโตนปลิว เทศบาลเมืองกำแพงเพชร อำเภอรัตภูมิ จังหวัดสงขลา 1 แห่ง ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "จ้างก่อสร้าง",
+        "discount": 2.56,
+        "referencePrice": 44231000,
+        "zScore": 6.46,
+        "agencyMedian": 0.08,
+        "agencyStddev": 0.37,
+        "fiscalYear": 2563,
+        "province": "กำแพงเพชร",
+        "winnerName": "บริษัท เขาแดงคอนสตรัคชั่น จำกัด",
+        "procurementMethod": "ประกวดราคาอิเล็กทรอนิกส์ (e-bidding)"
+      },
+      {
+        "agency": "สำนักงานปลัดกระทรวงสาธารณสุข",
+        "projectName": "ประกวดราคาจ้างก่อสร้างหอผู้ป่วยใน ๗ ชั้น (จำนวน ๑๕๖ เตียง) เป็นอาคาร คสล. ๗ ชั้น พื้นที่ใช้สอยประมาณ ๖,๑๘๔ ตารางเมตร  (โครงสร้างต้านแผ่นดินไหว) โรงพยาบาลวังสะพุง ตำบลวังสะพุง อำเภอวังสะพุง จังหวัดเลย ๑ หลัง ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "จ้างก่อสร้าง",
+        "discount": 81.47,
+        "referencePrice": 167030699.34,
+        "zScore": 6.35,
+        "agencyMedian": 0.42,
+        "agencyStddev": 11.94,
+        "fiscalYear": 2568,
+        "province": "เลย",
+        "winnerName": "7 ธ.ค. 69",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กรมโยธาธิการและผังเมือง",
+        "projectName": "จ้างออกแบบค่าใช้จ่ายในการจ้างออกแบบรายละเอียดโครงการพัฒนาพื้นที่กลุ่มจังหวัดภาคตะวันออกเฉียงเหนือตอนกลาง ระยะที่ 3 โดยวิธีคัดเลือก",
+        "projectType": "จ้างออกแบบ",
+        "discount": 76.07,
+        "referencePrice": 29984343,
+        "zScore": 6.14,
+        "agencyMedian": 1,
+        "agencyStddev": 11.71,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "4 ก.ย. 69",
+        "procurementMethod": "งานจ้างออกแบบและควบคุมงาน"
+      },
+      {
+        "agency": "โรงพยาบาลศิริราช ปิยมหาราชการุณย์",
+        "projectName": "ประกวดราคาซื้อวัสดุงานบ้านบริการผู้ป่วย (กลุ่มรายการ Minibar) จำนวน 8 รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 40.71,
+        "referencePrice": 17649729.6,
+        "zScore": 6.12,
+        "agencyMedian": 0,
+        "agencyStddev": 6.4,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "30 พ.ย. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "การประปาส่วนภูมิภาค",
+        "projectName": "ประกวดราคาซื้อจัดซื้อมาตรวัดน้ำประจำปีงบประมาณ 2568 ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 95.67,
+        "referencePrice": 23561546.59,
+        "zScore": 6.06,
+        "agencyMedian": 4.91,
+        "agencyStddev": 14.17,
+        "fiscalYear": 2568,
+        "province": "ราชบุรี",
+        "winnerName": "1 ธ.ค. 67",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "โรงพยาบาลภูมิพลอดุลยเดช",
+        "projectName": "ประกวดราคาซื้อยา ezetimibe 10 mg tablet, 1 tablet จำนวน 1,176,000 TAB ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 81.31,
+        "referencePrice": 18874800,
+        "zScore": 5.99,
+        "agencyMedian": 0,
+        "agencyStddev": 12.85,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "30 ก.ย. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กรมทางหลวง",
+        "projectName": "ประกวดราคาซื้อครุภัณฑ์คอมพิวเตอร์ จำนวน 10 รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 43.97,
+        "referencePrice": 1561300,
+        "zScore": 5.82,
+        "agencyMedian": 0.11,
+        "agencyStddev": 7.16,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "15 ม.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กรมทรัพยากรน้ำ",
+        "projectName": "จ้างที่ปรึกษาศึกษาผลกระทบสิ่งแวดล้อมเบื้องต้น  IEE  โครงการก่อสร้างอ่างเก็บน้ำมอโค้ ตำบลบ้านไร่ อำเภอบ้านไร่ จังหวัดอุทัยธานี โดยวิธีคัดเลือก",
+        "projectType": "จ้างที่ปรึกษา",
+        "discount": 55.01,
+        "referencePrice": 9992982.52,
+        "zScore": 5.76,
+        "agencyMedian": 0.12,
+        "agencyStddev": 9.1,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "7 ก.ย. 68",
+        "procurementMethod": "งานจ้างที่ปรึกษา"
+      },
+      {
+        "agency": "กองทัพอากาศ",
+        "projectName": "ประกวดราคาซื้อยา ATORVASTATIN TABLET,40 MG จำนวน ๑,๖๐๐,๐๐๐ TB ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 93.58,
+        "referencePrice": 40000000,
+        "zScore": 5.73,
+        "agencyMedian": 0.48,
+        "agencyStddev": 14.91,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "30 ก.ย. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "กรมทางหลวง",
+        "projectName": "ประกวดราคาจ้างก่อสร้างงานบูรณะสะพานข้ามทางแยกต่างระดับรามอินทรา และทางแยกต่างระดับสุขาภิบาล 2 - 3 บนทางหลวงพิเศษหมายเลข 9 ระยะที่ 3 ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "จ้างก่อสร้าง",
+        "discount": 43.21,
+        "referencePrice": 154497931.04,
+        "zScore": 5.71,
+        "agencyMedian": 0.11,
+        "agencyStddev": 7.16,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "1 ธ.ค. 69",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดอุบลราชธานี",
+        "projectName": "ประกวดราคาซื้อค่าจัดซื้อเครื่องคอมพิวเตอร์ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 46.05,
+        "referencePrice": 5574000,
+        "zScore": 5.67,
+        "agencyMedian": 0.37,
+        "agencyStddev": 7.56,
+        "fiscalYear": 2568,
+        "province": "อุบลราชธานี",
+        "winnerName": "21 ธ.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      },
+      {
+        "agency": "โรงพยาบาลสมเด็จพระปิ่นเกล้า",
+        "projectName": "ประกวดราคาซื้อน้ำยาตรวจ และวิเคราะห์โรคทางพยาธิวิทยา  จำนวน 6 รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "projectType": "ซื้อ",
+        "discount": 2.39,
+        "referencePrice": 4829920,
+        "zScore": 5.64,
+        "agencyMedian": 0,
+        "agencyStddev": 0.41,
+        "fiscalYear": 2568,
+        "province": "กรุงเทพมหานคร",
+        "winnerName": "27 ต.ค. 68",
+        "procurementMethod": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง"
+      }
+    ],
+    "extremeDiscount": [
+      {
+        "agency": "องค์การบริหารส่วนตำบลเสมา",
+        "projectName": "จ้างโครงการก่อสร้างถนน คสล. สายเลียบคลอง หน้าบ้านครูวันเพ็ญ บ้านทะเลใน หมู่ที่ 12 โดยวิธีเฉพาะเจาะจง",
+        "discount": 99,
+        "referencePrice": 46133040,
+        "agreedPrice": 461000,
+        "fiscalYear": 2567,
+        "winnerName": "หจก.อุดหนุนการโยธา"
+      },
+      {
+        "agency": "กรมการแพทย์",
+        "projectName": "ประกวดราคาซื้อร่วมยาระดับกรม กลุ่มที่ 3 กลุ่มยาระบบตา จำนวน 7 รายการ ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "discount": 98.49,
+        "referencePrice": 185027793.04,
+        "agreedPrice": 2795627.52,
+        "fiscalYear": 2568,
+        "winnerName": "2 เม.ย. 69"
+      },
+      {
+        "agency": "การไฟฟ้าส่วนภูมิภาค",
+        "projectName": "ประกวดราคาซื้อพัสดุรอง ประจำปี 2567 ประเภทอุปกรณ์โลหะ จำนวน 18 รายการ ตามแผนงบผู้ใช้ไฟ,   งบลงทุน, งบโครงการต่าง ๆ และตามโครงการพัฒนาระบบส่งและจำหน่าย ระยะที่ 2 แผนที่ 3 เลขที่ต.3กบพ.(จร.)e-bidding022/2567 ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "discount": 97.97,
+        "referencePrice": 31040487.08,
+        "agreedPrice": 631407,
+        "fiscalYear": 2568,
+        "winnerName": "17 ม.ค. 68"
+      },
+      {
+        "agency": "ศูนย์พัฒนาเด็กเล็กบ้านสะพังกร่าง",
+        "projectName": "จ้างเหมา ประกอบอาหารกลางวัน สำหรับศูนย์พัฒนาเด็กเล็กบ้านสะพังกร่างตามรายการอาหารที่ศูนย์พัฒนาเด็กเล็กกำหนด จำนวน ๑๕ คนๆ ละ ๓๕.๙๐ บาท ตั้งแต่วันที่ ๑๖ พฤษภาคม ๒๕๖๗ ถึง ๗ มิถุนายน ๒๕๖๗ (ตามวันทำการปกติ) จำนวน ๑๕ วัน โดยวิธีเฉพาะเจาะจง",
+        "discount": 97.38,
+        "referencePrice": 308700,
+        "agreedPrice": 8077.5,
+        "fiscalYear": 2567,
+        "winnerName": "นางฑาณะมาศ หนูอ้น"
+      },
+      {
+        "agency": "ศูนย์พัฒนาเด็กเล็กบ้านรางกร่าง",
+        "projectName": "จ้างเหมา ประกอบอาหารกลางวัน สำหรับศูนย์พัฒนาเด็กเล็กบ้านรางกร่างตามรายการอาหารที่ศูนย์พัฒนาเด็กเล็กกำหนด จำนวน ๑๗ คนๆ ละ ๓๕.๙๐ บาท ตั้งแต่วันที่ ๑๖ พฤษภาคม ๒๕๖๗ ถึง ๗ มิถุนายน ๒๕๖๗ (ตามวันทำการปกติ) จำนวน ๑๕ วัน โดยวิธีเฉพาะเจาะจง",
+        "discount": 97.03,
+        "referencePrice": 308700,
+        "agreedPrice": 9154.5,
+        "fiscalYear": 2567,
+        "winnerName": "นางฑาณะมาศ หนูอ้น"
+      },
+      {
+        "agency": "ศูนย์พัฒนาเด็กเล็กบ้านขื่อชนก",
+        "projectName": "จ้างเหมา ประกอบอาหารกลางวัน สำหรับศูนย์พัฒนาเด็กเล็กบ้านขื่อชนกตามรายการอาหารที่ศูนย์พัฒนาเด็กเล็กกำหนด จำนวน ๑๗ คนๆ ละ ๓๕.๙๐ บาท ตั้งแต่วันที่ ๑๖ พฤษภาคม ๒๕๖๗ ถึง ๗ มิถุนายน ๒๕๖๗ (ตามวันทำการปกติ) จำนวน ๑๕ วัน โดยวิธีเฉพาะเจาะจง",
+        "discount": 97.03,
+        "referencePrice": 308700,
+        "agreedPrice": 9154.5,
+        "fiscalYear": 2567,
+        "winnerName": "นางฑาณะมาศ หนูอ้น"
+      },
+      {
+        "agency": "คณะแพทยศาสตร์ศิริราชพยาบาล มหาวิทยาลัยมหิดล",
+        "projectName": "ซื้อยา จำนวน 4 รายการ โดยวิธีคัดเลือก",
+        "discount": 96.81,
+        "referencePrice": 48081840,
+        "agreedPrice": 1535985,
+        "fiscalYear": 2568,
+        "winnerName": "30 ก.ย. 70"
+      },
+      {
+        "agency": "ศูนย์พัฒนาเด็กเล็กบ้านวังตะกู",
+        "projectName": "จ้างเหมา ประกอบอาหารกลางวัน สำหรับศูนย์พัฒนาเด็กเล็กบ้านวังตะกูตามรายการอาหารที่ศูนย์พัฒนาเด็กเล็กกำหนด จำนวน ๒๑ คนๆ ละ ๓๕.๙๐ บาท ตั้งแต่วันที่ ๑๖ พฤษภาคม ๒๕๖๗ ถึง ๗ มิถุนายน ๒๕๖๗ (ตามวันทำการปกติ) จำนวน ๑๕ วัน โดยวิธีเฉพาะเจาะจง",
+        "discount": 96.34,
+        "referencePrice": 308700,
+        "agreedPrice": 11308.5,
+        "fiscalYear": 2567,
+        "winnerName": "นางฑาณะมาศ หนูอ้น"
+      },
+      {
+        "agency": "การประปาส่วนภูมิภาค",
+        "projectName": "ประกวดราคาซื้อจัดซื้อมาตรวัดน้ำประจำปีงบประมาณ 2568 ด้วยวิธีประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+        "discount": 95.67,
+        "referencePrice": 23561546.59,
+        "agreedPrice": 1019068,
+        "fiscalYear": 2568,
+        "winnerName": "1 ธ.ค. 67"
+      },
+      {
+        "agency": "ศูนย์พัฒนาเด็กเล็กบ้านไผ่ขาด",
+        "projectName": "จ้างเหมา ประกอบอาหารกลางวัน สำหรับศูนย์พัฒนาเด็กเล็กบ้านไผ่ขาดตามรายการอาหารที่ศูนย์พัฒนาเด็กเล็กกำหนด จำนวน ๒๕ คนๆ ละ ๓๕.๙๐ บาท ตั้งแต่วันที่ ๑๖ พฤษภาคม ๒๕๖๗ ถึง ๗ มิถุนายน ๒๕๖๗ (ตามวันทำการปกติ) จำนวน ๑๕ วัน โดยวิธีเฉพาะเจาะจง",
+        "discount": 95.64,
+        "referencePrice": 308700,
+        "agreedPrice": 13462.5,
+        "fiscalYear": 2567,
+        "winnerName": "นางฑาณะมาศ หนูอ้น"
+      }
+    ]
+  },
+  "nearZeroCompetitive": {
+    "total": 5885,
+    "pctOfCompetitive": 36.1,
+    "topAgencies": [
+      {
+        "agency": "กรมชลประทาน",
+        "count": 524,
+        "totalContracts": 1639
+      },
+      {
+        "agency": "คณะแพทยศาสตร์โรงพยาบาลรามาธิบดี มหาวิทยาลัยมหิดล",
+        "count": 322,
+        "totalContracts": 552
+      },
+      {
+        "agency": "กรมทางหลวง",
+        "count": 198,
+        "totalContracts": 310
+      },
+      {
+        "agency": "โรงพยาบาลพระมงกุฎเกล้า",
+        "count": 147,
+        "totalContracts": 193
+      },
+      {
+        "agency": "คณะแพทยศาสตร์ศิริราชพยาบาล มหาวิทยาลัยมหิดล",
+        "count": 116,
+        "totalContracts": 142
+      },
+      {
+        "agency": "กรุงเทพมหานคร",
+        "count": 88,
+        "totalContracts": 241
+      },
+      {
+        "agency": "กรมทางหลวงชนบท",
+        "count": 83,
+        "totalContracts": 182
+      },
+      {
+        "agency": "การรถไฟแห่งประเทศไทย",
+        "count": 82,
+        "totalContracts": 116
+      },
+      {
+        "agency": "การไฟฟ้าส่วนภูมิภาค",
+        "count": 80,
+        "totalContracts": 478
+      },
+      {
+        "agency": "กองทัพอากาศ",
+        "count": 80,
+        "totalContracts": 159
+      }
+    ]
+  },
+  "projectTypeStats": [
+    {
+      "type": "จ้างก่อสร้าง",
+      "n": 8034,
+      "medianDiscount": 2.4,
+      "stddev": 11.57
+    },
+    {
+      "type": "ซื้อ",
+      "n": 6662,
+      "medianDiscount": 0.78,
+      "stddev": 16.54
+    },
+    {
+      "type": "จ้างทำของ/จ้างเหมาบริการ",
+      "n": 4523,
+      "medianDiscount": 0.08,
+      "stddev": 10.06
+    },
+    {
+      "type": "เช่า",
+      "n": 461,
+      "medianDiscount": 0.33,
+      "stddev": 12.33
+    },
+    {
+      "type": "จ้างที่ปรึกษา",
+      "n": 56,
+      "medianDiscount": 1.88,
+      "stddev": 23.78
+    },
+    {
+      "type": "จ้างออกแบบ",
+      "n": 23,
+      "medianDiscount": 15,
+      "stddev": 23.45
+    }
+  ],
+  "fiscalYearTrends": [
+    {
+      "year": 2559,
+      "n": 3,
+      "medianDiscount": 32.15,
+      "p25": 30.39,
+      "p75": 32.15
+    },
+    {
+      "year": 2560,
+      "n": 1,
+      "medianDiscount": 12.22,
+      "p25": 12.22,
+      "p75": 12.22
+    },
+    {
+      "year": 2561,
+      "n": 90,
+      "medianDiscount": 13.12,
+      "p25": 5.02,
+      "p75": 21.55
+    },
+    {
+      "year": 2562,
+      "n": 109,
+      "medianDiscount": 12.82,
+      "p25": 3.21,
+      "p75": 28.74
+    },
+    {
+      "year": 2563,
+      "n": 305,
+      "medianDiscount": 5.53,
+      "p25": 0.24,
+      "p75": 21.19
+    },
+    {
+      "year": 2567,
+      "n": 4083,
+      "medianDiscount": 0.06,
+      "p25": 0,
+      "p75": 0.56
+    },
+    {
+      "year": 2568,
+      "n": 15182,
+      "medianDiscount": 2.3,
+      "p25": 0.13,
+      "p75": 12.98
+    }
+  ],
+  "provincialStats": {
+    "lowest10": [
+      {
+        "province": "สระบุรี",
+        "n": 273,
+        "medianDiscount": 0.09,
+        "uniqueVendors": 161,
+        "vendorDensity": 0.59
+      },
+      {
+        "province": "แม่ฮ่องสอน",
+        "n": 50,
+        "medianDiscount": 0.14,
+        "uniqueVendors": 39,
+        "vendorDensity": 0.78
+      },
+      {
+        "province": "ยโสธร",
+        "n": 122,
+        "medianDiscount": 0.17,
+        "uniqueVendors": 107,
+        "vendorDensity": 0.88
+      },
+      {
+        "province": "ลพบุรี",
+        "n": 192,
+        "medianDiscount": 0.18,
+        "uniqueVendors": 163,
+        "vendorDensity": 0.85
+      },
+      {
+        "province": "กาญจนบุรี",
+        "n": 257,
+        "medianDiscount": 0.22,
+        "uniqueVendors": 163,
+        "vendorDensity": 0.63
+      },
+      {
+        "province": "น่าน",
+        "n": 110,
+        "medianDiscount": 0.22,
+        "uniqueVendors": 75,
+        "vendorDensity": 0.68
+      },
+      {
+        "province": "ชัยภูมิ",
+        "n": 168,
+        "medianDiscount": 0.24,
+        "uniqueVendors": 121,
+        "vendorDensity": 0.72
+      },
+      {
+        "province": "สิงห์บุรี",
+        "n": 36,
+        "medianDiscount": 0.25,
+        "uniqueVendors": 24,
+        "vendorDensity": 0.67
+      },
+      {
+        "province": "บึงกาฬ",
+        "n": 74,
+        "medianDiscount": 0.28,
+        "uniqueVendors": 56,
+        "vendorDensity": 0.76
+      },
+      {
+        "province": "สตูล",
+        "n": 53,
+        "medianDiscount": 0.28,
+        "uniqueVendors": 34,
+        "vendorDensity": 0.64
+      }
+    ],
+    "highest10": [
+      {
+        "province": "พิจิตร",
+        "n": 163,
+        "medianDiscount": 10.91,
+        "uniqueVendors": 101,
+        "vendorDensity": 0.62
+      },
+      {
+        "province": "สมุทรสงคราม",
+        "n": 39,
+        "medianDiscount": 10.26,
+        "uniqueVendors": 32,
+        "vendorDensity": 0.82
+      },
+      {
+        "province": "ปทุมธานี",
+        "n": 300,
+        "medianDiscount": 5.94,
+        "uniqueVendors": 172,
+        "vendorDensity": 0.57
+      },
+      {
+        "province": "สมุทรสาคร",
+        "n": 164,
+        "medianDiscount": 5.35,
+        "uniqueVendors": 114,
+        "vendorDensity": 0.7
+      },
+      {
+        "province": "ระยอง",
+        "n": 278,
+        "medianDiscount": 5.33,
+        "uniqueVendors": 167,
+        "vendorDensity": 0.6
+      },
+      {
+        "province": "นครนายก",
+        "n": 66,
+        "medianDiscount": 4.76,
+        "uniqueVendors": 50,
+        "vendorDensity": 0.76
+      },
+      {
+        "province": "แพร่",
+        "n": 77,
+        "medianDiscount": 4.19,
+        "uniqueVendors": 63,
+        "vendorDensity": 0.82
+      },
+      {
+        "province": "ลำพูน",
+        "n": 122,
+        "medianDiscount": 4.12,
+        "uniqueVendors": 92,
+        "vendorDensity": 0.75
+      },
+      {
+        "province": "นราธิวาส",
+        "n": 212,
+        "medianDiscount": 3.86,
+        "uniqueVendors": 95,
+        "vendorDensity": 0.45
+      },
+      {
+        "province": "ตราด",
+        "n": 43,
+        "medianDiscount": 3.83,
+        "uniqueVendors": 33,
+        "vendorDensity": 0.77
+      }
+    ]
+  },
+  "budgetTierStats": [
+    {
+      "label": "<100k",
+      "n": 1216,
+      "medianDiscount": 0,
+      "meanDiscount": 0.21
+    },
+    {
+      "label": "100k–1M",
+      "n": 5556,
+      "medianDiscount": 0.37,
+      "meanDiscount": 4.67
+    },
+    {
+      "label": "1M–10M",
+      "n": 9708,
+      "medianDiscount": 3.28,
+      "meanDiscount": 9.86
+    },
+    {
+      "label": "10M–100M",
+      "n": 2922,
+      "medianDiscount": 1.74,
+      "meanDiscount": 9.91
+    },
+    {
+      "label": ">100M",
+      "n": 371,
+      "medianDiscount": 1.01,
+      "meanDiscount": 10.6
+    }
+  ],
+  "consistentVendors": [
+    {
+      "name": "31 ธ.ค. 70",
+      "wins": 39,
+      "medianDiscount": 0,
+      "stddevDiscount": 0.59,
+      "agencyCount": 6
+    },
+    {
+      "name": "11 ต.ค. 67",
+      "wins": 23,
+      "medianDiscount": 0,
+      "stddevDiscount": 0.3,
+      "agencyCount": 5
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด วี คอนสตรัคชั่น กำแพงเพชร",
+      "wins": 18,
+      "medianDiscount": 0.04,
+      "stddevDiscount": 0.02,
+      "agencyCount": 1
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด ลำปาง ภาณุภัทร์ก่อสร้าง 2008",
+      "wins": 18,
+      "medianDiscount": 0.54,
+      "stddevDiscount": 0.44,
+      "agencyCount": 1
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด ที.วี.พี.การโยธา",
+      "wins": 17,
+      "medianDiscount": 0.98,
+      "stddevDiscount": 0.1,
+      "agencyCount": 1
+    },
+    {
+      "name": "16 ต.ค. 67",
+      "wins": 14,
+      "medianDiscount": 0,
+      "stddevDiscount": 0.43,
+      "agencyCount": 3
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด รุสลันโยธา",
+      "wins": 12,
+      "medianDiscount": 0.07,
+      "stddevDiscount": 0.14,
+      "agencyCount": 7
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด ธงไทยหันคา",
+      "wins": 11,
+      "medianDiscount": 0.17,
+      "stddevDiscount": 0.19,
+      "agencyCount": 6
+    },
+    {
+      "name": "พิมพ์ดี",
+      "wins": 11,
+      "medianDiscount": 0,
+      "stddevDiscount": 0,
+      "agencyCount": 1
+    },
+    {
+      "name": "นายไชยรัตน์  วงค์วันดี",
+      "wins": 10,
+      "medianDiscount": 0,
+      "stddevDiscount": 0,
+      "agencyCount": 1
+    },
+    {
+      "name": "นางสาวรัสรินทร์ แก่นพระเนาว์",
+      "wins": 10,
+      "medianDiscount": 0,
+      "stddevDiscount": 0,
+      "agencyCount": 1
+    },
+    {
+      "name": "บริษัท ไอโฟร์เทค จำกัด",
+      "wins": 10,
+      "medianDiscount": 0,
+      "stddevDiscount": 0,
+      "agencyCount": 1
+    },
+    {
+      "name": "บริษัท ธนัชวิชญ์ แทรเวล กรุ๊ป จำกัด",
+      "wins": 10,
+      "medianDiscount": 0,
+      "stddevDiscount": 0,
+      "agencyCount": 1
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด นครชุม 2002",
+      "wins": 10,
+      "medianDiscount": 0.12,
+      "stddevDiscount": 0.07,
+      "agencyCount": 1
+    },
+    {
+      "name": "ห้างหุ้นส่วนจำกัด ชีวิตดี ทราฟฟิค",
+      "wins": 10,
+      "medianDiscount": 0.43,
+      "stddevDiscount": 0.15,
+      "agencyCount": 1
+    }
+  ],
+  "methodBreakdown": [
+    {
+      "method": "วิธีการจัดหา ประกาศเชิญชวนทั่วไป คัดเลือก เฉพาะเจาะจง",
+      "n": 15089,
+      "medianDiscount": 2.3
+    },
+    {
+      "method": "เฉพาะเจาะจง",
+      "n": 3376,
+      "medianDiscount": 0
+    },
+    {
+      "method": "ประกวดราคาอิเล็กทรอนิกส์ (e-bidding)",
+      "n": 1070,
+      "medianDiscount": 5.42
+    },
+    {
+      "method": "คัดเลือก",
+      "n": 144,
+      "medianDiscount": 0.17
+    },
+    {
+      "method": "งานจ้างที่ปรึกษา",
+      "n": 56,
+      "medianDiscount": 1.88
+    },
+    {
+      "method": "งานจ้างออกแบบและควบคุมงาน",
+      "n": 37,
+      "medianDiscount": 2.51
+    },
+    {
+      "method": "ประกวดราคานานาชาติ",
+      "n": 1,
+      "medianDiscount": 16.46
+    }
+  ],
+  "agencyTrends": {
+    "bigDropAgencies": [
+      {
+        "agency": "กรมการขนส่งทางบก",
+        "trend": -59.04,
+        "first": 72.41,
+        "last": 13.37,
+        "years": [
+          [
+            2561,
+            72.41
+          ],
+          [
+            2563,
+            13.35
+          ],
+          [
+            2567,
+            0
+          ],
+          [
+            2568,
+            13.37
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดยโสธร",
+        "trend": -52.09,
+        "first": 52.51,
+        "last": 0.42,
+        "years": [
+          [
+            2561,
+            52.51
+          ],
+          [
+            2562,
+            43.38
+          ],
+          [
+            2567,
+            0.42
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดนครพนม",
+        "trend": -50.13,
+        "first": 50.5,
+        "last": 0.37,
+        "years": [
+          [
+            2561,
+            50.5
+          ],
+          [
+            2567,
+            17.73
+          ],
+          [
+            2568,
+            0.37
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนตำบลบ้านแลง",
+        "trend": -47.56,
+        "first": 54.69,
+        "last": 7.13,
+        "years": [
+          [
+            2562,
+            54.69
+          ],
+          [
+            2567,
+            0
+          ],
+          [
+            2568,
+            7.13
+          ]
+        ]
+      },
+      {
+        "agency": "เทศบาลเมืองมหาสารคาม",
+        "trend": -41.13,
+        "first": 42,
+        "last": 0.87,
+        "years": [
+          [
+            2563,
+            42
+          ],
+          [
+            2567,
+            0
+          ],
+          [
+            2568,
+            0.87
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนตำบลสินปุน",
+        "trend": -37.26,
+        "first": 38,
+        "last": 0.74,
+        "years": [
+          [
+            2563,
+            38
+          ],
+          [
+            2567,
+            0
+          ],
+          [
+            2568,
+            0.74
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดมหาสารคาม",
+        "trend": -33.38,
+        "first": 37.63,
+        "last": 4.25,
+        "years": [
+          [
+            2561,
+            37.63
+          ],
+          [
+            2563,
+            0.18
+          ],
+          [
+            2567,
+            0.55
+          ],
+          [
+            2568,
+            4.25
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดสิงห์บุรี",
+        "trend": -33.15,
+        "first": 36.24,
+        "last": 3.09,
+        "years": [
+          [
+            2561,
+            36.24
+          ],
+          [
+            2562,
+            37.66
+          ],
+          [
+            2568,
+            3.09
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนตำบลเสอเพลอ",
+        "trend": -33.06,
+        "first": 33.06,
+        "last": 0,
+        "years": [
+          [
+            2562,
+            33.06
+          ],
+          [
+            2563,
+            41.92
+          ],
+          [
+            2567,
+            0
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดแพร่",
+        "trend": -31.05,
+        "first": 34.28,
+        "last": 3.23,
+        "years": [
+          [
+            2563,
+            34.28
+          ],
+          [
+            2567,
+            12.56
+          ],
+          [
+            2568,
+            3.23
+          ]
+        ]
+      }
+    ],
+    "bigRiseAgencies": [
+      {
+        "agency": "เทศบาลนครนครสวรรค์",
+        "trend": 44.13,
+        "first": 0.36,
+        "last": 44.49,
+        "years": [
+          [
+            2561,
+            0.36
+          ],
+          [
+            2567,
+            10.71
+          ],
+          [
+            2568,
+            44.49
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนตำบลคำนาดี",
+        "trend": 29.87,
+        "first": 0.56,
+        "last": 30.43,
+        "years": [
+          [
+            2562,
+            0.56
+          ],
+          [
+            2563,
+            5.81
+          ],
+          [
+            2568,
+            30.43
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดสมุทรสาคร",
+        "trend": 26.39,
+        "first": 1.47,
+        "last": 27.86,
+        "years": [
+          [
+            2562,
+            1.47
+          ],
+          [
+            2567,
+            8.77
+          ],
+          [
+            2568,
+            27.86
+          ]
+        ]
+      },
+      {
+        "agency": "เทศบาลเมืองคลองแห",
+        "trend": 23.12,
+        "first": 8.09,
+        "last": 31.21,
+        "years": [
+          [
+            2561,
+            8.09
+          ],
+          [
+            2563,
+            35.02
+          ],
+          [
+            2568,
+            31.21
+          ]
+        ]
+      },
+      {
+        "agency": "เทศบาลตำบลเขาชุมทอง",
+        "trend": 17.92,
+        "first": 0.4,
+        "last": 18.32,
+        "years": [
+          [
+            2562,
+            0.4
+          ],
+          [
+            2567,
+            0.87
+          ],
+          [
+            2568,
+            18.32
+          ]
+        ]
+      },
+      {
+        "agency": "เทศบาลเมืองสุพรรณบุรี",
+        "trend": 16.64,
+        "first": 11.6,
+        "last": 28.24,
+        "years": [
+          [
+            2561,
+            11.6
+          ],
+          [
+            2567,
+            0.82
+          ],
+          [
+            2568,
+            28.24
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนตำบลวังใหม่",
+        "trend": 16.24,
+        "first": 1.01,
+        "last": 17.25,
+        "years": [
+          [
+            2563,
+            1.01
+          ],
+          [
+            2567,
+            0.54
+          ],
+          [
+            2568,
+            17.25
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนตำบลนาดี",
+        "trend": 15.23,
+        "first": 0.23,
+        "last": 15.46,
+        "years": [
+          [
+            2563,
+            0.23
+          ],
+          [
+            2567,
+            0.01
+          ],
+          [
+            2568,
+            15.46
+          ]
+        ]
+      },
+      {
+        "agency": "องค์การบริหารส่วนจังหวัดกาญจนบุรี",
+        "trend": 14.43,
+        "first": 0.06,
+        "last": 14.49,
+        "years": [
+          [
+            2563,
+            0.06
+          ],
+          [
+            2567,
+            0
+          ],
+          [
+            2568,
+            14.49
+          ]
+        ]
+      },
+      {
+        "agency": "เทศบาลตำบลโคกม่วง",
+        "trend": 13.56,
+        "first": 4.37,
+        "last": 17.93,
+        "years": [
+          [
+            2563,
+            4.37
+          ],
+          [
+            2567,
+            0.03
+          ],
+          [
+            2568,
+            17.93
+          ]
+        ]
+      }
+    ]
+  }
+}

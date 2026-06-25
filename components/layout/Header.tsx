@@ -2,11 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Menu, X, ChevronDown, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, ChevronDown, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useLanguage } from '@/lib/language-context';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getInitials(name: string): string {
   return name
@@ -17,26 +15,31 @@ function getInitials(name: string): string {
     .join('');
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const INSIGHTS_LINK_KEYS = [
+  { key: 'nav.market-intel' as const, href: '/intelligence' },
+  { key: 'nav.agency-intel' as const, href: '/agency' },
+  { key: 'nav.plans'        as const, href: '/plans' },
+];
 
-export default function Header() {
+const REPORT_NAV = { labelTh: 'รายงาน', labelEn: 'Report', href: '/report' };
+
+export default function Header({ dark = false }: { dark?: boolean }) {
   const { user, isAuthenticated, logout } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [insightsOpen, setInsightsOpen] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  const NAV_LINKS = [
-    { label: t('nav.tenders'), href: '/tenders' },
-    { label: t('nav.projects'), href: '/projects' },
-    { label: t('nav.post'), href: '/post-project' },
-  ];
+  const insightsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
+      }
+      if (insightsRef.current && !insightsRef.current.contains(e.target as Node)) {
+        setInsightsOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -47,8 +50,13 @@ export default function Header() {
     setMobileMenuOpen(false);
   }
 
+  const d = dark;
+  const linkCls = d
+    ? "px-3 py-2 rounded-lg text-sm font-medium text-[#64748B] hover:text-[#E2E8F0] hover:bg-[#1A2B48] transition-colors duration-150 focus-ring"
+    : "px-3 py-2 rounded-lg text-sm font-medium text-[#717171] hover:text-[#111111] hover:bg-[#F7F7F7] transition-colors duration-150 focus-ring";
+
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-[#E0E0E0]">
+    <header className={`sticky top-0 z-50 border-b ${d ? 'bg-[#0D1628] border-[#1A2B48]' : 'bg-white border-[#E0E0E0]'}`}>
       <div className="container-app">
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
@@ -57,40 +65,64 @@ export default function Header() {
             className="flex items-center gap-2 flex-shrink-0 focus-ring rounded-md"
             aria-label="Conjuncture home"
           >
-            <span className="text-[#111111] text-xl font-semibold tracking-tight leading-none">
+            <span className={`text-xl font-semibold tracking-tight leading-none ${d ? 'text-[#E2E8F0]' : 'text-[#111111]'}`}>
               CONJUNCTURE
             </span>
-            <span className="text-[#E0E0E0] text-lg leading-none" aria-hidden="true">
-              •
-            </span>
-            <span className="text-lg leading-none" aria-label="Thailand" title="Thailand">
-              🇹🇭
-            </span>
+            <span className={`text-lg leading-none ${d ? 'text-[#1A2B48]' : 'text-[#E0E0E0]'}`} aria-hidden="true">•</span>
+            <span className="text-lg leading-none" aria-label="Thailand" title="Thailand">🇹🇭</span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-[#717171] hover:text-[#111111] hover:bg-[#F7F7F7] transition-colors duration-150 focus-ring"
+          <nav className="hidden md:flex items-center gap-0.5" aria-label="Main navigation">
+            {/* Insights dropdown */}
+            <div className="relative" ref={insightsRef}>
+              <button
+                onClick={() => setInsightsOpen(v => !v)}
+                className={`${linkCls} flex items-center gap-1`}
+                aria-haspopup="true"
+                aria-expanded={insightsOpen}
               >
-                {link.label}
-              </Link>
-            ))}
+                {t('nav.insights.label')}
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-150 ${insightsOpen ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
+              {insightsOpen && (
+                <div
+                  className={`absolute top-full left-0 mt-1 w-52 border rounded-xl shadow-lg py-1 z-50 ${d ? 'bg-[#0D1628] border-[#1A2B48]' : 'bg-white border-[#E0E0E0]'}`}
+                  role="menu"
+                >
+                  {INSIGHTS_LINK_KEYS.map(link => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`block px-4 py-2.5 text-sm transition-colors duration-100 ${d ? 'text-[#C4D3E8] hover:bg-[#1A2B48]' : 'text-[#111111] hover:bg-[#F7F7F7]'}`}
+                      role="menuitem"
+                      onClick={() => setInsightsOpen(false)}
+                    >
+                      {t(link.key)}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href="/bidsight" className={linkCls}>{t('nav.bid-tool')}</Link>
+            <Link href="/report" className={linkCls}>{lang === 'th' ? REPORT_NAV.labelTh : REPORT_NAV.labelEn}</Link>
           </nav>
 
           {/* Right side */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* Language toggle */}
-            <div className="flex items-center border border-[#E0E0E0] rounded-lg overflow-hidden text-xs font-semibold">
+            <div className={`flex items-center border rounded-lg overflow-hidden text-xs font-semibold ${d ? 'border-[#1A2B48]' : 'border-[#E0E0E0]'}`}>
               <button
                 onClick={() => setLang('en')}
                 className={`px-2.5 py-1.5 transition-colors duration-150 ${
                   lang === 'en'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-white text-[#717171] hover:bg-[#F7F7F7]'
+                    ? d ? 'bg-[#2563EB] text-white' : 'bg-[#111111] text-white'
+                    : d ? 'bg-transparent text-[#64748B] hover:bg-[#1A2B48]' : 'bg-white text-[#717171] hover:bg-[#F7F7F7]'
                 }`}
                 aria-pressed={lang === 'en'}
               >
@@ -100,8 +132,8 @@ export default function Header() {
                 onClick={() => setLang('th')}
                 className={`px-2.5 py-1.5 transition-colors duration-150 ${
                   lang === 'th'
-                    ? 'bg-[#111111] text-white'
-                    : 'bg-white text-[#717171] hover:bg-[#F7F7F7]'
+                    ? d ? 'bg-[#2563EB] text-white' : 'bg-[#111111] text-white'
+                    : d ? 'bg-transparent text-[#64748B] hover:bg-[#1A2B48]' : 'bg-white text-[#717171] hover:bg-[#F7F7F7]'
                 }`}
                 aria-pressed={lang === 'th'}
               >
@@ -110,96 +142,76 @@ export default function Header() {
             </div>
 
             {isAuthenticated && user ? (
-              /* Authenticated user menu */
               <div className="relative" ref={userMenuRef}>
                 <button
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#E0E0E0] hover:border-[#222222] hover:bg-[#F7F7F7] transition-colors duration-150 focus-ring"
+                  onClick={() => setUserMenuOpen(prev => !prev)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors duration-150 focus-ring ${d ? 'border-[#1A2B48] hover:border-[#3B82F6] hover:bg-[#1A2B48]' : 'border-[#E0E0E0] hover:border-[#222222] hover:bg-[#F7F7F7]'}`}
                   aria-haspopup="true"
                   aria-expanded={userMenuOpen}
                 >
-                  <span className="avatar" aria-hidden="true">
-                    {getInitials(user.name)}
-                  </span>
-                  <span className="hidden sm:block text-sm font-medium text-[#111111] max-w-[140px] truncate">
+                  <span className="avatar" aria-hidden="true">{getInitials(user.name)}</span>
+                  <span className={`hidden sm:block text-sm font-medium max-w-[140px] truncate ${d ? 'text-[#E2E8F0]' : 'text-[#111111]'}`}>
                     {user.name}
                   </span>
                   <ChevronDown
                     size={14}
-                    className={`text-[#717171] transition-transform duration-150 ${
-                      userMenuOpen ? 'rotate-180' : ''
-                    }`}
+                    className={`transition-transform duration-150 ${d ? 'text-[#64748B]' : 'text-[#717171]'} ${userMenuOpen ? 'rotate-180' : ''}`}
                     aria-hidden="true"
                   />
                 </button>
 
-                {/* Dropdown */}
                 {userMenuOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-56 bg-white border border-[#E0E0E0] rounded-xl shadow-lg py-1 z-50"
+                    className={`absolute right-0 mt-2 w-56 border rounded-xl shadow-lg py-1 z-50 ${d ? 'bg-[#0D1628] border-[#1A2B48]' : 'bg-white border-[#E0E0E0]'}`}
                     role="menu"
                     aria-label="User menu"
                   >
-                    <div className="px-4 py-3 border-b border-[#E0E0E0]">
-                      <p className="text-xs text-[#717171] font-medium uppercase tracking-wider mb-0.5">
-                        {user.role === 'buyer' ? t('auth.buyer') : t('auth.vendor')}
+                    <div className={`px-4 py-3 border-b ${d ? 'border-[#1A2B48]' : 'border-[#E0E0E0]'}`}>
+                      <p className={`text-xs font-medium uppercase tracking-wider mb-0.5 ${d ? 'text-[#64748B]' : 'text-[#717171]'}`}>
+                        {user.role === 'buyer' ? 'Buyer' : 'Vendor'}
                       </p>
-                      <p className="text-sm font-semibold text-[#111111] truncate">{user.name}</p>
+                      <p className={`text-sm font-semibold truncate ${d ? 'text-[#E2E8F0]' : 'text-[#111111]'}`}>{user.name}</p>
                       {user.company && (
-                        <p className="text-xs text-[#717171] truncate mt-0.5">{user.company}</p>
+                        <p className={`text-xs truncate mt-0.5 ${d ? 'text-[#64748B]' : 'text-[#717171]'}`}>{user.company}</p>
                       )}
                     </div>
 
-                    <Link
-                      href={user.role === 'vendor' ? '/dashboard/vendor' : '/dashboard/buyer'}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#111111] hover:bg-[#F7F7F7] transition-colors duration-100 focus-ring"
-                      role="menuitem"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <LayoutDashboard size={15} className="text-[#717171]" aria-hidden="true" />
-                      {t('auth.dashboard')}
-                    </Link>
-
-                    <hr className="border-[#E0E0E0] my-1" />
+                    <hr className={`my-1 ${d ? 'border-[#1A2B48]' : 'border-[#E0E0E0]'}`} />
 
                     <button
-                      onClick={() => {
-                        logout();
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#C0392B] hover:bg-[#FDE8E8] transition-colors duration-100 focus-ring"
+                      onClick={() => { logout(); setUserMenuOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-100 focus-ring ${d ? 'text-red-400 hover:bg-red-950/40' : 'text-[#C0392B] hover:bg-[#FDE8E8]'}`}
                       role="menuitem"
                     >
                       <LogOut size={15} aria-hidden="true" />
-                      {t('auth.signOut')}
+                      Sign out
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              /* Unauthenticated buttons */
               <>
-                <Link href="/admin" className="btn-outline hidden sm:inline-flex text-sm py-2 px-4">
-                  {t('auth.signIn')}
+                <Link href="/login" className={`hidden sm:inline-flex text-sm py-2 px-4 rounded-lg border font-medium transition-colors ${d ? 'border-[#1A2B48] text-[#C4D3E8] hover:bg-[#1A2B48]' : 'btn-outline'}`}>
+                  Sign in
                 </Link>
-                <Link href="/admin" className="btn-primary text-sm py-2 px-4">
-                  {t('auth.getStarted')}
+                <Link href="/register" className={d ? 'inline-flex text-sm py-2 px-4 rounded-lg bg-[#2563EB] text-white font-medium hover:bg-[#1D4ED8] transition-colors' : 'btn-primary text-sm py-2 px-4'}>
+                  Register
                 </Link>
               </>
             )}
 
             {/* Mobile hamburger */}
             <button
-              className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-[#E0E0E0] hover:bg-[#F7F7F7] transition-colors duration-150 focus-ring ml-1"
-              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              className={`md:hidden flex items-center justify-center w-9 h-9 rounded-lg border transition-colors duration-150 focus-ring ml-1 ${d ? 'border-[#1A2B48] hover:bg-[#1A2B48]' : 'border-[#E0E0E0] hover:bg-[#F7F7F7]'}`}
+              onClick={() => setMobileMenuOpen(prev => !prev)}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav"
             >
               {mobileMenuOpen ? (
-                <X size={18} className="text-[#111111]" aria-hidden="true" />
+                <X size={18} className={d ? 'text-[#E2E8F0]' : 'text-[#111111]'} aria-hidden="true" />
               ) : (
-                <Menu size={18} className="text-[#111111]" aria-hidden="true" />
+                <Menu size={18} className={d ? 'text-[#E2E8F0]' : 'text-[#111111]'} aria-hidden="true" />
               )}
             </button>
           </div>
@@ -210,37 +222,42 @@ export default function Header() {
       {mobileMenuOpen && (
         <div
           id="mobile-nav"
-          className="md:hidden border-t border-[#E0E0E0] bg-white"
+          className={`md:hidden border-t ${d ? 'bg-[#0D1628] border-[#1A2B48]' : 'bg-white border-[#E0E0E0]'}`}
           role="navigation"
           aria-label="Mobile navigation"
         >
           <div className="container-app py-4 flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
+            {([
+              { key: 'nav.market-intel',  href: '/intelligence' },
+              { key: 'nav.agency-intel',  href: '/agency' },
+              { key: 'nav.plans',         href: '/plans' },
+              { key: 'nav.bid-tool',      href: '/bidsight' },
+            ] as const).map((link) => ({...link, label: t(link.key)})).map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={closeMobileMenu}
-                className="flex items-center px-4 py-3 rounded-lg text-sm font-medium text-[#111111] hover:bg-[#F7F7F7] transition-colors duration-150 focus-ring"
+                className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-150 focus-ring ${d ? 'text-[#C4D3E8] hover:bg-[#1A2B48]' : 'text-[#111111] hover:bg-[#F7F7F7]'}`}
               >
                 {link.label}
               </Link>
             ))}
 
+            <Link
+              href="/report"
+              onClick={closeMobileMenu}
+              className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-150 focus-ring ${d ? 'text-[#C4D3E8] hover:bg-[#1A2B48]' : 'text-[#111111] hover:bg-[#F7F7F7]'}`}
+            >
+              {lang === 'th' ? 'รายงาน' : 'Report'}
+            </Link>
+
             {!isAuthenticated && (
-              <div className="flex flex-col gap-2 pt-3 mt-2 border-t border-[#E0E0E0]">
-                <Link
-                  href="/admin"
-                  onClick={closeMobileMenu}
-                  className="btn-outline w-full justify-center text-sm"
-                >
-                  {t('auth.signIn')}
+              <div className={`flex flex-col gap-2 pt-3 mt-2 border-t ${d ? 'border-[#1A2B48]' : 'border-[#E0E0E0]'}`}>
+                <Link href="/login" onClick={closeMobileMenu} className={`w-full justify-center text-sm rounded-lg border px-4 py-2 font-medium text-center ${d ? 'border-[#1A2B48] text-[#C4D3E8] hover:bg-[#1A2B48]' : 'btn-outline'}`}>
+                  Sign in
                 </Link>
-                <Link
-                  href="/admin"
-                  onClick={closeMobileMenu}
-                  className="btn-primary w-full justify-center text-sm"
-                >
-                  {t('auth.getStarted')}
+                <Link href="/register" onClick={closeMobileMenu} className={`w-full justify-center text-sm rounded-lg px-4 py-2 font-medium text-center ${d ? 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]' : 'btn-primary'}`}>
+                  Register
                 </Link>
               </div>
             )}

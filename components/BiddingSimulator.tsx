@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   AreaChart,
   Area,
@@ -13,7 +13,12 @@ import {
 } from "recharts";
 import { Sliders, TrendingUp, Shield, AlertTriangle, Info } from "lucide-react";
 import { t, type Lang } from "@/lib/landing-translations";
-import { recommendBid, generateWinCurve, buildCurveFromBand, positioningLabel, CALIB_ALPHA } from "@/lib/bidsight-core";
+import { recommendBid, generateWinCurve, buildCurveFromBand, positioningLabel, CALIB_ALPHA, type QuantileTable } from "@/lib/bidsight-core";
+import { BidOutcomePrompt } from "@/components/BidOutcomePrompt";
+
+function makeSessionId(): string {
+  return `sim_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
 
 interface SimulatorProps {
   lang: Lang;
@@ -49,9 +54,17 @@ function piecewiseFromBand(band: Band, disc: number): number {
 
 function computeSimulation(refPriceM: number, costPct: number, targetMarginPct: number, marketBand?: Band | null) {
   const costM = refPriceM * (costPct / 100);
-  const rec = recommendBid(refPriceM, costM, targetMarginPct);
 
-  // Use market band for positioning if available; otherwise use global fallback from rec
+  // When a market band is available, pass it as a minimal QuantileTable so recommendBid
+  // targets the market median rather than GLOBAL_MEDIAN. discounts is empty so the
+  // empirical-CDF path is skipped and bench.median is used as benchTarget directly.
+  const synthBench: QuantileTable | undefined = marketBand
+    ? { discounts: [], ...marketBand, sigma: 0, n: 0, source: 'band' }
+    : undefined;
+
+  const rec = recommendBid(refPriceM, costM, targetMarginPct, synthBench);
+
+  // Use piecewise CDF for accurate positioning (raw discounts unavailable in the simulator).
   const pct = marketBand ? piecewiseFromBand(marketBand, rec.recommendedDiscount) : rec.positioningPct;
   const label = positioningLabel(pct);
 
@@ -194,11 +207,45 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   const [marketBand, setMarketBand] = useState<Band | null>(null);
   const [marketN, setMarketN] = useState(0);
   const [marketLoading, setMarketLoading] = useState(false);
+  const [medianCI, setMedianCI] = useState<{ lo: number; hi: number } | null>(null);
+  const [concentration, setConcentration] = useState<{ hhi: number; eNoc: number; n: number } | null>(null);
+  const [competitionDensity, setCompetitionDensity] = useState<{ median: number; n: number } | null>(null);
 
   // ── Slider layer (user economics — local, no fetch) ──────────────────────
   const [refPrice, setRefPrice] = useState(10);
   const [costPct, setCostPct] = useState(82);
   const [targetMarginPct, setTargetMarginPct] = useState(5);
+
+  // ── Stream A: passive telemetry + outcome prompt ──────────────────────────
+  const [sessionId] = useState(makeSessionId);
+  const [showOutcomePrompt, setShowOutcomePrompt] = useState(false);
+  const logTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const logSimulatorState = useCallback((
+    rPrice: number, cPct: number, mPct: number,
+    recBid: number, recDisc: number,
+    pType: string, band: string,
+  ) => {
+    if (logTimer.current) clearTimeout(logTimer.current);
+    logTimer.current = setTimeout(() => {
+      fetch('/api/simulator-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          session_id:           sessionId,
+          project_type:         pType,
+          agency_category:      pType,
+          budget_bucket:        band,
+          cost_ratio:           cPct,
+          min_margin:           mPct,
+          market_position:      recDisc,
+          recommended_bid:      recBid,
+          recommended_discount: recDisc,
+          refPriceM:            rPrice,
+        }),
+      }).catch(() => {});
+    }, 3000); // 3s debounce — fire once after user stops adjusting
+  }, [sessionId]);
 
   const {
     positioningPct, positioningLabelTh, positioningLabelEn,
@@ -208,6 +255,16 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
     () => computeSimulation(refPrice, costPct, targetMarginPct, marketBand),
     [refPrice, costPct, targetMarginPct, marketBand]
   );
+
+  // Fire-and-forget log after each meaningful interaction (3s debounce)
+  useEffect(() => {
+    logSimulatorState(
+      refPrice, costPct, targetMarginPct,
+      optimalBid, targetDiscount,
+      projectType,
+      refPrice < 1 ? '<1M' : refPrice < 5 ? '1-5M' : refPrice < 20 ? '5-20M' : refPrice < 100 ? '20-100M' : '>100M',
+    );
+  }, [refPrice, costPct, targetMarginPct, optimalBid, targetDiscount, projectType, logSimulatorState]);
 
   useEffect(() => {
     fetch("/api/benchmark-categories", { cache: "no-store" })
@@ -221,7 +278,11 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
   }, []);
 
   useEffect(() => {
-    if (!projectType) { setMarketBand(null); setMarketN(0); return; }
+    if (!projectType) {
+      setMarketBand(null); setMarketN(0);
+      setMedianCI(null); setConcentration(null); setCompetitionDensity(null);
+      return;
+    }
     setMarketLoading(true);
     const qs = new URLSearchParams({ refPriceM: "10", costM: "8", targetMarginPct: "10", projectType });
     fetch(`/api/recommend-bid?${qs}`)
@@ -229,6 +290,9 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
       .then((data: any) => {
         setMarketBand(data.band ?? null);
         setMarketN(data.comparableN ?? 0);
+        setMedianCI(data.medianCI ?? null);
+        setConcentration(data.concentration ?? null);
+        setCompetitionDensity(data.competitionDensity ?? null);
       })
       .catch(() => {})
       .finally(() => setMarketLoading(false));
@@ -317,12 +381,49 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
               {marketLoading && (
                 <p className="text-[10px] text-slate-400">{isTh ? "กำลังโหลดข้อมูลตลาด…" : "Loading market data…"}</p>
               )}
-              {!marketLoading && marketBand && marketN > 0 && (
+              {!marketLoading && marketN > 0 && (
                 <p className="text-[10px] text-slate-400">
-                  {isTh ? `อ้างอิง ${marketN.toLocaleString()} สัญญา` : `${marketN.toLocaleString()} comparable contracts`}
+                  {isTh ? `${marketN.toLocaleString()} สัญญา` : `${marketN.toLocaleString()} contracts`}
                 </p>
               )}
             </div>
+
+            {/* Market intelligence: HHI concentration + competition density (CoST) */}
+            {!marketLoading && (concentration || competitionDensity) && (
+              <div className="grid grid-cols-2 gap-2">
+                {concentration && (() => {
+                  // DOJ/FTC antitrust thresholds — no arbitrary cutoffs
+                  const label = concentration.hhi < 1500
+                    ? { th: "ตลาดแข่งขัน", en: "Competitive",         color: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+                    : concentration.hhi < 2500
+                    ? { th: "กระจุกตัวปานกลาง", en: "Moderately concentrated", color: "text-amber-600 bg-amber-50 border-amber-100" }
+                    : { th: "กระจุกตัวสูง",  en: "Highly concentrated", color: "text-red-600 bg-red-50 border-red-100" };
+                  return (
+                    <div className={`rounded-xl p-2.5 border ${label.color}`}>
+                      <p className={`text-[10px] opacity-70 mb-0.5 ${isTh ? "lang-th" : ""}`}>
+                        {isTh ? "ผู้แข่งขันที่แท้จริง" : "Effective competitors"}
+                      </p>
+                      <p className="text-base font-bold">{concentration.eNoc}</p>
+                      <p className={`text-[9px] font-medium ${isTh ? "lang-th" : ""}`}>
+                        {isTh ? label.th : label.en}
+                      </p>
+                      <p className="text-[9px] opacity-60">HHI {concentration.hhi.toLocaleString()}</p>
+                    </div>
+                  );
+                })()}
+                {competitionDensity && (
+                  <div className="rounded-xl p-2.5 bg-slate-50">
+                    <p className={`text-[10px] text-slate-400 mb-0.5 ${isTh ? "lang-th" : ""}`}>
+                      {isTh ? "ผู้เสนอราคา (กลาง)" : "Median bidders"}
+                    </p>
+                    <p className="text-base font-bold text-slate-800">{competitionDensity.median}</p>
+                    <p className="text-[9px] text-slate-400">
+                      {isTh ? `CoST · ${competitionDensity.n} สัญญา` : `CoST · ${competitionDensity.n} contracts`}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <SliderField
               label={tx.projectScope}
@@ -426,6 +527,13 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                     <span>{band.p75}%</span>
                     <span>{band.p90}%</span>
                   </div>
+                  {medianCI && (
+                    <p className="text-[9px] text-slate-400 mt-1">
+                      {isTh
+                        ? `P50 95% CI: ${medianCI.lo}–${medianCI.hi}%`
+                        : `P50 95% CI: ${medianCI.lo}–${medianCI.hi}%`}
+                    </p>
+                  )}
                 </div>
                 <div className={`${riskConfig.bg} border rounded-xl p-3`}>
                   <div className="flex items-center gap-1.5 mb-1">
@@ -462,7 +570,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
               )}
             </div>
 
-            <div className="h-64 lg:h-72">
+            <div className="h-80 lg:h-[420px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={curveData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
                   <defs>
@@ -526,7 +634,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
               </ResponsiveContainer>
             </div>
 
-            <div className="mt-4 flex items-center gap-6 text-xs text-slate-400 flex-wrap">
+            <div className="mt-3 flex items-center gap-6 text-xs text-slate-400 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <div className="w-4 h-0.5 bg-blue-500" />
                 <span className={isTh ? "lang-th" : ""}>{isTh ? "เปอร์เซ็นไทล์ตำแหน่ง" : "Positioning %ile"}</span>
@@ -542,7 +650,7 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
             </div>
 
             {isMarginConstrained ? (
-              <div className="mt-5 flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-xl">
+              <div className="mt-3 flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-xl">
                 <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                 <p className={`text-xs text-slate-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
                   <span className="font-semibold text-red-700">{isTh ? "ถึงจุดคุ้มทุนแล้ว: " : "Break-even limit reached: "}</span>
@@ -559,21 +667,23 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
                 </p>
               </div>
             ) : (
-              <div className="mt-5 flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+              <div className="mt-3 flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
                 <TrendingUp className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                 <p className={`text-xs text-slate-600 leading-relaxed ${isTh ? "lang-th" : ""}`}>
                   <span className="font-semibold text-blue-600">{isTh ? "ข้อมูลตลาด: " : "Market Data: "}</span>
                   {isTh ? (
                     <>ส่วนลดกลางตลาด{" "}
-                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span> จาก 29,750 โครงการ e-bidding
-                    กำไร {targetMarginPct}% รองรับได้ถึง −{marginMaxDiscount.toFixed(1)}% ✓ — เสนอ ฿{optimalBid.toFixed(1)}M{" "}
+                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span>
+                    {marketN > 0 && <> จาก {marketN.toLocaleString()} โครงการ e-bidding</>}
+                    {" "}กำไร {targetMarginPct}% รองรับได้ถึง −{marginMaxDiscount.toFixed(1)}% ✓ — เสนอ ฿{optimalBid.toFixed(1)}M{" "}
                     (เปอร์เซ็นไทล์ที่ <span className={`font-semibold ${positionColor}`}>{positioningPct}</span>
                     {" "}· <span className={`font-semibold ${positionColor} lang-th`}>{positioningLabelTh}</span>)
                     กำไร <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}%</span></>
                   ) : (
                     <>Market median{" "}
-                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span> across 29,750 e-bidding tenders.
-                    Your {targetMarginPct}% margin allows up to −{marginMaxDiscount.toFixed(1)}% ✓ — bid ฿{optimalBid.toFixed(1)}M{" "}
+                    <span className="font-semibold text-amber-600">−{benchDiscount}%</span>
+                    {marketN > 0 && <> across {marketN.toLocaleString()} e-bidding tenders</>}.
+                    {" "}Your {targetMarginPct}% margin allows up to −{marginMaxDiscount.toFixed(1)}% ✓ — bid ฿{optimalBid.toFixed(1)}M{" "}
                     (<span className={`font-semibold ${positionColor}`}>{positioningPct}th %ile</span>
                     {" "}· <span className={`font-semibold ${positionColor}`}>{positioningLabelEn.split(" — ")[0]}</span>),{" "}
                     <span className="font-semibold text-emerald-600">{actualMargin.toFixed(1)}% estimated margin</span>.</>
@@ -593,12 +703,31 @@ export default function BiddingSimulator({ lang }: SimulatorProps) {
 
             <p className="mt-1 text-[10px] text-slate-400 text-right">
               {isTh
-                ? "อ้างอิง: 29,750 โครงการ e-bidding · ส่วนลดจากราคากลาง · ปีงบ 2561–2568"
-                : "Benchmarks: 29,750 e-bidding tenders · reference price discounts · FY2561–2568"}
+                ? `อ้างอิง: ${marketN > 0 ? marketN.toLocaleString() + ' โครงการ' : 'ทุกหมวดหมู่'} e-bidding · ส่วนลดจากราคากลาง · ปีงบ 2561–2569`
+                : `Benchmarks: ${marketN > 0 ? marketN.toLocaleString() + ' tenders' : 'all categories'} e-bidding · reference price discounts · FY2561–2569`}
             </p>
+
+            <div className="mt-3 pt-3 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={() => setShowOutcomePrompt(true)}
+                className={`text-xs px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors font-medium ${isTh ? 'lang-th' : ''}`}
+              >
+                {isTh ? 'รายงานผลการประมูล →' : 'Report bid outcome →'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {showOutcomePrompt && (
+        <BidOutcomePrompt
+          sessionId={sessionId}
+          projectType={projectType}
+          submittedPrice={optimalBid}
+          isTh={isTh}
+          onClose={() => setShowOutcomePrompt(false)}
+        />
+      )}
     </section>
   );
 }
