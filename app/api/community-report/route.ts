@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { restAddDocument, restGetDocument, restSetDocument } from '@/lib/firestore-rest';
 import type { CommunityReport, CommunityReportType, ContributorStats } from '@/lib/types';
-import { Resend } from 'resend';
-
 export const dynamic = 'force-dynamic';
 
 const VALID_TYPES: CommunityReportType[] = [
@@ -72,9 +70,7 @@ export async function POST(req: NextRequest) {
 
     await restAddDocument('community_reports', doc as unknown as Record<string, unknown>);
 
-    // Increment stats + notify admin in background
     incrementReportCount().catch(() => {});
-    notifyAdmin(doc, report_id).catch(() => {});
 
     return NextResponse.json({ ok: true, report_id });
   } catch (err) {
@@ -96,30 +92,3 @@ function sanitizeContent(content: Record<string, unknown>): Record<string, unkno
   return out;
 }
 
-async function notifyAdmin(report: Omit<CommunityReport, 'id'>, reportId: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return;
-  const resend = new Resend(apiKey);
-  const typeLabel: Record<CommunityReportType, string> = {
-    suspicious: 'พบสัญญาน่าสงสัย',
-    data_error: 'ข้อมูลไม่ถูกต้อง',
-    analysis_request: 'ขอให้วิเคราะห์',
-    bid_outcome: 'รายงานผลประมูล',
-  };
-  await resend.emails.send({
-    from: 'Conjuncture Reports <noreply@conjuncture.work>',
-    to: 'panitiarjit@gmail.com',
-    subject: `[รายงานใหม่] ${typeLabel[report.report_type]} — ${reportId}`,
-    html: `
-      <p><strong>ประเภท:</strong> ${typeLabel[report.report_type]}</p>
-      <p><strong>ID:</strong> ${reportId}</p>
-      ${report.agency ? `<p><strong>หน่วยงาน:</strong> ${report.agency}</p>` : ''}
-      ${report.fiscal_year ? `<p><strong>ปีงบประมาณ:</strong> ${report.fiscal_year}</p>` : ''}
-      ${report.project_ref ? `<p><strong>โครงการ:</strong> ${report.project_ref}</p>` : ''}
-      <p><strong>รายละเอียด:</strong></p>
-      <pre>${JSON.stringify(report.content, null, 2)}</pre>
-      ${report.submitter_email ? `<p><strong>ติดต่อกลับ:</strong> ${report.submitter_email}</p>` : ''}
-      <p><a href="https://conjuncture.work/admin/reports">ดูใน Admin Dashboard →</a></p>
-    `,
-  });
-}

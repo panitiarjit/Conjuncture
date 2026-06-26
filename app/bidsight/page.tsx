@@ -172,7 +172,7 @@ export default function BidSightPage() {
         .then(r => r.json())
         .then(data => { if (!ctrl.signal.aborted) { setApiRec(data); setLoading(false); } })
         .catch(e => { if (e.name !== 'AbortError') setLoading(false); });
-    }, 400);
+    }, 50);
 
     return () => clearTimeout(timer);
   }, [refPriceM, costM, targetMarginPct, targetPositionPct, agency, category]);
@@ -189,6 +189,40 @@ export default function BidSightPage() {
       positionPct: pt.positionPct,
     })).sort((a, b) => a.bidM - b.bidM);
   }, [band, refPriceM]);
+
+  // ── Local recommendation (instant — derived from cached band + current economics) ──
+  const localRec = useMemo(() => {
+    const costRatio = costM / refPriceM;
+    const marginMaxDiscount = (1 - costRatio / (1 - targetMarginPct / 100)) * 100;
+    const cannotMeetMargin = marginMaxDiscount <= 0;
+
+    const nearest = curvePoints.length > 0
+      ? curvePoints.reduce((best, pt) =>
+          Math.abs(pt.positionPct - targetPositionPct) < Math.abs(best.positionPct - targetPositionPct) ? pt : best
+        )
+      : null;
+    const benchTarget = nearest?.disc ?? band.median;
+
+    const targetDiscount = cannotMeetMargin ? 0 : Math.min(benchTarget, marginMaxDiscount);
+    const bid = Math.round(refPriceM * (1 - targetDiscount / 100) * 100) / 100;
+    const actualMargin = cannotMeetMargin ? 0 : (bid - costM) / bid * 100;
+    const marginFloorBreached = !cannotMeetMargin && benchTarget > marginMaxDiscount;
+
+    const posNearest = curvePoints.length > 0
+      ? curvePoints.reduce((best, pt) =>
+          Math.abs(pt.disc - targetDiscount) < Math.abs(best.disc - targetDiscount) ? pt : best
+        )
+      : null;
+
+    return {
+      recommendedBid:      bid,
+      recommendedDiscount: Math.round(targetDiscount * 10) / 10,
+      expectedMargin:      Math.round(actualMargin * 10) / 10,
+      positioningPct:      posNearest?.positionPct ?? 50,
+      marginFloorBreached,
+      cannotMeetMargin,
+    };
+  }, [band, curvePoints, refPriceM, costM, targetMarginPct, targetPositionPct]);
 
   // ── Interactive explore slider ────────────────────────────────────────────
   const [exploreBidM, setExploreBidM] = useState<number | null>(null);
@@ -417,29 +451,23 @@ export default function BidSightPage() {
                   <p className="text-[#64748B] text-xs font-semibold uppercase tracking-widest mb-1">
                     {t('bid.rec.title')}
                   </p>
-                  {loading ? (
-                    <div className="h-14 w-48 bg-[#1A2B48] rounded-xl animate-pulse" />
-                  ) : rec ? (
-                    <p className={`text-5xl font-black tracking-tight ${rec.cannotMeetMargin ? 'text-red-400' : 'text-[#E2E8F0]'}`}>
-                      {fmtM(rec.recommendedBid)}
-                    </p>
-                  ) : (
-                    <p className="text-5xl font-black text-[#1A2B48]">—</p>
-                  )}
+                  <p className={`text-5xl font-black tracking-tight ${localRec.cannotMeetMargin ? 'text-red-400' : 'text-[#E2E8F0]'}`}>
+                    {fmtM(localRec.recommendedBid)}
+                  </p>
                 </div>
-                {rec && !rec.cannotMeetMargin && (
+                {!localRec.cannotMeetMargin && (
                   <div className="text-right flex-shrink-0 space-y-3">
                     <div>
                       <p className="text-[#64748B] text-[11px] mb-0.5">{t('bid.rec.discount')}</p>
-                      <p className="text-[#E2E8F0] font-black text-xl">−{rec.recommendedDiscount}%</p>
+                      <p className="text-[#E2E8F0] font-black text-xl">−{localRec.recommendedDiscount}%</p>
                     </div>
                     <div>
                       <p className="text-[#64748B] text-[11px] mb-0.5">{t('bid.rec.margin')}</p>
-                      <p className={`font-black text-xl ${rec.marginFloorBreached ? 'text-amber-400' : 'text-emerald-400'}`}>
-                        {rec.expectedMargin.toFixed(1)}%
+                      <p className={`font-black text-xl ${localRec.marginFloorBreached ? 'text-amber-400' : 'text-emerald-400'}`}>
+                        {localRec.expectedMargin.toFixed(1)}%
                       </p>
-                      <p className={`text-[10px] mt-0.5 ${rec.marginFloorBreached ? 'text-amber-500' : 'text-[#334155]'}`}>
-                        {rec.marginFloorBreached ? t('bid.rec.margin-limited') : t('bid.rec.market-det')}
+                      <p className={`text-[10px] mt-0.5 ${localRec.marginFloorBreached ? 'text-amber-500' : 'text-[#334155]'}`}>
+                        {localRec.marginFloorBreached ? t('bid.rec.margin-limited') : t('bid.rec.market-det')}
                       </p>
                     </div>
                   </div>
@@ -447,7 +475,7 @@ export default function BidSightPage() {
               </div>
 
               {/* Confidence band */}
-              {rec && !rec.cannotMeetMargin && (
+              {!localRec.cannotMeetMargin && (
                 <div className="mt-3">
                   <p className="text-[#64748B] text-xs mb-2">{t('bid.rec.band')}</p>
                   <div className="flex items-center gap-3">
@@ -460,10 +488,10 @@ export default function BidSightPage() {
                           right: `${Math.max(0, (1 - (bandHighM - chartMin) / (chartMax - chartMin)) * 100)}%`,
                         }}
                       />
-                      {rec.recommendedBid >= chartMin && rec.recommendedBid <= chartMax && (
+                      {localRec.recommendedBid >= chartMin && localRec.recommendedBid <= chartMax && (
                         <div
                           className="absolute inset-y-0 w-0.5 bg-emerald-400 rounded"
-                          style={{ left: `${((rec.recommendedBid - chartMin) / (chartMax - chartMin)) * 100}%` }}
+                          style={{ left: `${((localRec.recommendedBid - chartMin) / (chartMax - chartMin)) * 100}%` }}
                         />
                       )}
                     </div>
@@ -476,7 +504,7 @@ export default function BidSightPage() {
                 </div>
               )}
 
-              {rec?.cannotMeetMargin && (
+              {localRec.cannotMeetMargin && (
                 <div className="mt-3 flex items-start gap-2 p-3 bg-red-950/50 border border-red-800/60 rounded-lg">
                   <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                   <p className="text-red-300 text-xs">
@@ -493,29 +521,29 @@ export default function BidSightPage() {
                 <p className="text-[#64748B] text-xs font-semibold uppercase tracking-widest mb-3">{t('bid.positioning.title')}</p>
                 <div className="flex items-end gap-2 mb-2">
                   <span className={`text-4xl font-black ${
-                    (rec?.positioningPct ?? 50) >= 50 && (rec?.positioningPct ?? 50) <= 85
+                    localRec.positioningPct >= 50 && localRec.positioningPct <= 85
                       ? 'text-emerald-400'
-                      : (rec?.positioningPct ?? 50) < 25 || (rec?.positioningPct ?? 50) > 85
+                      : localRec.positioningPct < 25 || localRec.positioningPct > 85
                       ? 'text-red-400'
                       : 'text-amber-400'
                   }`}>
-                    {loading ? '…' : (rec?.positioningPct ?? '—')}
+                    {localRec.positioningPct}
                   </span>
-                  {rec && <span className="text-[#64748B] text-lg mb-1">th %ile</span>}
+                  <span className="text-[#64748B] text-lg mb-1">th %ile</span>
                 </div>
                 <div className="w-full h-1.5 bg-[#1A2B48] rounded-full overflow-hidden mb-2">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      (rec?.positioningPct ?? 0) >= 50 ? 'bg-emerald-500' : 'bg-amber-500'
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      localRec.positioningPct >= 50 ? 'bg-emerald-500' : 'bg-amber-500'
                     }`}
-                    style={{ width: `${rec?.positioningPct ?? 0}%` }}
+                    style={{ width: `${localRec.positioningPct}%` }}
                   />
                 </div>
-                <p className="text-[#64748B] text-[11px]">{rec?.positioningLabelEn ?? '—'}</p>
+                <p className="text-[#64748B] text-[11px]">{posLabel(localRec.positioningPct)}</p>
                 <p className="text-[#334155] text-[10px] mt-1">
-                  {t('bid.positioning.median')} −{rec?.marketMedianDiscount ?? '—'}%
+                  {t('bid.positioning.median')} −{rec?.marketMedianDiscount ?? band.median}%
                 </p>
-                {rec?.marginFloorBreached && targetPositionPct !== 50 && (
+                {localRec.marginFloorBreached && targetPositionPct !== 50 && (
                   <div className="mt-2 p-2 bg-amber-950/50 border border-amber-800/60 rounded-lg">
                     <p className="text-amber-300 text-[10px] leading-relaxed">
                       P{targetPositionPct} blocked by {targetMarginPct}% margin floor — lower {t('bid.target-margin')} to reach more aggressive positioning.
@@ -581,9 +609,9 @@ export default function BidSightPage() {
                   />
                   <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#1A2B48', strokeWidth: 1 }} />
 
-                  {rec && !rec.cannotMeetMargin && (
+                  {!localRec.cannotMeetMargin && (
                     <ReferenceLine
-                      x={rec.recommendedBid}
+                      x={localRec.recommendedBid}
                       stroke="#34D399"
                       strokeWidth={2}
                       label={{ value: 'Rec.', fill: '#34D399', fontSize: 10, dy: -6 }}
@@ -638,7 +666,7 @@ export default function BidSightPage() {
                 min={chartMin}
                 max={chartMax}
                 step={(chartMax - chartMin) / 200}
-                value={exploreBidM ?? rec?.recommendedBid ?? (chartMin + chartMax) / 2}
+                value={exploreBidM ?? localRec.recommendedBid}
                 onChange={e => setExploreBidM(parseFloat(e.target.value))}
                 className="dark-range-indigo"
               />

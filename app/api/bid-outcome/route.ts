@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { restAddDocument, restGetDocument, restSetDocument } from '@/lib/firestore-rest';
 import type { BidOutcome, BidOutcomeType, ContributorStats } from '@/lib/types';
-import { Resend } from 'resend';
-
 export const dynamic = 'force-dynamic';
 
 const VALID_OUTCOMES: BidOutcomeType[] = ['won', 'lost', 'no_bid', 'pending'];
@@ -58,25 +56,6 @@ export async function POST(req: NextRequest) {
 
     // Increment stats counter in background
     incrementOutcomeCount().catch(() => {});
-
-    // Optional confirmation email
-    const emailAddr = body.submitter_email as string | undefined;
-    if (emailAddr && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr)) {
-      const apiKey = process.env.RESEND_API_KEY;
-      if (apiKey) {
-        const resend = new Resend(apiKey);
-        const outcomeLabel: Record<BidOutcomeType, string> = {
-          won: 'ชนะการประมูล ✓', lost: 'ไม่ชนะการประมูล',
-          no_bid: 'ไม่ได้ยื่นประมูล', pending: 'ยังรอผล',
-        };
-        resend.emails.send({
-          from: 'Conjuncture <noreply@conjuncture.work>',
-          to: emailAddr,
-          subject: 'รับรายงานผลการประมูลแล้ว',
-          html: `<p>ขอบคุณที่แจ้งผลการประมูล: <strong>${outcomeLabel[doc.outcome_type]}</strong></p><p>หมายเลขอ้างอิง: ${outcome_id}</p><p>ข้อมูลของคุณช่วยให้โมเดลของเราแม่นยำขึ้น</p>`,
-        }).catch(() => {});
-      }
-    }
 
     return NextResponse.json({ ok: true, outcome_id });
   } catch (err) {

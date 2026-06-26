@@ -14,6 +14,8 @@ import {
   updateProfile,
   signOut,
   onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { auth } from './firebase';
@@ -36,6 +38,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string, role: UserRole) => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
   register: (email: string, password: string, displayName: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
 }
@@ -102,6 +105,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const loginWithGoogle = useCallback(async (): Promise<boolean> => {
+    if (!auth) { console.error('[auth] Firebase not initialized'); return false; }
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      return true;
+    } catch (err) {
+      console.error('[auth] Google sign-in failed:', err);
+      return false;
+    }
+  }, []);
+
   const logout = useCallback(() => {
     if (auth) signOut(auth);
   }, []);
@@ -111,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: user !== null,
     isLoading,
     login,
+    loginWithGoogle,
     register,
     logout,
   };
