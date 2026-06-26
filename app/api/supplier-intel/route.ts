@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   const category = req.nextUrl.searchParams.get('category')?.trim();
   if (!category) return NextResponse.json({ error: 'category param required' }, { status: 400 });
 
-  const all = await getAwardedContracts(undefined, 5_000);
+  const all = await getAwardedContracts();
 
   // Resolve keywords: if category is a known English key use its Thai keywords;
   // otherwise treat the value itself as a Thai keyword (direct search).

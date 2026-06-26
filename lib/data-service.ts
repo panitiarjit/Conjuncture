@@ -131,29 +131,52 @@ export async function getAwardedContract(projectId: string): Promise<AwardedCont
  * Fetch recent awarded contracts, optionally filtered by keyword in project name.
  * Used by the market intelligence page.
  */
+// Field-masked like benchmark to avoid full-doc payload timeouts on Cloudflare Workers.
+// Includes every field used by IntelligenceView and the export-prospects API.
+// Budget: 5k reads/day (24h cache, 5k docs × 1 revalidation/day).
+const INTEL_FIELDS = [
+  'projectId', 'projectName', 'agency', 'province', 'projectType',
+  'procurementMethodGroup', 'budget', 'referencePrice', 'agreedPrice',
+  'discountFromReference', 'winnerName', 'winnerBusinessId', 'fiscalYear', 'losers',
+];
+
 const fetchAwardedContractsFromFirestore = unstable_cache(
-  async (keyword: string | undefined, maxDocs: number): Promise<AwardedContract[]> => {
-    const { restGetCollection } = await import('./firestore-rest');
-    const all = await restGetCollection<AwardedContract>('cgd_contracts', maxDocs);
-    if (!keyword) return all;
-    const kw = keyword.toLowerCase();
-    return all.filter((c) => c.projectName.toLowerCase().includes(kw));
+  async (): Promise<AwardedContract[]> => {
+    const { restGetCollectionPage } = await import('./firestore-rest');
+    const all: AwardedContract[] = [];
+    let cursor: string | undefined;
+    do {
+      const { docs, nextPageToken } = await restGetCollectionPage<AwardedContract>(
+        'cgd_contracts',
+        300,
+        cursor,
+        INTEL_FIELDS,
+      );
+      all.push(...docs);
+      cursor = nextPageToken;
+    } while (cursor && all.length < 5_000);
+    return all;
   },
-  ['cgd_contracts'],
+  ['intel_contracts'],
   // 24h revalidate: cgd_contracts only changes once/day (fetch-historical at 15:00).
-  // Keeps daily Firestore reads from this path to 1 revalidation × 5k docs = 5k reads/day.
   { revalidate: 86400, tags: ['cgd_contracts'] },
 );
 
-export async function getAwardedContracts(keyword?: string, maxDocs = 2_000): Promise<AwardedContract[]> {
+export async function getAwardedContracts(keyword?: string): Promise<AwardedContract[]> {
   if (!hasFirestoreCredentials()) return [];
-  const cacheKey = `contracts:${keyword ?? ''}:${maxDocs}`;
+  const cacheKey = 'intel_contracts';
   const cached = memGet<AwardedContract[]>(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    if (!keyword) return cached;
+    const kw = keyword.toLowerCase();
+    return cached.filter((c) => c.projectName?.toLowerCase().includes(kw));
+  }
   try {
-    const contracts = await fetchAwardedContractsFromFirestore(keyword, maxDocs);
-    memSet(cacheKey, contracts, 24 * 60 * 60 * 1000); // 24h: cgd_contracts changes once/day
-    return contracts;
+    const contracts = await fetchAwardedContractsFromFirestore();
+    memSet(cacheKey, contracts, 24 * 60 * 60 * 1000);
+    if (!keyword) return contracts;
+    const kw = keyword.toLowerCase();
+    return contracts.filter((c) => c.projectName?.toLowerCase().includes(kw));
   } catch {
     return [];
   }

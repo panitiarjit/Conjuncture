@@ -116,10 +116,11 @@ Every read over 50k/day costs money. The current budget:
 | `soe_tenders` cache (6h) | 6h | 4,000 |
 | `benchmark` cache (24h) | 24h | 10,000 |
 | `agency-intel` cache (24h) | 24h | 5,000 |
+| `market-intel` cache (24h) | 24h | 5,000 |
 | Batch test script (daily cron) | — | 10,000 |
-| **Total** | | **37,000** |
+| **Total** | | **42,000** |
 | **Free tier** | | **50,000** |
-| **Remaining buffer** | | **13,000** |
+| **Remaining buffer** | | **8,000** |
 
 **Before touching any of the following, recalculate reads/day and verify the total stays under 50k:**
 
