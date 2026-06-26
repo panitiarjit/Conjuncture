@@ -20,7 +20,7 @@ export async function GET() {
       .slice(0, 300);
 
     return NextResponse.json(result, {
-      headers: { 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=600' },
+      headers: { 'Cache-Control': 'private, max-age=3600' },
     });
   } catch {
     return NextResponse.json([]);
