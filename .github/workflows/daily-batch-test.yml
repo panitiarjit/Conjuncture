@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
           git add .batch-state.json scripts/test-results/
+          git pull --rebase origin main
           git diff --staged --quiet || git commit -m "chore: bidsight batch test $(date -u +%Y-%m-%d) batch-$(jq .currentBatch .batch-state.json)"
           git push origin main

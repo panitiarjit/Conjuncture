@@ -213,6 +213,65 @@ export async function getContractsForBenchmark(): Promise<BenchmarkContract[]> {
   }
 }
 
+// ── Agency intel contracts (field-masked, paginated) ─────────────────────────
+// Field-masked like benchmark to avoid full-doc payload timeouts in Workers.
+// Budget: 5k reads/day (24h cache). Matches the agency-intel line in CLAUDE.md.
+export type AgencyIntelContract = {
+  id: string;
+  projectId?: string;
+  projectName: string;
+  agency: string;
+  projectType: string;
+  budget: number | null;
+  agreedPrice: number | null;
+  discountFromReference: number | null;
+  fiscalYear: number;
+  winnerName: string | null;
+  winnerBusinessId: string | null;
+  announceDate: string;
+};
+
+const AGENCY_INTEL_FIELDS = [
+  'projectId', 'projectName', 'agency', 'projectType',
+  'budget', 'agreedPrice', 'discountFromReference',
+  'fiscalYear', 'winnerName', 'winnerBusinessId', 'announceDate',
+];
+
+const fetchAgencyIntelContractsFromFirestore = unstable_cache(
+  async (): Promise<AgencyIntelContract[]> => {
+    const { restGetCollectionPage } = await import('./firestore-rest');
+    const all: AgencyIntelContract[] = [];
+    let cursor: string | undefined;
+    do {
+      const { docs, nextPageToken } = await restGetCollectionPage<AgencyIntelContract>(
+        'cgd_contracts',
+        300,
+        cursor,
+        AGENCY_INTEL_FIELDS,
+      );
+      all.push(...docs);
+      cursor = nextPageToken;
+    } while (cursor && all.length < 5_000);
+    return all;
+  },
+  ['agency_intel_contracts'],
+  { revalidate: 86400, tags: ['cgd_contracts'] },
+);
+
+export async function getAgencyIntelContracts(): Promise<AgencyIntelContract[]> {
+  if (!hasFirestoreCredentials()) return [];
+  const cacheKey = 'agency_intel_contracts';
+  const cached = memGet<AgencyIntelContract[]>(cacheKey);
+  if (cached) return cached;
+  try {
+    const contracts = await fetchAgencyIntelContractsFromFirestore();
+    memSet(cacheKey, contracts, 24 * 60 * 60 * 1000);
+    return contracts;
+  } catch {
+    return [];
+  }
+}
+
 // ── SOE tenders (soe_tenders Firestore collection) ───────────────────────────
 
 const fetchSoeTendersFromFirestore = unstable_cache(

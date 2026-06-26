@@ -29,7 +29,6 @@ export default async function IntelligencePage({
     : null;
   const withLosers = contracts.filter((c) => (c.losers?.length ?? 0) > 0).length;
 
-  const exportUrl      = `/api/export-prospects?keyword=${encodeURIComponent(keyword)}`;
   const exportLosersUrl = `/api/export-prospects?keyword=${encodeURIComponent(keyword)}&losers=true`;
 
   return (
@@ -43,7 +42,6 @@ export default async function IntelligencePage({
             totalBudget={totalBudget}
             avgDiscount={avgDiscount}
             withLosers={withLosers}
-            exportUrl={exportUrl}
             exportLosersUrl={exportLosersUrl}
           />
         </main>

@@ -29,12 +29,11 @@ interface Props {
   totalBudget: number;
   avgDiscount: number | null;
   withLosers: number;
-  exportUrl: string;
   exportLosersUrl: string;
 }
 
 export default function IntelligenceView({
-  contracts, keyword, totalBudget, avgDiscount, withLosers, exportUrl, exportLosersUrl,
+  contracts, keyword, totalBudget, avgDiscount, withLosers, exportLosersUrl,
 }: Props) {
   const { t } = useLanguage();
   const [page, setPage] = useState(1);
@@ -84,33 +83,23 @@ export default function IntelligenceView({
               {t('common.search.button')}
             </button>
           </form>
-          <div className="flex gap-2">
+          {withLosers > 0 && (
             <a
-              href={exportUrl}
-              className="flex items-center gap-2 border border-[#E0E0E0] bg-white px-4 py-2 rounded-lg text-sm font-medium text-[#444] hover:bg-[#F7F7F7] transition-colors"
+              href={exportLosersUrl}
+              className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a4f7f] transition-colors"
             >
               <Download size={15} />
-              {t('intel.export.all')}
+              {t('intel.export.losers')} ({withLosers})
             </a>
-            {withLosers > 0 && (
-              <a
-                href={exportLosersUrl}
-                className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a4f7f] transition-colors"
-              >
-                <Download size={15} />
-                {t('intel.export.losers')} ({withLosers})
-              </a>
-            )}
-          </div>
+          )}
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           {[
             { label: t('intel.stats.contracts'),    value: contracts.length.toLocaleString() },
             { label: t('intel.stats.total-budget'), value: fmt(totalBudget) },
             { label: t('intel.stats.avg-discount'), value: avgDiscount !== null ? `${avgDiscount.toFixed(1)}%` : '—' },
-            { label: t('intel.stats.loser-data'),   value: withLosers.toString() },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white border border-[#E0E0E0] rounded-xl p-4">
               <div className="text-xs text-[#717171] mb-1">{label}</div>

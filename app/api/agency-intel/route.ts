@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAwardedContracts } from '@/lib/data-service';
+import { getAgencyIntelContracts } from '@/lib/data-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   const agency = req.nextUrl.searchParams.get('agency')?.trim();
   if (!agency) return NextResponse.json({ error: 'agency param required' }, { status: 400 });
 
-  const all = await getAwardedContracts(undefined, 5_000);
+  const all = await getAgencyIntelContracts();
   const contracts = all.filter((c) =>
     c.agency.toLowerCase().includes(agency.toLowerCase()),
   );
@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => (b.announceDate ?? '').localeCompare(a.announceDate ?? ''))
     .slice(0, 50)
     .map((c) => ({
-      projectId: c.projectId,
+      projectId: c.projectId ?? c.id,
       projectName: c.projectName,
       budget: c.budget,
       agreedPrice: c.agreedPrice,
