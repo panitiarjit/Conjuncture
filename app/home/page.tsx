@@ -13,7 +13,7 @@ import ProcurementFeed from '@/components/ProcurementFeed';
 const QUICK_ACTIONS = [
   {
     icon: TrendingUp,
-    href: '/bidsight',
+    href: '/bidtool',
     titleTh: 'Conjuncture',
     titleEn: 'Conjuncture',
     descTh: 'จำลองราคาประมูลและดูว่าคุณอยู่ที่เปอร์เซ็นไทล์ไหนของตลาด',

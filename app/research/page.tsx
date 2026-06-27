@@ -304,7 +304,7 @@ export default function ResearchPage() {
                 <ArrowRight size={14} />
               </Link>
               <Link
-                href="/bidsight"
+                href="/bidtool"
                 className={`inline-flex items-center gap-2 px-5 py-2.5 border border-[#E0E0E0] text-[#111111] text-sm font-medium rounded-lg hover:border-[#111111] transition-colors ${isTh ? 'lang-th' : ''}`}
               >
                 {isTh ? 'ลองใช้ Conjuncture' : 'Try Conjuncture Simulator'}
