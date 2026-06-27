@@ -40,7 +40,7 @@ Conjuncture is a rehearsal laboratory for contractors: run your bid price agains
 
 ## 🌐 Live Demo
 
-Visit **[conjuncture.work](https://conjuncture.work)** to try the BidSight simulator live.
+Visit **[conjuncture.work](https://conjuncture.work)** to try the BidTool simulator live.
 
 No installation required. Sign in with Google or register with email.
 
@@ -176,7 +176,7 @@ cd bidsight_scraper && python3 run_all.py --days 7
 
 ---
 
-## 🧠 BidSight Model
+## 🧠 BidTool Model
 
 Core logic: `lib/bidsight-core.ts`
 
