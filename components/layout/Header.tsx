@@ -181,9 +181,6 @@ export default function Header({ dark = false }: { dark?: boolean }) {
                     aria-label="User menu"
                   >
                     <div className={`px-4 py-3 border-b ${d ? 'border-[#1A2B48]' : 'border-[#E0E0E0]'}`}>
-                      <p className={`text-xs font-medium uppercase tracking-wider mb-0.5 ${d ? 'text-[#64748B]' : 'text-[#717171]'}`}>
-                        {user.role === 'buyer' ? 'Buyer' : 'Vendor'}
-                      </p>
                       <p className={`text-sm font-semibold truncate ${d ? 'text-[#E2E8F0]' : 'text-[#111111]'}`}>{user.name}</p>
                       {user.company && (
                         <p className={`text-xs truncate mt-0.5 ${d ? 'text-[#64748B]' : 'text-[#717171]'}`}>{user.company}</p>
