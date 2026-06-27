@@ -94,7 +94,7 @@ No installation required. Sign in with Google or register with email.
 
 1. **Data collection** — TypeScript scrapers pull e-GP tenders and awarded contracts daily; Python scrapers cover 7 SOE portals (BMA, MEA, PEA, PWA, EGAT, MRTA, PTT)
 2. **Normalization** — contracts are bucketed by procurement category and budget tier into a `QuantileTable` (p10 / p25 / median / p75 / p90)
-3. **BidSight model** — given your reference price, cost structure, and margin floor, computes your bid's CDF positioning and recommends the optimal discount
+3. **BidTool model** — given your reference price, cost structure, and margin floor, computes your bid's CDF positioning and recommends the optimal discount
 4. **Network Effect loops** — as community bid outcome reports accumulate, three automated loops blend behavioral data into the benchmark, fit win-probability logistic regression, and flag anomalies
 5. **Live signals** — the home feed shows real-time market signals derived from the latest scrape run
 
@@ -109,7 +109,6 @@ No installation required. Sign in with Google or register with email.
 | Node.js | 18+ |
 | Python | 3.11 – 3.12 |
 | Firebase project | Firestore + Auth enabled |
-| Resend account | For transactional email |
 
 ### Option 1 · Source Code (Recommended)
 
