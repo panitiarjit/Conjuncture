@@ -12,7 +12,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License" />
-  <img src="https://img.shields.io/badge/Next.js-15-black" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js" />
   <img src="https://img.shields.io/badge/Cloudflare-Workers-orange" alt="Cloudflare Workers" />
   <img src="https://img.shields.io/badge/Firebase-Firestore-yellow" alt="Firestore" />
   <img src="https://img.shields.io/badge/data-251%2C000%2B%20contracts-green" alt="Contracts" />
@@ -129,15 +129,6 @@ npx ts-node --project tsconfig.scripts.json scripts/sync-method-ids.ts
 cd bidsight_scraper && python3 run_all.py --days 7
 ```
 
-### Option 2 · Docker
-
-```bash
-# Coming soon
-docker compose up
-```
-
----
-
 ## 🗄️ Data Sources
 
 | Source | Firestore collection | Cadence |
@@ -203,24 +194,9 @@ Data sourced from Thailand's e-GP system (กรมบัญชีกลาง) 
 
 ---
 
-## 📊 Project Status
-
-Firestore budget: **~37,000 reads/day** against a **50,000/day free tier** limit.
-
-| Cache | TTL | Reads/day |
-|-------|-----|-----------|
-| `tenders` | 6h | ~8,000 |
-| `soe_tenders` | 6h | ~4,000 |
-| `benchmark` | 24h | ~10,000 |
-| `agency-intel` | 24h | ~5,000 |
-| Batch test cron | daily | ~10,000 |
-| **Total** | | **~37,000** |
-
----
-
 ## 📄 License
 
-Copyright © 2024 Conjuncture
+Copyright © 2026 Conjuncture
 
 Licensed under the **GNU Affero General Public License v3.0** — see [LICENSE](LICENSE) for details.
 
