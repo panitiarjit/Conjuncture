@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="public/logo.png" alt="Conjuncture" width="120" />
-</p>
-
 <h1 align="center">Conjuncture</h1>
 
 <p align="center"><strong>Thai Government Procurement Intelligence · Bid Smarter, Win More</strong></p>
