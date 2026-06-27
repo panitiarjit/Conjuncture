@@ -48,9 +48,45 @@ No installation required. Sign in with Google or register with email.
 
 ## 📸 Screenshots
 
-> BidSight Simulator — real-time win curve with recommended bid, positioning percentile, and expected value point.
+**Landing page** — market context, key statistics, and call to action.
 
-> Market Intelligence — agency discount profiles, HHI concentration index, competition density by province.
+![Landing page](docs/screenshots/landing.png)
+
+---
+
+**Dashboard** — live procurement signals, data network loop progress, and platform-wide stats.
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+---
+
+**Bid Tool** — real-time win-curve simulator with recommended bid, market positioning percentile, and max expected value.
+
+![Bid Tool](docs/screenshots/bid-tool.png)
+
+---
+
+**Market Intelligence** — full-text search across 251,000+ awarded contracts with winner, discount, and loser data.
+
+![Market Intelligence](docs/screenshots/market-intel.png)
+
+---
+
+**Agency Intelligence** — top agencies by contract volume; click any to load win rates, top competitors, and spend patterns.
+
+![Agency Intelligence](docs/screenshots/agency-intel.png)
+
+---
+
+**Procurement Plans** — upcoming e-GP procurement plans with 30–90 day lead time before tender opens.
+
+![Procurement Plans](docs/screenshots/procurement-plans.png)
+
+---
+
+**Community Report** — 3-step flow for contractors to submit suspicious patterns, data corrections, or bid outcome results.
+
+![Community Report](docs/screenshots/report.png)
 
 ---
 
