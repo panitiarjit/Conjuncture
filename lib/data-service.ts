@@ -1,13 +1,11 @@
 import 'server-only';
-import { unstable_cache } from 'next/cache';
 import fs from 'fs';
 import path from 'path';
 import { TENDERS, PROJECTS, VENDORS, CATEGORIES } from './mock-data';
 import type { Tender, Project, Vendor, Category, AwardedContract, SoeTender } from './types';
 
 // Module-level in-memory cache — persists across requests on the same warm Worker instance.
-// Without R2/KV configured, unstable_cache has no persistent backend in Cloudflare Workers,
-// so this prevents Firestore re-reads on every request from the same warm Worker.
+// unstable_cache is NOT used: it calls new Function() internally which is blocked in Workers.
 const _memCache = new Map<string, { data: unknown; expiresAt: number }>();
 function memGet<T>(key: string): T | null {
   const e = _memCache.get(key);
@@ -45,20 +43,12 @@ function loadFromDisk(): Tender[] | null {
   }
 }
 
-// Next.js data cache — shared across all serverless invocations, revalidates every hour.
-// Call revalidateTag('tenders') after a scrape to bust the cache immediately.
-const fetchTendersFromFirestore = unstable_cache(
-  async (): Promise<Tender[]> => {
-    // firebase-admin uses eval() which is blocked in Cloudflare Workers.
-    // Use the REST client (Web Crypto + fetch) instead — works everywhere.
-    const { restGetCollection } = await import('./firestore-rest');
-    const tenders = await restGetCollection<Tender>('tenders', 2000);
-    saveToDisk(tenders);
-    return tenders;
-  },
-  ['tenders'],
-  { revalidate: 21600, tags: ['tenders'] },
-);
+async function fetchTendersFromFirestore(): Promise<Tender[]> {
+  const { restGetCollection } = await import('./firestore-rest');
+  const tenders = await restGetCollection<Tender>('tenders', 2000);
+  saveToDisk(tenders);
+  return tenders;
+}
 
 export async function getTenders(): Promise<Tender[]> {
   if (!hasFirestoreCredentials()) return TENDERS;
@@ -140,27 +130,22 @@ const INTEL_FIELDS = [
   'discountFromReference', 'winnerName', 'winnerBusinessId', 'fiscalYear', 'losers',
 ];
 
-const fetchAwardedContractsFromFirestore = unstable_cache(
-  async (): Promise<AwardedContract[]> => {
-    const { restGetCollectionPage } = await import('./firestore-rest');
-    const all: AwardedContract[] = [];
-    let cursor: string | undefined;
-    do {
-      const { docs, nextPageToken } = await restGetCollectionPage<AwardedContract>(
-        'cgd_contracts',
-        300,
-        cursor,
-        INTEL_FIELDS,
-      );
-      all.push(...docs);
-      cursor = nextPageToken;
-    } while (cursor && all.length < 5_000);
-    return all;
-  },
-  ['intel_contracts'],
-  // 24h revalidate: cgd_contracts only changes once/day (fetch-historical at 15:00).
-  { revalidate: 86400, tags: ['cgd_contracts'] },
-);
+async function fetchAwardedContractsFromFirestore(): Promise<AwardedContract[]> {
+  const { restGetCollectionPage } = await import('./firestore-rest');
+  const all: AwardedContract[] = [];
+  let cursor: string | undefined;
+  do {
+    const { docs, nextPageToken } = await restGetCollectionPage<AwardedContract>(
+      'cgd_contracts',
+      300,
+      cursor,
+      INTEL_FIELDS,
+    );
+    all.push(...docs);
+    cursor = nextPageToken;
+  } while (cursor && all.length < 5_000);
+  return all;
+}
 
 export async function getAwardedContracts(keyword?: string): Promise<AwardedContract[]> {
   if (!hasFirestoreCredentials()) return [];
@@ -177,7 +162,8 @@ export async function getAwardedContracts(keyword?: string): Promise<AwardedCont
     if (!keyword) return contracts;
     const kw = keyword.toLowerCase();
     return contracts.filter((c) => c.projectName?.toLowerCase().includes(kw));
-  } catch {
+  } catch (err) {
+    console.error('[data-service] getAwardedContracts failed:', (err as Error).message);
     return [];
   }
 }
@@ -198,29 +184,25 @@ const BENCHMARK_FIELDS = [
   'winnerBusinessId', 'bidders', 'fiscalYear', 'referencePrice', 'announceDate',
 ];
 
-const fetchBenchmarkContractsFromFirestore = unstable_cache(
-  async (): Promise<BenchmarkContract[]> => {
-    const { restGetCollectionPage } = await import('./firestore-rest');
-    const all: BenchmarkContract[] = [];
-    let cursor: string | undefined;
-    // Cap at 10k docs: field-masked fetch is cheap per-doc (~150 bytes) but Firestore
-    // still charges one read per document. 10k × 1 refresh/day = 10k reads/day.
-    // Test scripts mirror this cap so validation reflects production behaviour.
-    do {
-      const { docs, nextPageToken } = await restGetCollectionPage<BenchmarkContract>(
-        'cgd_contracts',
-        300,
-        cursor,
-        BENCHMARK_FIELDS,
-      );
-      all.push(...docs);
-      cursor = nextPageToken;
-    } while (cursor && all.length < 10_000);
-    return all;
-  },
-  ['benchmark_contracts'],
-  { revalidate: 86400, tags: ['cgd_contracts'] },
-);
+async function fetchBenchmarkContractsFromFirestore(): Promise<BenchmarkContract[]> {
+  const { restGetCollectionPage } = await import('./firestore-rest');
+  const all: BenchmarkContract[] = [];
+  let cursor: string | undefined;
+  // Cap at 10k docs: field-masked fetch is cheap per-doc (~150 bytes) but Firestore
+  // still charges one read per document. 10k × 1 refresh/day = 10k reads/day.
+  // Test scripts mirror this cap so validation reflects production behaviour.
+  do {
+    const { docs, nextPageToken } = await restGetCollectionPage<BenchmarkContract>(
+      'cgd_contracts',
+      300,
+      cursor,
+      BENCHMARK_FIELDS,
+    );
+    all.push(...docs);
+    cursor = nextPageToken;
+  } while (cursor && all.length < 10_000);
+  return all;
+}
 
 export async function getContractsForBenchmark(): Promise<BenchmarkContract[]> {
   if (!hasFirestoreCredentials()) return [];
@@ -231,7 +213,8 @@ export async function getContractsForBenchmark(): Promise<BenchmarkContract[]> {
     const contracts = await fetchBenchmarkContractsFromFirestore();
     memSet(cacheKey, contracts, 24 * 60 * 60 * 1000);
     return contracts;
-  } catch {
+  } catch (err) {
+    console.error('[data-service] getContractsForBenchmark failed:', (err as Error).message);
     return [];
   }
 }
@@ -260,26 +243,22 @@ const AGENCY_INTEL_FIELDS = [
   'fiscalYear', 'winnerName', 'winnerBusinessId', 'announceDate',
 ];
 
-const fetchAgencyIntelContractsFromFirestore = unstable_cache(
-  async (): Promise<AgencyIntelContract[]> => {
-    const { restGetCollectionPage } = await import('./firestore-rest');
-    const all: AgencyIntelContract[] = [];
-    let cursor: string | undefined;
-    do {
-      const { docs, nextPageToken } = await restGetCollectionPage<AgencyIntelContract>(
-        'cgd_contracts',
-        300,
-        cursor,
-        AGENCY_INTEL_FIELDS,
-      );
-      all.push(...docs);
-      cursor = nextPageToken;
-    } while (cursor && all.length < 5_000);
-    return all;
-  },
-  ['agency_intel_contracts'],
-  { revalidate: 86400, tags: ['cgd_contracts'] },
-);
+async function fetchAgencyIntelContractsFromFirestore(): Promise<AgencyIntelContract[]> {
+  const { restGetCollectionPage } = await import('./firestore-rest');
+  const all: AgencyIntelContract[] = [];
+  let cursor: string | undefined;
+  do {
+    const { docs, nextPageToken } = await restGetCollectionPage<AgencyIntelContract>(
+      'cgd_contracts',
+      300,
+      cursor,
+      AGENCY_INTEL_FIELDS,
+    );
+    all.push(...docs);
+    cursor = nextPageToken;
+  } while (cursor && all.length < 5_000);
+  return all;
+}
 
 export async function getAgencyIntelContracts(): Promise<AgencyIntelContract[]> {
   if (!hasFirestoreCredentials()) return [];
@@ -290,21 +269,18 @@ export async function getAgencyIntelContracts(): Promise<AgencyIntelContract[]> 
     const contracts = await fetchAgencyIntelContractsFromFirestore();
     memSet(cacheKey, contracts, 24 * 60 * 60 * 1000);
     return contracts;
-  } catch {
+  } catch (err) {
+    console.error('[data-service] getAgencyIntelContracts failed:', (err as Error).message);
     return [];
   }
 }
 
 // ── SOE tenders (soe_tenders Firestore collection) ───────────────────────────
 
-const fetchSoeTendersFromFirestore = unstable_cache(
-  async (): Promise<SoeTender[]> => {
-    const { restGetCollection } = await import('./firestore-rest');
-    return restGetCollection<SoeTender>('soe_tenders', 1000);
-  },
-  ['soe_tenders'],
-  { revalidate: 21600, tags: ['soe_tenders'] },
-);
+async function fetchSoeTendersFromFirestore(): Promise<SoeTender[]> {
+  const { restGetCollection } = await import('./firestore-rest');
+  return restGetCollection<SoeTender>('soe_tenders', 1000);
+}
 
 export async function getSoeTenders(): Promise<SoeTender[]> {
   if (!hasFirestoreCredentials()) return [];

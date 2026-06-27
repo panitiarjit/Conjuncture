@@ -198,20 +198,26 @@ export default function AgencyPage() {
                     <Trophy size={16} className="text-amber-500" />
                     <h3 className="text-sm font-semibold text-[#111111]">{t('agency.winners.title')}</h3>
                   </div>
-                  <div className="divide-y divide-[#E0E0E0]">
-                    {stats.topWinners.map((w, i) => (
-                      <div key={w.name} className="px-5 py-3 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <span className="text-xs font-bold text-[#717171] w-5 flex-shrink-0">#{i + 1}</span>
-                          <span className="text-sm text-[#111111] truncate">{w.name}</span>
+                  {stats.topWinners.length === 0 ? (
+                    <div className="px-5 py-8 text-sm text-[#B0B0B0] text-center">
+                      Winner names not recorded in CGD data for this agency.
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-[#E0E0E0]">
+                      {stats.topWinners.map((w, i) => (
+                        <div key={w.name} className="px-5 py-3 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="text-xs font-bold text-[#717171] w-5 flex-shrink-0">#{i + 1}</span>
+                            <span className="text-sm text-[#111111] truncate">{w.name}</span>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-sm font-medium text-[#111111]">{w.count} {t('common.wins.label')}</div>
+                            <div className="text-xs text-[#717171]">{fmt(w.totalValue)}</div>
+                          </div>
                         </div>
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-sm font-medium text-[#111111]">{w.count} {t('common.wins.label')}</div>
-                          <div className="text-xs text-[#717171]">{fmt(w.totalValue)}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Top categories + fiscal year */}

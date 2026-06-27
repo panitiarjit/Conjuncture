@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidateTag } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
 // Scraping runs in GitHub Actions (Playwright requires Node.js, not Cloudflare Workers).
-// POST with Authorization: Bearer <SCRAPE_SECRET> to bust the tenders cache after a scrape.
+// POST with Authorization: Bearer <SCRAPE_SECRET> to signal a completed scrape.
+// Cache is in-memory per Worker instance (6h TTL) — instances refresh naturally on next request.
 export async function GET() {
   return NextResponse.json(
-    { error: 'Scraping is handled by GitHub Actions — call POST to revalidate cache after a scrape.' },
+    { error: 'Scraping is handled by GitHub Actions.' },
     { status: 405 },
   );
 }
@@ -18,6 +18,5 @@ export async function POST(req: NextRequest) {
   if (!process.env.SCRAPE_SECRET || auth !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  revalidateTag('tenders', 'max');
-  return NextResponse.json({ ok: true, revalidated: true });
+  return NextResponse.json({ ok: true });
 }

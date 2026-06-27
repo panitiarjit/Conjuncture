@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, browserLocalPersistence, setPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -19,6 +19,9 @@ const app =
     ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0])
     : null;
 
-export const auth = (app ? getAuth(app) : null) as ReturnType<typeof getAuth>;
+const _auth = app ? getAuth(app) : null;
+// Explicitly set localStorage persistence — default but Safari ITP can reset it
+if (_auth) setPersistence(_auth, browserLocalPersistence).catch(() => {});
+export const auth = _auth as ReturnType<typeof getAuth>;
 export const db = (app ? getFirestore(app) : null) as ReturnType<typeof getFirestore>;
 export default app;

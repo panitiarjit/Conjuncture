@@ -10,7 +10,7 @@ export function useProtectedRoute() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace('/admin');
+      router.replace('/login');
     }
     // router is a stable singleton in Next.js App Router — omitting it
     // from deps prevents the infinite re-run caused by Turbopack returning

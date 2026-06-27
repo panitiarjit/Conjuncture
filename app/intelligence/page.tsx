@@ -27,10 +27,6 @@ export default async function IntelligencePage({
   const avgDiscount = withDiscountContracts.length > 0
     ? withDiscountContracts.reduce((s, c) => s + c.discountFromReference!, 0) / withDiscountContracts.length
     : null;
-  const withLosers = contracts.filter((c) => (c.losers?.length ?? 0) > 0).length;
-
-  const exportLosersUrl = `/api/export-prospects?keyword=${encodeURIComponent(keyword)}&losers=true`;
-
   return (
     <ProtectedShell>
       <div className="min-h-screen flex flex-col">
@@ -41,8 +37,6 @@ export default async function IntelligencePage({
             keyword={keyword}
             totalBudget={totalBudget}
             avgDiscount={avgDiscount}
-            withLosers={withLosers}
-            exportLosersUrl={exportLosersUrl}
           />
         </main>
         <Footer />

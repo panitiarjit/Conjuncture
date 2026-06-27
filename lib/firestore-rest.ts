@@ -81,9 +81,12 @@ async function getAccessToken(): Promise<string> {
     body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
   });
 
-  const { access_token } = await res.json() as { access_token: string };
-  cachedToken = { value: access_token, expiresAt: (now + 3500) * 1000 };
-  return access_token;
+  const body = await res.json() as { access_token?: string; error?: string; error_description?: string };
+  if (!body.access_token) {
+    throw new Error(`Firebase auth failed: ${body.error ?? 'unknown'} — ${body.error_description ?? ''}`);
+  }
+  cachedToken = { value: body.access_token, expiresAt: (now + 3500) * 1000 };
+  return body.access_token;
 }
 
 export async function restGetCollection<T>(collection: string, maxDocs?: number): Promise<T[]> {

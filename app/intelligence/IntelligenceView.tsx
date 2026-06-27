@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Download, Trophy, Users, TrendingDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trophy, Users, TrendingDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '@/lib/language-context';
 import type { AwardedContract } from '@/lib/types';
 
@@ -28,12 +28,10 @@ interface Props {
   keyword: string;
   totalBudget: number;
   avgDiscount: number | null;
-  withLosers: number;
-  exportLosersUrl: string;
 }
 
 export default function IntelligenceView({
-  contracts, keyword, totalBudget, avgDiscount, withLosers, exportLosersUrl,
+  contracts, keyword, totalBudget, avgDiscount,
 }: Props) {
   const { t } = useLanguage();
   const [page, setPage] = useState(1);
@@ -67,8 +65,8 @@ export default function IntelligenceView({
       </div>
 
       <div className="container-app py-8">
-        {/* Search + export bar */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        {/* Search bar */}
+        <div className="flex gap-2 mb-6">
           <form method="GET" className="flex gap-2 flex-1">
             <input
               name="q"
@@ -83,15 +81,6 @@ export default function IntelligenceView({
               {t('common.search.button')}
             </button>
           </form>
-          {withLosers > 0 && (
-            <a
-              href={exportLosersUrl}
-              className="flex items-center gap-2 bg-[#1E3A5F] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2a4f7f] transition-colors"
-            >
-              <Download size={15} />
-              {t('intel.export.losers')} ({withLosers})
-            </a>
-          )}
         </div>
 
         {/* Stats */}
