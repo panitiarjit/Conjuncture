@@ -10,7 +10,7 @@ const LINK_GROUPS = [
     headingEn: 'Data',
     headingTh: 'ข้อมูล',
     links: [
-      { labelEn: 'Bid Simulator', labelTh: 'จำลองราคาประมูล', href: '/bidsight' },
+      { labelEn: 'Bid Simulator', labelTh: 'จำลองราคาประมูล', href: '/bidtool' },
       { labelEn: 'Market Intelligence', labelTh: 'ข้อมูลตลาด', href: '/intelligence' },
       { labelEn: 'Agency Intel', labelTh: 'ข้อมูลหน่วยงาน', href: '/agency' },
       { labelEn: 'Procurement Plans', labelTh: 'แผนจัดซื้อ', href: '/plans' },

@@ -109,7 +109,7 @@ export default function Header({ dark = false }: { dark?: boolean }) {
               )}
             </div>
 
-            <Link href="/bidsight" className={linkCls}>{t('nav.bid-tool')}</Link>
+            <Link href="/bidtool" className={linkCls}>{t('nav.bid-tool')}</Link>
             <Link href="/report" className={linkCls}>{lang === 'th' ? REPORT_NAV.labelTh : REPORT_NAV.labelEn}</Link>
           </nav>
 
@@ -245,7 +245,7 @@ export default function Header({ dark = false }: { dark?: boolean }) {
               { key: 'nav.market-intel',  href: '/intelligence' },
               { key: 'nav.agency-intel',  href: '/agency' },
               { key: 'nav.plans',         href: '/plans' },
-              { key: 'nav.bid-tool',      href: '/bidsight' },
+              { key: 'nav.bid-tool',      href: '/bidtool' },
             ] as const).map((link) => ({...link, label: t(link.key)})).map((link) => (
               <Link
                 key={link.href}
