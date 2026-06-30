@@ -5,7 +5,6 @@ import common from './common';
 import hero from './hero';
 import how from './how';
 import val from './val';
-import tenders from './tenders';
 import projects from './projects';
 import trust from './trust';
 import post from './post';
@@ -15,7 +14,6 @@ import categories from './categories';
 import footer from './footer';
 import procurement from './procurement';
 import waitlist from './waitlist';
-import tenderDetail from './tenderDetail';
 
 type NS = { en: Record<string, string>; th: Record<string, string> };
 
@@ -34,7 +32,6 @@ export default merge(
   hero,
   how,
   val,
-  tenders,
   projects,
   trust,
   post,
@@ -44,5 +41,4 @@ export default merge(
   footer,
   procurement,
   waitlist,
-  tenderDetail,
 );

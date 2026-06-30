@@ -5,7 +5,6 @@ import common from './translations/common';
 import hero from './translations/hero';
 import how from './translations/how';
 import val from './translations/val';
-import tenders from './translations/tenders';
 import projects from './translations/projects';
 import trust from './translations/trust';
 import post from './translations/post';
@@ -15,7 +14,6 @@ import categories from './translations/categories';
 import footer from './translations/footer';
 import procurement from './translations/procurement';
 import waitlist from './translations/waitlist';
-import tenderDetail from './translations/tenderDetail';
 import type { ProjectCategory } from './types';
 
 export type TranslationKey =
@@ -26,7 +24,6 @@ export type TranslationKey =
   | keyof typeof hero.en
   | keyof typeof how.en
   | keyof typeof val.en
-  | keyof typeof tenders.en
   | keyof typeof projects.en
   | keyof typeof trust.en
   | keyof typeof post.en
@@ -35,8 +32,7 @@ export type TranslationKey =
   | keyof typeof categories.en
   | keyof typeof footer.en
   | keyof typeof procurement.en
-  | keyof typeof waitlist.en
-  | keyof typeof tenderDetail.en;
+  | keyof typeof waitlist.en;
 
 export const CATEGORY_KEYS: Record<ProjectCategory, TranslationKey> = {
   construction: 'cat.construction',

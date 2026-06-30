@@ -1,8 +1,5 @@
 import 'server-only';
-import fs from 'fs';
-import path from 'path';
-import { TENDERS, CATEGORIES } from './mock-data';
-import type { Tender, Category, AwardedContract, SoeTender } from './types';
+import type { AwardedContract, SoeTender } from './types';
 
 // Module-level in-memory cache — persists across requests on the same warm Worker instance.
 // unstable_cache is NOT used: it calls new Function() internally which is blocked in Workers.
@@ -21,62 +18,6 @@ function hasFirestoreCredentials(): boolean {
     process.env.FIREBASE_ADMIN_CLIENT_EMAIL &&
     process.env.FIREBASE_ADMIN_PRIVATE_KEY
   );
-}
-
-// Disk cache — last-resort fallback when Firestore is down and Next.js cache has expired
-const DISK_CACHE_PATH = path.join(process.cwd(), '.tender-cache.json');
-
-function saveToDisk(tenders: Tender[]): void {
-  try {
-    fs.writeFileSync(DISK_CACHE_PATH, JSON.stringify(tenders));
-  } catch {
-    // non-critical
-  }
-}
-
-function loadFromDisk(): Tender[] | null {
-  try {
-    const raw = fs.readFileSync(DISK_CACHE_PATH, 'utf-8');
-    return JSON.parse(raw) as Tender[];
-  } catch {
-    return null;
-  }
-}
-
-async function fetchTendersFromFirestore(): Promise<Tender[]> {
-  const { restGetCollection } = await import('./firestore-rest');
-  const tenders = await restGetCollection<Tender>('tenders', 2000);
-  saveToDisk(tenders);
-  return tenders;
-}
-
-export async function getTenders(): Promise<Tender[]> {
-  if (!hasFirestoreCredentials()) return TENDERS;
-  const cached = memGet<Tender[]>('tenders');
-  if (cached) return cached;
-  try {
-    const tenders = await fetchTendersFromFirestore();
-    memSet('tenders', tenders, 6 * 60 * 60 * 1000); // 6h
-    return tenders;
-  } catch (err) {
-    console.warn('[data-service] Firestore unavailable, serving disk/mock fallback:', (err as Error).message);
-    return loadFromDisk() ?? TENDERS;
-  }
-}
-
-export async function getTenderById(id: string): Promise<Tender | undefined> {
-  const tenders = await getTenders();
-  return tenders.find((t) => t.id === id);
-}
-
-export async function getCategories(): Promise<Category[]> {
-  // Reuses getTenders() cache — no separate Firestore read
-  const tenders = await getTenders();
-  const counts: Partial<Record<string, number>> = {};
-  for (const t of tenders) {
-    if (t.status !== 'closed') counts[t.category] = (counts[t.category] ?? 0) + 1;
-  }
-  return CATEGORIES.map((c) => ({ ...c, count: counts[c.id] ?? 0 }));
 }
 
 // ── CGD awarded contracts ─────────────────────────────────────────────────────
@@ -255,26 +196,6 @@ export async function getAgencyIntelContracts(): Promise<AgencyIntelContract[]> 
     return contracts;
   } catch (err) {
     console.error('[data-service] getAgencyIntelContracts failed:', (err as Error).message);
-    return [];
-  }
-}
-
-// ── SOE tenders (soe_tenders Firestore collection) ───────────────────────────
-
-async function fetchSoeTendersFromFirestore(): Promise<SoeTender[]> {
-  const { restGetCollection } = await import('./firestore-rest');
-  return restGetCollection<SoeTender>('soe_tenders', 1000);
-}
-
-export async function getSoeTenders(): Promise<SoeTender[]> {
-  if (!hasFirestoreCredentials()) return [];
-  const cached = memGet<SoeTender[]>('soe_tenders');
-  if (cached) return cached;
-  try {
-    const tenders = await fetchSoeTendersFromFirestore();
-    memSet('soe_tenders', tenders, 6 * 60 * 60 * 1000);
-    return tenders;
-  } catch {
     return [];
   }
 }
