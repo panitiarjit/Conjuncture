@@ -23,27 +23,28 @@ const SITE_URL = 'https://conjuncture.work';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Conjuncture — Procurement Data & Bidding Insights",
+    default: "Conjuncture — Thai Government Procurement Intelligence",
     template: '%s | Conjuncture',
   },
   description:
-    'Conjuncture gives Thai contractors procurement intelligence from 153,685 government projects — benchmark your bids, track competitors, and win more with real e-GP data.',
+    'Conjuncture (conjuncture.work) helps Thai contractors win government tenders — price-to-win benchmarking, competitor tracking, and bid analytics from 153,685 real e-GP contracts.',
   keywords: [
     'Conjuncture',
+    'conjuncture.work',
     'ConjunctureTH',
-    'Conjuncture.work',
-    'conjunctureth',
+    'Conjuncture Thailand',
     'conjuncturework',
-    'Thailand procurement',
-    'Thai government tenders',
-    'B2B marketplace Thailand',
-    'vendor sourcing Thailand',
-    'sealed bid procurement',
-    'escrow payments Thailand',
-    'Thai suppliers',
-    'ประมูล',
-    'จัดซื้อจัดจ้าง',
-    'ผู้รับเหมา',
+    'BidTool',
+    'Thai government procurement',
+    'Thailand e-GP tenders',
+    'Thai contractor bid analytics',
+    'price to win Thailand',
+    'government tender benchmark Thailand',
+    'จัดซื้อจัดจ้างภาครัฐ',
+    'ประมูลงานราชการ',
+    'ราคากลาง',
+    'ผู้รับเหมาภาครัฐ',
+    'e-GP ประเทศไทย',
   ],
   alternates: {
     canonical: '/',
@@ -60,31 +61,44 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE_URL,
     siteName: 'Conjuncture',
-    title: "Conjuncture — Procurement Data & Bidding Insights",
+    title: "Conjuncture — Thai Government Procurement Intelligence",
     description:
-      'Procurement intelligence from 153,685 Thai government projects — benchmark bids, track competitors, and win more with real e-GP data.',
+      'Price-to-win benchmarking and bid analytics for Thai contractors — powered by 153,685 real e-GP awarded contracts.',
     locale: 'th_TH',
     alternateLocale: ['en_US'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Conjuncture — Procurement Data & Bidding Insights",
+    title: "Conjuncture — Thai Government Procurement Intelligence",
     description:
-      'Procurement intelligence from 153,685 Thai government projects — benchmark bids, track competitors, and win more with real e-GP data.',
+      'Price-to-win benchmarking and bid analytics for Thai contractors — powered by 153,685 real e-GP awarded contracts.',
   },
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'Organization',
+  '@type': 'SoftwareApplication',
   name: 'Conjuncture',
+  alternateName: ['conjuncture.work', 'ConjunctureTH'],
   url: SITE_URL,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
   description:
-    'Procurement intelligence from 153,685 Thai government projects — benchmark bids, track competitors, and win more with real e-GP data.',
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'Bangkok',
-    addressCountry: 'TH',
+    'Thai government procurement analytics platform — price-to-win benchmarking and bid analytics from 153,685 real e-GP awarded contracts.',
+  offers: {
+    '@type': 'Offer',
+    priceCurrency: 'THB',
+    availability: 'https://schema.org/InStock',
+  },
+  provider: {
+    '@type': 'Organization',
+    name: 'Conjuncture',
+    url: SITE_URL,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Bangkok',
+      addressCountry: 'TH',
+    },
   },
 };
 

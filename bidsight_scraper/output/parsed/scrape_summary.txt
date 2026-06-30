@@ -1,17 +1,17 @@
-Scrape run: 2026-06-25T07:31:00.115760+00:00
+Scrape run: 2026-06-30T08:32:02.279194+00:00
 
-BMA: 11 records  [render=requests]
+BMA: 2 records  [render=requests]
 MEA: 22 records  [render=requests]
 PEA: 20 records  [render=requests]
-PWA: 22 records  [render=requests]
-EGAT: 40 records  [render=requests]
-MRTA: 3 records  [render=requests]
-PTT: 80 records  [render=requests]
+PWA: 19 records  [render=requests]
+EGAT: ERROR — ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+MRTA: 0 records  [render=requests]
+PTT: 46 records  [render=requests]
 
-Total raw records:         198
-Within-source dupes:       43 (dropped)
-Unique records:            155
-  National-format IDs:     82  (YYMM+seq — not guaranteed in Firestore)
+Total raw records:         109
+Within-source dupes:       25 (dropped)
+Unique records:            84
+  National-format IDs:     34  (YYMM+seq — not guaranteed in Firestore)
   Cross-source dupes:      0  (same tender_id from 2+ scraped sites)
   Overlap details:         /Users/mgsunroof/Documents/Conjuncture/bidsight_scraper/output/parsed/overlap_report.csv
 NOTE: BMA records verified 0/19 in Firestore tenders — BMA data is genuinely new.

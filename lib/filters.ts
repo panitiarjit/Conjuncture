@@ -1,5 +1,5 @@
-import type { Tender, Project } from './types';
-import { getDisplayStatus, getDaysRemaining } from './deadline';
+import type { Tender } from './types';
+import { getDisplayStatus } from './deadline';
 import { resolveProcurementType, resolveMethod } from './procurement';
 
 const STATUS_SORT_ORDER: Record<string, number> = { open: 0, unknown: 1, closed: 2 };
@@ -63,54 +63,3 @@ export function filterAndSortTenders(tenders: Tender[], filters: TenderFilters):
   });
 }
 
-export interface ProjectFilters {
-  search: string;
-  selectedCategories: string[];
-  location: string;
-  statusFilter: 'all' | 'open' | 'in_progress';
-  budgetMin: string;
-  budgetMax: string;
-  sort: 'deadline' | 'budget' | 'recent';
-}
-
-export function filterAndSortProjects(projects: Project[], filters: ProjectFilters): Project[] {
-  const {
-    search,
-    selectedCategories,
-    location,
-    statusFilter,
-    budgetMin,
-    budgetMax,
-    sort,
-  } = filters;
-
-  const result = projects.filter((p) => {
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      if (
-        !p.title.toLowerCase().includes(q) &&
-        !p.description.toLowerCase().includes(q) &&
-        !p.buyerName.toLowerCase().includes(q)
-      )
-        return false;
-    }
-    if (selectedCategories.length > 0 && !selectedCategories.includes(p.category)) return false;
-    if (location !== '' && p.location !== location) return false;
-    if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-    if (budgetMin !== '') {
-      const min = Number(budgetMin);
-      if (!isNaN(min) && p.budgetMax < min) return false;
-    }
-    if (budgetMax !== '') {
-      const max = Number(budgetMax);
-      if (!isNaN(max) && p.budgetMin > max) return false;
-    }
-    return true;
-  });
-
-  return [...result].sort((a, b) => {
-    if (sort === 'deadline') return getDaysRemaining(a.deadline) - getDaysRemaining(b.deadline);
-    if (sort === 'budget') return b.budgetMax - a.budgetMax;
-    return new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime();
-  });
-}

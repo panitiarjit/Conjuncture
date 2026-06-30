@@ -1,9 +1,17 @@
-// Domain types for the Conjuncture procurement marketplace.
-// Data fixtures live in lib/mock-data.ts; real API shapes should match these interfaces.
+// Domain types for the Conjuncture procurement analytics platform.
 
 export type TenderStatus = 'open' | 'closing_soon' | 'closed' | 'unknown';
-export type ProjectStatus = 'open' | 'in_progress' | 'completed';
-export type VendorVerified = 'new' | 'verified' | 'verified_pro';
+
+export type ProcurementType =
+  | 'purchase'
+  | 'construction'
+  | 'services'
+  | 'rent'
+  | 'consulting'
+  | 'design'
+  | 'supervision'
+  | 'design_supervision';
+
 export type ProjectCategory =
   | 'renovation'
   | 'technology'
@@ -17,16 +25,6 @@ export type ProjectCategory =
   | 'food'
   | 'security'
   | 'other';
-
-export type ProcurementType =
-  | 'purchase'
-  | 'construction'
-  | 'services'
-  | 'rent'
-  | 'consulting'
-  | 'design'
-  | 'supervision'
-  | 'design_supervision';
 
 export interface Tender {
   id: string;
@@ -48,39 +46,11 @@ export interface Tender {
   announceType?: string;
 }
 
-export interface Project {
-  id: string;
-  title: string;
-  category: ProjectCategory;
-  location: string;
-  budgetMin: number;
-  budgetMax: number;
-  bidsReceived: number;
-  deadline: string;
-  description: string;
-  buyerName: string;
-  buyerVerified: boolean;
-  postedAt: string;
-  // Server hint. computeProjectStatus(deadline, status) is the display source of truth.
-  status: ProjectStatus;
-}
-
-export interface VendorReview {
-  id: string;
-  author: string;
-  rating: number;
-  quality: number;
-  communication: number;
-  timeliness: number;
-  priceAccuracy: number;
-  comment: string;
-  date: string;
-}
-
-export interface PortfolioItem {
-  id: string;
-  title: string;
-  imageUrl: null;
+export interface Category {
+  id: ProjectCategory;
+  name: string;
+  icon: string;
+  count: number;
 }
 
 // ── State-owned enterprise tenders (soe_tenders Firestore collection) ────────
@@ -103,28 +73,6 @@ export interface SoeTender {
   status?: string;           // "open" | "awarded"
   scraped_at?: string;
   imported_at?: string;
-}
-
-export interface Vendor {
-  id: string;
-  companyName: string;
-  logo: null;
-  verified: VendorVerified;
-  completedJobs: number;
-  rating: number;
-  responseRate: number;
-  memberSince: string;
-  reviews: VendorReview[];
-  portfolio: PortfolioItem[];
-  categories: string[];
-  location: string;
-}
-
-export interface Category {
-  id: ProjectCategory;
-  name: string;
-  icon: string;
-  count: number;
 }
 
 // ── Data network effect types ─────────────────────────────────────────────────

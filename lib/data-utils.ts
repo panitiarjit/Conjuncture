@@ -1,4 +1,4 @@
-import type { Tender, Project } from './types';
+import type { Tender } from './types';
 
 export const ALL_THAI_PROVINCES: readonly string[] = [
   'กระบี่',
@@ -166,8 +166,4 @@ export function getProvinceName(thaiName: string, lang: string): string {
 
 export function getUniqueRegions(tenders: Tender[]): string[] {
   return [...new Set(tenders.map((t) => t.region))].sort();
-}
-
-export function getUniqueLocations(projects: Project[]): string[] {
-  return [...new Set(projects.map((p) => p.location))].sort();
 }

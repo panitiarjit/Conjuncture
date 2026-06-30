@@ -2,7 +2,6 @@
 // Import from here instead of writing raw hex strings in components.
 
 import type { StatusValue } from './status';
-import type { VendorVerified } from './types';
 import type { ProcurementMethod } from './procurement';
 
 // ─── Status pills and dots ─────────────────────────────────────────────────────
@@ -24,14 +23,6 @@ export const METHOD_COLORS: Record<ProcurementMethod, string> = {
   specific_simple: 'bg-[#D8F3DC] text-[#2D6A4F] border-[#B7E4C7]',
   specific_compare: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
   e_bidding: 'bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]',
-};
-
-// ─── Verified vendor badges ────────────────────────────────────────────────────
-
-export const VERIFIED_COLORS: Record<VendorVerified, string> = {
-  new:          'border-[#E0E0E0] bg-[#F7F7F7] text-[#717171]',
-  verified:     'border-[#BFDBFE] bg-[#EFF6FF] text-[#1D4ED8]',
-  verified_pro: 'border-[#111111] bg-[#111111] text-white',
 };
 
 // ─── Milestone step colors ─────────────────────────────────────────────────────

@@ -1,8 +1,8 @@
 import 'server-only';
 import fs from 'fs';
 import path from 'path';
-import { TENDERS, PROJECTS, VENDORS, CATEGORIES } from './mock-data';
-import type { Tender, Project, Vendor, Category, AwardedContract, SoeTender } from './types';
+import { TENDERS, CATEGORIES } from './mock-data';
+import type { Tender, Category, AwardedContract, SoeTender } from './types';
 
 // Module-level in-memory cache — persists across requests on the same warm Worker instance.
 // unstable_cache is NOT used: it calls new Function() internally which is blocked in Workers.
@@ -67,22 +67,6 @@ export async function getTenders(): Promise<Tender[]> {
 export async function getTenderById(id: string): Promise<Tender | undefined> {
   const tenders = await getTenders();
   return tenders.find((t) => t.id === id);
-}
-
-export async function getProjects(): Promise<Project[]> {
-  return PROJECTS;
-}
-
-export async function getProjectById(id: string): Promise<Project | undefined> {
-  return PROJECTS.find((p) => p.id === id);
-}
-
-export async function getVendors(): Promise<Vendor[]> {
-  return VENDORS;
-}
-
-export async function getVendorById(id: string): Promise<Vendor | undefined> {
-  return VENDORS.find((v) => v.id === id);
 }
 
 export async function getCategories(): Promise<Category[]> {
@@ -293,6 +277,54 @@ export async function getSoeTenders(): Promise<SoeTender[]> {
   } catch {
     return [];
   }
+}
+
+// ── Contractor intel (contractor_intel Firestore collection) ──────────────────
+// Written by scripts/analyze-contractors.ts (manual run).
+// Cached 24h — small collection (~500–2k docs), safe to load in full.
+
+import type { ContractorSignal } from './contractor-intel-types';
+export type { ContractorSignal };
+
+async function fetchContractorIntelFromFirestore(): Promise<ContractorSignal[]> {
+  const { restGetCollectionPage } = await import('./firestore-rest');
+  const all: ContractorSignal[] = [];
+  let cursor: string | undefined;
+  do {
+    const { docs, nextPageToken } = await restGetCollectionPage<ContractorSignal>(
+      'contractor_intel',
+      500,
+      cursor,
+    );
+    all.push(...docs);
+    cursor = nextPageToken;
+  } while (cursor);
+  return all;
+}
+
+async function getAllContractorIntel(): Promise<ContractorSignal[]> {
+  if (!hasFirestoreCredentials()) return [];
+  const cached = memGet<ContractorSignal[]>('contractor_intel');
+  if (cached) return cached;
+  try {
+    const data = await fetchContractorIntelFromFirestore();
+    memSet('contractor_intel', data, 24 * 60 * 60 * 1000);
+    return data;
+  } catch (err) {
+    console.error('[data-service] getAllContractorIntel failed:', (err as Error).message);
+    return [];
+  }
+}
+
+export async function getContractorIntel(name: string): Promise<ContractorSignal | null> {
+  const all = await getAllContractorIntel();
+  const needle = name.trim().toLowerCase();
+  return all.find(c => c.winnerName.toLowerCase().includes(needle)) ?? null;
+}
+
+export async function getFlaggedContractors(minFlags = 1): Promise<ContractorSignal[]> {
+  const all = await getAllContractorIntel();
+  return all.filter(c => c.flag_count >= minFlags);
 }
 
 /** Paginated fetch — used by /api/cgd-csv for Google Sheets IMPORTDATA chaining. */

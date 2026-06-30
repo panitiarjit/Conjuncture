@@ -415,3 +415,71 @@
 2026-06-25 14:35:54,689 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
 2026-06-25 14:36:00,961 [PTT] INFO PTT: 80 records in last 7 days
 2026-06-25 14:36:00,962 [PTT] INFO === Done: PTT — 80 records ===
+2026-06-28 09:15:13,438 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-28 09:15:13,444 [BMA] WARNING Session init failed (non-fatal): HTTPSConnectionPool(host='egp2.bangkok.go.th', port=443): Max retries exceeded with url: /api/cookies/useragent (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10d070640>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+2026-06-28 09:15:13,445 [BMA] WARNING Could not load robots.txt (https://egp2.bangkok.go.th/robots.txt): HTTPSConnectionPool(host='egp2.bangkok.go.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10d070730>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-28 09:15:13,445 [BMA] WARNING robots.txt disallows: https://egp2.bangkok.go.th/appapi/api/Projects/GetProjectFromFilter
+2026-06-28 09:15:13,445 [BMA] ERROR BMA: failed to fetch first page
+2026-06-28 09:15:13,445 [BMA] INFO === Done: BMA — 0 records ===
+2026-06-28 09:15:13,445 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-28 09:15:13,446 [MEA] WARNING Could not load robots.txt (https://procurement.mea.or.th/robots.txt): HTTPSConnectionPool(host='procurement.mea.or.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10d070a60>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-28 09:15:13,446 [MEA] WARNING robots.txt disallows: https://procurement.mea.or.th/Procurement/Index
+2026-06-28 09:15:13,446 [MEA] ERROR MEA: failed to reach site
+2026-06-28 09:15:13,446 [MEA] INFO === Done: MEA — 0 records ===
+2026-06-28 09:15:13,446 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-28 09:15:13,447 [PEA] WARNING Could not load robots.txt (https://bidding.pea.co.th/robots.txt): HTTPSConnectionPool(host='bidding.pea.co.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10d070cd0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-28 09:15:13,447 [PEA] WARNING robots.txt disallows: https://bidding.pea.co.th/procurement/list
+2026-06-28 09:15:13,447 [PEA] WARNING PEA: page 0 failed, stopping
+2026-06-28 09:15:13,447 [PEA] INFO PEA: 0 records scraped across 1 pages
+2026-06-28 09:15:13,447 [PEA] INFO === Done: PEA — 0 records ===
+2026-06-28 09:15:13,447 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-28 09:15:13,448 [PWA] WARNING Could not load robots.txt (https://eprocurement.pwa.co.th/robots.txt): HTTPSConnectionPool(host='eprocurement.pwa.co.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10d070f40>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-28 09:15:13,448 [PWA] WARNING robots.txt disallows: https://eprocurement.pwa.co.th/report/conclude-type-1
+2026-06-28 09:15:13,448 [PWA] ERROR PWA: failed to reach site
+2026-06-28 09:15:13,448 [PWA] INFO === Done: PWA — 0 records ===
+2026-06-28 09:15:13,448 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-28 09:15:13,457 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-28 09:15:13,458 [MRTA] WARNING Could not load robots.txt (https://www.mrta.co.th/robots.txt): HTTPSConnectionPool(host='www.mrta.co.th', port=443): Max retries exceeded with url: /robots.txt (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10d08e4f0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known')) — proceeding
+2026-06-28 09:15:13,458 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-28 09:15:13,458 [MRTA] WARNING MRTA: category 126 page 1 failed
+2026-06-28 09:15:13,458 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-28 09:15:13,458 [MRTA] WARNING MRTA: category 37 page 1 failed
+2026-06-28 09:15:13,458 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-28 09:15:13,458 [MRTA] WARNING MRTA: category 39 page 1 failed
+2026-06-28 09:15:13,458 [MRTA] WARNING robots.txt disallows: https://www.mrta.co.th/th/news/procurement
+2026-06-28 09:15:13,458 [MRTA] WARNING MRTA: category 125 page 1 failed
+2026-06-28 09:15:13,458 [MRTA] INFO MRTA: 0 records scraped
+2026-06-28 09:15:13,458 [MRTA] INFO === Done: MRTA — 0 records ===
+2026-06-28 09:15:13,458 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-30 15:32:02,331 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-06-30 15:32:03,027 [BMA] INFO BMA session cookie established
+2026-06-30 15:32:03,333 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-06-30 15:32:11,113 [BMA] INFO BMA: 257429 total projects, 5149 pages
+2026-06-30 15:32:11,113 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-06-30 15:32:17,701 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-30 15:32:28,322 [BMA] WARNING HTTP 410: https://egp2.bangkok.go.th/appapi/api/BidderOffers/GetBidderOfferInProject
+2026-06-30 15:32:31,115 [BMA] INFO BMA: reached cutoff 2026-06-23, stopping
+2026-06-30 15:32:31,115 [BMA] INFO BMA: 2 records scraped (2 unique IDs)
+2026-06-30 15:32:31,115 [BMA] INFO === Done: BMA — 2 records ===
+2026-06-30 15:32:31,126 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-06-30 15:32:31,362 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-06-30 15:32:34,275 [MEA] INFO MEA: 827 total records (fetching from newest)
+2026-06-30 15:33:16,463 [MEA] INFO MEA: reached cutoff 2026-06-23 at 2026-06-22, stopping
+2026-06-30 15:33:16,464 [MEA] INFO MEA: 22 records scraped
+2026-06-30 15:33:16,464 [MEA] INFO === Done: MEA — 22 records ===
+2026-06-30 15:33:16,469 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-06-30 15:33:16,953 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-06-30 15:34:01,703 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-06-30 15:34:01,704 [PEA] INFO === Done: PEA — 20 records ===
+2026-06-30 15:34:01,708 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-06-30 15:34:02,219 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-06-30 15:34:07,413 [PWA] INFO PWA: 19 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-06-30 15:34:07,413 [PWA] INFO === Done: PWA — 19 records ===
+2026-06-30 15:34:07,416 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-06-30 15:34:07,681 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-06-30 15:34:07,983 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-06-30 15:34:16,053 [MRTA] INFO MRTA: 0 records scraped
+2026-06-30 15:34:16,053 [MRTA] INFO === Done: MRTA — 0 records ===
+2026-06-30 15:34:16,053 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-06-30 15:34:21,483 [PTT] INFO PTT: 46 records in last 7 days
+2026-06-30 15:34:21,483 [PTT] INFO === Done: PTT — 46 records ===

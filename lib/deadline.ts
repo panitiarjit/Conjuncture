@@ -1,4 +1,4 @@
-import type { TenderStatus, ProjectStatus, Tender } from './types';
+import type { TenderStatus, Tender } from './types';
 
 export function computeTenderStatus(deadline: string): TenderStatus {
   const diffDays = Math.ceil((new Date(deadline).getTime() - Date.now()) / 86_400_000);
@@ -15,9 +15,4 @@ export function getDisplayStatus(tender: Pick<Tender, 'status'>): TenderStatus {
 
 export function getDaysRemaining(deadline: string): number {
   return Math.max(0, Math.ceil((new Date(deadline).getTime() - Date.now()) / 86_400_000));
-}
-
-export function computeProjectStatus(deadline: string, baseStatus: ProjectStatus): ProjectStatus {
-  if (baseStatus === 'completed' || baseStatus === 'in_progress') return baseStatus;
-  return getDaysRemaining(deadline) === 0 ? 'completed' : 'open';
 }
