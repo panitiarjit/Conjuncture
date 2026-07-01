@@ -16,9 +16,10 @@ function getInitials(name: string): string {
 }
 
 const INSIGHTS_LINK_KEYS = [
-  { key: 'nav.market-intel' as const, href: '/intelligence' },
-  { key: 'nav.agency-intel' as const, href: '/agency' },
-  { key: 'nav.plans'        as const, href: '/plans' },
+  { key: 'nav.market-intel'      as const, href: '/intelligence' },
+  { key: 'nav.agency-intel'      as const, href: '/agency' },
+  { key: 'nav.contractor-intel'  as const, href: '/contractor-intel' },
+  { key: 'nav.plans'             as const, href: '/plans' },
 ];
 
 const REPORT_NAV = { labelTh: 'รายงาน', labelEn: 'Report', href: '/report' };
@@ -239,10 +240,11 @@ export default function Header({ dark = false }: { dark?: boolean }) {
         >
           <div className="container-app py-4 flex flex-col gap-1">
             {([
-              { key: 'nav.market-intel',  href: '/intelligence' },
-              { key: 'nav.agency-intel',  href: '/agency' },
-              { key: 'nav.plans',         href: '/plans' },
-              { key: 'nav.bid-tool',      href: '/bidtool' },
+              { key: 'nav.market-intel',     href: '/intelligence' },
+              { key: 'nav.agency-intel',     href: '/agency' },
+              { key: 'nav.contractor-intel', href: '/contractor-intel' },
+              { key: 'nav.plans',            href: '/plans' },
+              { key: 'nav.bid-tool',         href: '/bidtool' },
             ] as const).map((link) => ({...link, label: t(link.key)})).map((link) => (
               <Link
                 key={link.href}

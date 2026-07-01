@@ -248,6 +248,10 @@ export async function getFlaggedContractors(minFlags = 1): Promise<ContractorSig
   return all.filter(c => c.flag_count >= minFlags);
 }
 
+export async function getAllContractorIntelForPage(): Promise<ContractorSignal[]> {
+  return getAllContractorIntel();
+}
+
 /** Paginated fetch — used by /api/cgd-csv for Google Sheets IMPORTDATA chaining. */
 export async function getAwardedContractsPage(
   pageSize = 2_000,

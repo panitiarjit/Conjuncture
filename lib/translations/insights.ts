@@ -7,6 +7,7 @@ const insights = {
     'nav.agency-intel':         'Agency Intelligence',
     'nav.plans':                'Plans',
     'nav.bid-tool':             'Bid Tool',
+    'nav.contractor-intel':     'Contractor Intelligence',
     // Common cross-page
     'common.search.button':     'Search',
     'common.loading':           'Loading…',
@@ -115,6 +116,7 @@ const insights = {
     'nav.agency-intel':         'ข้อมูลหน่วยงาน',
     'nav.plans':                'แผนจัดซื้อ',
     'nav.bid-tool':             'เครื่องมือราคา',
+    'nav.contractor-intel':     'ข้อมูลผู้รับเหมา',
     // Common cross-page
     'common.search.button':     'ค้นหา',
     'common.loading':           'กำลังโหลด…',

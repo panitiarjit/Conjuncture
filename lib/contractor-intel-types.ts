@@ -10,10 +10,13 @@ export interface ContractorSignal {
   top_agency_pct: number;
   median_discount: number;
   near_ceiling_rate: number;
+  // Statistical flag results
+  near_ceiling_categories: string[];  // projectTypes where near_ceiling fired (after BH correction)
+  near_ceiling_p_values: number[];    // BH-adjusted p-values, parallel to near_ceiling_categories
+  single_agency_lock_p: number | null; // one-sided binomial p-value vs market baseline
   flags: {
     single_agency_lock: boolean;
     near_ceiling: boolean;
-    high_volume: boolean;
   };
   flag_count: number;
   computed_at: string;
