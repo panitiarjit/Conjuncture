@@ -1,17 +1,17 @@
-Scrape run: 2026-07-01T04:08:11.645969+00:00
+Scrape run: 2026-07-06T07:39:58.199767+00:00
 
-BMA: 0 records  [render=requests]
-MEA: 0 records  [render=requests]
-PEA: 0 records  [render=requests]
-PWA: 0 records  [render=requests]
-EGAT: ERROR — HTTPSConnectionPool(host='bidding.egat.co.th', port=443): Max retries exceeded with url: /procure/procure_api.php (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10afd12b0>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+BMA: 12 records  [render=requests]
+MEA: 12 records  [render=requests]
+PEA: 20 records  [render=requests]
+PWA: 23 records  [render=requests]
+EGAT: 40 records  [render=requests]
 MRTA: 0 records  [render=requests]
-PTT: ERROR — HTTPSConnectionPool(host='procurement.pttplc.com', port=443): Max retries exceeded with url: /th/Award/Table (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x10afd1a30>: Failed to establish a new connection: [Errno 8] nodename nor servname provided, or not known'))
+PTT: 44 records  [render=requests]
 
-Total raw records:         0
-Within-source dupes:       0 (dropped)
-Unique records:            0
-  National-format IDs:     0  (YYMM+seq — not guaranteed in Firestore)
+Total raw records:         151
+Within-source dupes:       23 (dropped)
+Unique records:            128
+  National-format IDs:     70  (YYMM+seq — not guaranteed in Firestore)
   Cross-source dupes:      0  (same tender_id from 2+ scraped sites)
   Overlap details:         /Users/mgsunroof/Documents/Conjuncture/bidsight_scraper/output/parsed/overlap_report.csv
 NOTE: BMA records verified 0/19 in Firestore tenders — BMA data is genuinely new.

@@ -1,47 +1,45 @@
 ﻿source,tender_id,title,title_en,department,budget,winning_bid,winner_name,winner_tax_id,method,category,announcement_date,submission_deadline,award_date,tor_url,tor_text,announcement_url,num_bidders,status,scraped_at
-PTT,69069176509,จ้างจัดงานเกษียณอายุพนักงาน ปตท. ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.478619+00:00
-PTT,PTT-1141000242,จัดจ้างติดตั้งระบบกันซึม อาคารควบคุมสถานีเพิ่มความดันก๊าซธรรมชาติวังน้อยและอาคารลดแรงดันและวัดปริมาตร WNCC4,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.478751+00:00
-PTT,PTT-1191000871,"จัดจ้างซ่อมแซมสีท่อ, กำแพงกันไฟและอาคาร ในพื้นที่ Block Valve 2, 2.2, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 5.1, 5.2 และ 5.3",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.478894+00:00
-PTT,69069353161,จ้างจัดกิจกรรมส่งเสริมพฤติกรรมด้าน GRC,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479090+00:00
-PTT,PTT-1121000669,งานจัดจ้างทำการทดสอบแรงดันถังดับเพลิงชนิดผงเคมีแห้ง Ansul ตามกฎหมายประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479198+00:00
-PTT,PTT-1141000125,จัดซื้อ Oil Filter Element เพื่อสำรองคลัง,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479322+00:00
-PTT,PTT-1121000652,จัดซื้อ UF Membrane สำหรับระบบบำบัดน้ำเสีย (CWWTP),,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479483+00:00
-PTT,PTT-1191001705,"จัดจ้างแก้ไขสายไฟของมอเตอร์จำนวน 4 units (3511PM07, 3518E01CM06, 3518E01CM14, 3518E01CM16) โรงแยกก๊าซธรรมชาติระยองหน่วยที่ 5",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479588+00:00
-PTT,PTT-1191001515,จัดจ้าง Purge N2 อุปกรณ์ Pressure vessel สำหรับงาน TA GSP6,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479692+00:00
-PTT,69069358953,งานเช่ารถยนต์เพื่อความต่อเนื่องในการใช้งาน จำนวน 7 คัน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479812+00:00
-PTT,PTT-1121000734,จัดจ้างติดตั้ง Blind สำหรับ Utility Line พื้นที่โรงแยกก๊าซฯ หน่วยที่ 5,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.479945+00:00
-PTT,PTT-1191001719,จัดจ้างซ่อมบำรุง Backlog Class A และงานเชื่อมในพื้นที่โรงแยกก๊าซธรรมชาติหน่วยที่ 6,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480051+00:00
-PTT,PTT-1191001734,TA4 GSP6 จัดจ้างทดสอบและบำรุงรักษา MV Motor TMEIC และ Liquid Rheostat โรงแยกก๊าซธรรมชาติหน่วยที่ 6,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480156+00:00
-PTT,PTT-1121000708,"จัดจ้างตรวจสอบ Safety valve, Strainer and Process Equipment Package ในช่วง Normal และ TA4 GSP6 (2026)",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480262+00:00
-PTT,PTT-1111000689,จัดซื้อพร้อมติดตั้ง License CVI สำหรับระบบ Video Conference,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480367+00:00
-PTT,PTT-1141000634,จัดซื้อ Gas Turbine Meter และ Rotary meter สำรองคลังพัสดุ สำหรับใช้ในงานบำรุงรักษาท่อส่งก๊าซธรรมชาติ และอุปกรณ์ในระบบจ่ายก๊าซธรรมชาติ,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480472+00:00
-PTT,PTT-1141000526,"จัดจ้างปรับปรุง PLC, Workstation & Software update สถานีก๊าซน้ำพอง",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480577+00:00
-PTT,69049442332,งานจัดซื้อเครื่องชงกาแฟ สำหรับอาคาร GPCC ชั้น 2,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480688+00:00
-PTT,PTT-1191001682,จัดจ้าง Refurbish Dry Gas Seal ของ Gas Compressor RCS,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480792+00:00
-PTT,PTT-1191000058,PTT Offshore Pipeline External Survey and Jacket Inspection 2-year Campaign,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.480905+00:00
-PTT,69069266992,จ้างประชาสัมพันธ์ ปตท.ผ่าน บริษัท สว่างดี มีเดีย จำกัด,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481016+00:00
-PTT,PTT-1121000383,จัดจ้างก่อสร้างโครงการ Full Flexibility Ethane Product Management,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481118+00:00
-PTT,69049197595,จ้างบำรุงรักษาป่าปีที่ 1-3 แปลงปลูกป่า PTT-N-3-67 เนื้อที่ 500 ไร่ ตำบลทุ่งแค้ว อำเภอหนองม่วงไข่ จังหวัดแพร่,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481235+00:00
-PTT,69069176509,จ้างจัดงานเกษียณอายุพนักงาน ปตท. ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481349+00:00
-PTT,PTT-1141000242,จัดจ้างติดตั้งระบบกันซึม อาคารควบคุมสถานีเพิ่มความดันก๊าซธรรมชาติวังน้อยและอาคารลดแรงดันและวัดปริมาตร WNCC4,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481451+00:00
-PTT,PTT-1191000871,"จัดจ้างซ่อมแซมสีท่อ, กำแพงกันไฟและอาคาร ในพื้นที่ Block Valve 2, 2.2, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 5.1, 5.2 และ 5.3",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481582+00:00
-PTT,69069353161,จ้างจัดกิจกรรมส่งเสริมพฤติกรรมด้าน GRC,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481766+00:00
-PTT,PTT-1121000669,งานจัดจ้างทำการทดสอบแรงดันถังดับเพลิงชนิดผงเคมีแห้ง Ansul ตามกฎหมายประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481866+00:00
-PTT,PTT-1141000125,จัดซื้อ Oil Filter Element เพื่อสำรองคลัง,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.481984+00:00
-PTT,PTT-1121000652,จัดซื้อ UF Membrane สำหรับระบบบำบัดน้ำเสีย (CWWTP),,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482137+00:00
-PTT,PTT-1191001705,"จัดจ้างแก้ไขสายไฟของมอเตอร์จำนวน 4 units (3511PM07, 3518E01CM06, 3518E01CM14, 3518E01CM16) โรงแยกก๊าซธรรมชาติระยองหน่วยที่ 5",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482237+00:00
-PTT,PTT-1191001515,จัดจ้าง Purge N2 อุปกรณ์ Pressure vessel สำหรับงาน TA GSP6,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482340+00:00
-PTT,69069358953,งานเช่ารถยนต์เพื่อความต่อเนื่องในการใช้งาน จำนวน 7 คัน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482454+00:00
-PTT,PTT-1121000734,จัดจ้างติดตั้ง Blind สำหรับ Utility Line พื้นที่โรงแยกก๊าซฯ หน่วยที่ 5,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482580+00:00
-PTT,PTT-1191001719,จัดจ้างซ่อมบำรุง Backlog Class A และงานเชื่อมในพื้นที่โรงแยกก๊าซธรรมชาติหน่วยที่ 6,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482678+00:00
-PTT,PTT-1191001734,TA4 GSP6 จัดจ้างทดสอบและบำรุงรักษา MV Motor TMEIC และ Liquid Rheostat โรงแยกก๊าซธรรมชาติหน่วยที่ 6,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482776+00:00
-PTT,PTT-1121000708,"จัดจ้างตรวจสอบ Safety valve, Strainer and Process Equipment Package ในช่วง Normal และ TA4 GSP6 (2026)",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482882+00:00
-PTT,PTT-1111000689,จัดซื้อพร้อมติดตั้ง License CVI สำหรับระบบ Video Conference,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.482984+00:00
-PTT,PTT-1141000634,จัดซื้อ Gas Turbine Meter และ Rotary meter สำรองคลังพัสดุ สำหรับใช้ในงานบำรุงรักษาท่อส่งก๊าซธรรมชาติ และอุปกรณ์ในระบบจ่ายก๊าซธรรมชาติ,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483082+00:00
-PTT,PTT-1141000526,"จัดจ้างปรับปรุง PLC, Workstation & Software update สถานีก๊าซน้ำพอง",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483183+00:00
-PTT,69049442332,งานจัดซื้อเครื่องชงกาแฟ สำหรับอาคาร GPCC ชั้น 2,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483297+00:00
-PTT,PTT-1191001682,จัดจ้าง Refurbish Dry Gas Seal ของ Gas Compressor RCS,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483398+00:00
-PTT,PTT-1191000058,PTT Offshore Pipeline External Survey and Jacket Inspection 2-year Campaign,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483499+00:00
-PTT,69069266992,จ้างประชาสัมพันธ์ ปตท.ผ่าน บริษัท สว่างดี มีเดีย จำกัด,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483603+00:00
-PTT,PTT-1121000383,จัดจ้างก่อสร้างโครงการ Full Flexibility Ethane Product Management,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483701+00:00
-PTT,69049197595,จ้างบำรุงรักษาป่าปีที่ 1-3 แปลงปลูกป่า PTT-N-3-67 เนื้อที่ 500 ไร่ ตำบลทุ่งแค้ว อำเภอหนองม่วงไข่ จังหวัดแพร่,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-06-30T08:34:21.483804+00:00
+PTT,PTT-1141000666,จัดจ้างตรวจสอบ CUS รอบ 5Y ปท.9 ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.072949+00:00
+PTT,69059418073,จัดจ้าง Hydrostatic Test และบรรจุก๊าซสำหรับถังดับเพลิงชนิดก๊าซคาร์บอนไดออกไซด์ขนาด 100 ปอนด์ ของสถาบันนวัตกรรม ปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.082953+00:00
+PTT,PTT-1141000196,จัดจ้างซ่อมแซม Test post และ Bond Box ในพื้นที่ ปท.3 ประจำปี 2569 (On Call),,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083120+00:00
+PTT,PTT-1141000186,จัดจ้างสำรวจความหนาแน่นของชุมชนตามแนวท่อส่งก๊าซธรรมชาติ ปี 2569 เพื่อจัดทำรายงานประกอบการต่อใบอนุญาตขนส่งก๊าซธรรมชาติทางท่อ,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083260+00:00
+PTT,69069392939,จัดจ้างซ่อมและทำสีขอบฟุตบาทภายในสำนักงาน ปท.7,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083444+00:00
+PTT,69069276620,จัดซื้อชุดเครื่องเสียงและเครื่องโปรเจคเตอร์ พร้อมติดตั้งที่ห้องประชุมโลซิน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083574+00:00
+PTT,69069392425,จัดจ้างซ่อมพื้นกระเบื้องอาคารสำนักงาน ปท.7,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083692+00:00
+PTT,69059381251,จัดซื้ออากาศยานซึ่งไม่มีนักบิน (Drone) จำนวน 2 ชุด เพื่อสนับสนุนการสำรวจ ติดตาม และประเมินผลการปลูกป่าและบำรุงรักษาป่า ปตท. ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083809+00:00
+PTT,PTT-1191001978,จัดซื้อหลอดไฟ LED Corn Light E27 สำหรับซ่อมโคมไฟของโรงแยกก๊าซอีเทน จำนวน 1 งาน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.083920+00:00
+PTT,69069193845,ซื้อสิทธิ์การใช้งานแบบเช่าใช้ (Subscription License) ระบบป้องกันเว็บแอปพลิเคชันจากการโจมตี (Cloud Web Application Firewall) ระยะเวลา 18 เดือน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.084035+00:00
+PTT,PTT-1141000638,จัดซื้อ Spare part RTU สำรองคลังพัสดุ สำหรับใช้ในงานบำรุงรักษาท่อส่งก๊าซธรรมชาติ เพื่อให้ระบบควบคุมการส่งก๊าซสามารถดำเนินงานได้อย่างต่อเนื่องไม่หยุดชะงัก,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.084144+00:00
+PTT,69069455042,จ้างจัดงาน PTT Group Big Cleaning Day,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.084259+00:00
+PTT,69069211397,จัดซื้อลำโพงสำหรับใช้ในการสนับสนุนงาน CSR ของหน่วยงาน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.084374+00:00
+PTT,PTT-1131000380,งานจ้างดำเนินการสอบเทียบและต่ออายุคำรับรอง ณ สถานีบริการ NGV ปตท. และสถานประกอบกิจการที่ ปตท. รับผิดชอบทั่วประเทศ แบบ Contingency Contract,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.084483+00:00
+PTT,69069176509,จ้างจัดงานเกษียณอายุพนักงาน ปตท. ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.084929+00:00
+PTT,PTT-1141000242,จัดจ้างติดตั้งระบบกันซึม อาคารควบคุมสถานีเพิ่มความดันก๊าซธรรมชาติวังน้อยและอาคารลดแรงดันและวัดปริมาตร WNCC4,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085038+00:00
+PTT,PTT-1191000871,"จัดจ้างซ่อมแซมสีท่อ, กำแพงกันไฟและอาคาร ในพื้นที่ Block Valve 2, 2.2, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 5.1, 5.2 และ 5.3",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085178+00:00
+PTT,69069353161,จ้างจัดกิจกรรมส่งเสริมพฤติกรรมด้าน GRC,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085380+00:00
+PTT,PTT-1121000669,งานจัดจ้างทำการทดสอบแรงดันถังดับเพลิงชนิดผงเคมีแห้ง Ansul ตามกฎหมายประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085490+00:00
+PTT,PTT-1141000125,จัดซื้อ Oil Filter Element เพื่อสำรองคลัง,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085624+00:00
+PTT,PTT-1121000652,จัดซื้อ UF Membrane สำหรับระบบบำบัดน้ำเสีย (CWWTP),,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085795+00:00
+PTT,PTT-1191001705,"จัดจ้างแก้ไขสายไฟของมอเตอร์จำนวน 4 units (3511PM07, 3518E01CM06, 3518E01CM14, 3518E01CM16) โรงแยกก๊าซธรรมชาติระยองหน่วยที่ 5",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.085911+00:00
+PTT,PTT-1141000666,จัดจ้างตรวจสอบ CUS รอบ 5Y ปท.9 ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086022+00:00
+PTT,69059418073,จัดจ้าง Hydrostatic Test และบรรจุก๊าซสำหรับถังดับเพลิงชนิดก๊าซคาร์บอนไดออกไซด์ขนาด 100 ปอนด์ ของสถาบันนวัตกรรม ปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086133+00:00
+PTT,PTT-1141000196,จัดจ้างซ่อมแซม Test post และ Bond Box ในพื้นที่ ปท.3 ประจำปี 2569 (On Call),,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086245+00:00
+PTT,PTT-1141000186,จัดจ้างสำรวจความหนาแน่นของชุมชนตามแนวท่อส่งก๊าซธรรมชาติ ปี 2569 เพื่อจัดทำรายงานประกอบการต่อใบอนุญาตขนส่งก๊าซธรรมชาติทางท่อ,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086380+00:00
+PTT,69069392939,จัดจ้างซ่อมและทำสีขอบฟุตบาทภายในสำนักงาน ปท.7,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086548+00:00
+PTT,69069276620,จัดซื้อชุดเครื่องเสียงและเครื่องโปรเจคเตอร์ พร้อมติดตั้งที่ห้องประชุมโลซิน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086658+00:00
+PTT,69069392425,จัดจ้างซ่อมพื้นกระเบื้องอาคารสำนักงาน ปท.7,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086769+00:00
+PTT,69059381251,จัดซื้ออากาศยานซึ่งไม่มีนักบิน (Drone) จำนวน 2 ชุด เพื่อสนับสนุนการสำรวจ ติดตาม และประเมินผลการปลูกป่าและบำรุงรักษาป่า ปตท. ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086878+00:00
+PTT,PTT-1191001978,จัดซื้อหลอดไฟ LED Corn Light E27 สำหรับซ่อมโคมไฟของโรงแยกก๊าซอีเทน จำนวน 1 งาน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.086981+00:00
+PTT,69069193845,ซื้อสิทธิ์การใช้งานแบบเช่าใช้ (Subscription License) ระบบป้องกันเว็บแอปพลิเคชันจากการโจมตี (Cloud Web Application Firewall) ระยะเวลา 18 เดือน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.087091+00:00
+PTT,PTT-1141000638,จัดซื้อ Spare part RTU สำรองคลังพัสดุ สำหรับใช้ในงานบำรุงรักษาท่อส่งก๊าซธรรมชาติ เพื่อให้ระบบควบคุมการส่งก๊าซสามารถดำเนินงานได้อย่างต่อเนื่องไม่หยุดชะงัก,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.087196+00:00
+PTT,69069455042,จ้างจัดงาน PTT Group Big Cleaning Day,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.087307+00:00
+PTT,69069211397,จัดซื้อลำโพงสำหรับใช้ในการสนับสนุนงาน CSR ของหน่วยงาน,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.087420+00:00
+PTT,PTT-1131000380,งานจ้างดำเนินการสอบเทียบและต่ออายุคำรับรอง ณ สถานีบริการ NGV ปตท. และสถานประกอบกิจการที่ ปตท. รับผิดชอบทั่วประเทศ แบบ Contingency Contract,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.087524+00:00
+PTT,69069176509,จ้างจัดงานเกษียณอายุพนักงาน ปตท. ประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.087951+00:00
+PTT,PTT-1141000242,จัดจ้างติดตั้งระบบกันซึม อาคารควบคุมสถานีเพิ่มความดันก๊าซธรรมชาติวังน้อยและอาคารลดแรงดันและวัดปริมาตร WNCC4,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088056+00:00
+PTT,PTT-1191000871,"จัดจ้างซ่อมแซมสีท่อ, กำแพงกันไฟและอาคาร ในพื้นที่ Block Valve 2, 2.2, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 5.1, 5.2 และ 5.3",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088188+00:00
+PTT,69069353161,จ้างจัดกิจกรรมส่งเสริมพฤติกรรมด้าน GRC,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088381+00:00
+PTT,PTT-1121000669,งานจัดจ้างทำการทดสอบแรงดันถังดับเพลิงชนิดผงเคมีแห้ง Ansul ตามกฎหมายประจำปี 2569,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088485+00:00
+PTT,PTT-1141000125,จัดซื้อ Oil Filter Element เพื่อสำรองคลัง,,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088610+00:00
+PTT,PTT-1121000652,จัดซื้อ UF Membrane สำหรับระบบบำบัดน้ำเสีย (CWWTP),,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088771+00:00
+PTT,PTT-1191001705,"จัดจ้างแก้ไขสายไฟของมอเตอร์จำนวน 4 units (3511PM07, 3518E01CM06, 3518E01CM14, 3518E01CM16) โรงแยกก๊าซธรรมชาติระยองหน่วยที่ 5",,,,,,,,,,,,,,https://procurement.pttplc.com/th/award/index,,awarded,2026-07-06T07:44:53.088887+00:00
