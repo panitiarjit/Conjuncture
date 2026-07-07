@@ -25,9 +25,9 @@
     "firebase-admin": "^12.7.0",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
+    "patchright": "^1.61.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "rebrowser-playwright": "^1.52.0",
     "recharts": "^3.8.1",
     "server-only": "^0.0.1",
     "xlsx": "^0.18.5"

@@ -35,12 +35,13 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
   const announceEDate = isoDate(today);
   console.log(`[egp-scraper] date range: ${announceSDate} → ${announceEDate}`);
 
-  // rebrowser-playwright is a drop-in replacement that patches out the CDP Runtime.enable
-  // detection vector — standard Playwright's isolated JS context is detectable by Cloudflare
-  // Turnstile even when navigator.webdriver and all JS-level signals are clean.
+  // patchright is a drop-in replacement that patches out CDP-level automation signals
+  // (Runtime.enable, command flags, etc.) more thoroughly than rebrowser-playwright —
+  // confirmed via diagnostic: rebrowser-playwright never got Cloudflare to render the
+  // Turnstile iframe at all (silently suppressed), while patchright does.
   // launchPersistentContext merges launch + context options and preserves cf cookies.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { chromium } = require('rebrowser-playwright') as typeof import('playwright');
+  const { chromium } = require('patchright') as typeof import('playwright');
   const headless = process.env.PLAYWRIGHT_HEADLESS !== 'false';
 
   const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
@@ -209,8 +210,8 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
     );
     console.log('[egp-scraper] Angular bootstrapped, polling for CSRF token...');
 
-    // Automation signals captured here (runs in rebrowser isolated world — values reflect
-    // the same underlying objects Cloudflare's turnstile.js sees in the main world).
+    // Automation signals captured here via patchright's evaluate — values reflect
+    // the same underlying objects Cloudflare's turnstile.js sees in the main world.
     const autoSignals = await page.evaluate(() => ({
       webdriver: (navigator as Navigator & { webdriver?: boolean }).webdriver,
       hasFocus: document.hasFocus(),
@@ -400,6 +401,60 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
       let iframeHandle = await page.waitForSelector('.cf-turnstile iframe', { timeout: 45_000 })
         .catch(() => null);
       console.log(iframeHandle ? '[egp-scraper] Turnstile iframe appeared' : '[egp-scraper] Turnstile iframe did NOT appear after 45s (Cloudflare suppressed it)');
+
+      // A CapSolver-solved token gets rejected by this site's own validate endpoint —
+      // it does session-binding validation beyond Cloudflare's siteverify, so a token
+      // solved out-of-band on CapSolver's infrastructure (not this browser session)
+      // fails even though it's cryptographically valid. The only token this site accepts
+      // is one solved live, in this exact session — so click the real checkbox instead
+      // of just waiting for auto-solve. Cloudflare nests the actual checkbox inside a
+      // same-origin challenges.cloudflare.com iframe below the visible widget iframe.
+      if (iframeHandle && !nativeAnnouncementToken) {
+        const cfFrame = page.frames().find(f => /challenges\.cloudflare\.com/.test(f.url()));
+        if (cfFrame) {
+          try {
+            const checkbox = await cfFrame.waitForSelector('input[type="checkbox"]', { timeout: 10_000 }).catch(() => null);
+            const box = await checkbox?.boundingBox().catch(() => null);
+            if (checkbox && box) {
+              // Natural move-then-click (not a forced/teleported click) — Cloudflare's
+              // behavioral check on the click itself likely rejects a click with no
+              // preceding cursor movement, which is what {force:true} produces.
+              const cx = box.x + box.width / 2;
+              const cy = box.y + box.height / 2;
+              await page.mouse.move(cx - 60, cy - 40, { steps: 6 });
+              await sleep(120 + Math.random() * 150);
+              await page.mouse.move(cx - 10, cy - 5, { steps: 8 });
+              await sleep(80 + Math.random() * 120);
+              await page.mouse.move(cx, cy, { steps: 4 });
+              await sleep(100 + Math.random() * 100);
+              await page.mouse.down();
+              await sleep(40 + Math.random() * 60);
+              await page.mouse.up();
+              await sleep(1500);
+              await page.screenshot({ path: '/tmp/egp-turnstile-click-debug.png', fullPage: false }).catch(() => null);
+              console.log('[egp-scraper] post-click screenshot -> /tmp/egp-turnstile-click-debug.png');
+              console.log('[egp-scraper] clicked Turnstile checkbox (natural move) in nested cf frame — waiting up to 10s for solve...');
+              const solveDeadline = Date.now() + 10_000;
+              while (Date.now() < solveDeadline) {
+                const val = await page.evaluate(() =>
+                  document.querySelector<HTMLInputElement>('input[name="cf-turnstile-response"]')?.value ?? ''
+                ).catch(() => '');
+                if (val && val.length > 10) {
+                  console.log(`[egp-scraper] checkbox solve produced token (${val.length} chars)`);
+                  break;
+                }
+                await sleep(500);
+              }
+            } else {
+              console.log('[egp-scraper] no checkbox found in nested cf frame');
+            }
+          } catch (err: unknown) {
+            console.log(`[egp-scraper] checkbox click failed: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        } else {
+          console.log('[egp-scraper] no nested challenges.cloudflare.com frame found');
+        }
+      }
 
       // If the iframe didn't appear, try resetting the Turnstile widget.
       // After 45s of genuine page activity (mouse moves, scroll, hover), Cloudflare may

@@ -138,10 +138,14 @@ Every read over 50k/day costs money. The current budget:
 
 | Job | Trigger | What it does |
 |-----|---------|--------------|
-| e-GP status refresh | Daily 08:00 UTC (15:00 BKK) via GitHub Actions | Updates open/closed on existing e-GP tenders |
-| e-GP new listings | Every 3rd day 08:00 UTC | Fetches new e-GP announcements |
-| SOE scrapers | `launchd-scrape-soe.sh` on self-hosted mac | BMA, MEA, PEA, PWA, EGAT, MRTA, PTT → `soe_tenders` |
+| e-GP status refresh | `launchd-refresh.sh` on self-hosted mac, daily 08:00 local | Updates open/closed on existing e-GP tenders |
+| e-GP new listings | `launchd-scrape.sh` on self-hosted mac, every 3rd day 08:30 local | Fetches new e-GP announcements |
+| SOE scrapers | `launchd-scrape-soe.sh` on self-hosted mac, every 3rd day 08:30 local | BMA, MEA, PEA, PWA, EGAT, MRTA, PTT → `soe_tenders` |
 | BidSight batch test | Daily 08:30 UTC via GitHub Actions | Runs one 10k batch, saves results, commits to repo |
 | CGD historical fetch | Manual (`fetch-historical.ts`) | Backfills awarded contracts; one-off when needed |
+
+**GitHub Actions cron for e-GP jobs was disabled 2026-06-03** — they now run exclusively via local launchd (`~/Library/LaunchAgents/com.conjuncture.{scrape-egp,refresh-statuses}.plist`). The `e-GP Tender Scrape` workflow still exists but is `workflow_dispatch`-only (manual trigger / debugging), not scheduled.
+
+**This means e-GP freshness now depends on this specific Mac being awake and online at ~08:00–08:30 local.** If the machine was asleep or just woke up, launchd still fires the job but DNS may not be ready yet — the scripts retry for up to 60s before giving up, but a cold Wi-Fi reconnect can outlast that. If e-GP data looks stale, check `~/Library/Logs/conjuncture-scrape.log` and `~/Library/Logs/conjuncture-refresh.log` for silent failures before assuming the portal itself changed. The `scrape-egp.ts` scraper requires real Google Chrome at `/Applications/Google Chrome.app` (launched via Playwright's `channel: 'chrome'`, not bundled Chromium) — its Cloudflare-bypass fingerprinting checks (`chrome.loadTimes`, `userAgentData` brands) only pass with the real browser. If Chrome gets uninstalled or auto-updated into a broken state, this job fails immediately with a clear "Chromium distribution not found" error.
 
 Closed tenders are never deleted — they accumulate in Firestore as historical records.

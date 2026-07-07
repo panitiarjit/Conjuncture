@@ -28,11 +28,6 @@ env:
   RESIDENTIAL_PROXY_URL: ${{ secrets.RESIDENTIAL_PROXY_URL }}
   CGD_API_KEY: ${{ secrets.CGD_API_KEY }}
   PLAYWRIGHT_HEADLESS: 'false'
-  # alwaysIsolated: uses a disguised isolated world (empty name, isDefault:true) so the
-  # page CSP is bypassed (isolated worlds are exempt) AND Cloudflare won't find
-  # __playwright_utility_world__. The default addBinding mode runs in the main world
-  # which is subject to this page's strict CSP (no unsafe-eval).
-  REBROWSER_PATCHES_RUNTIME_FIX_MODE: 'alwaysIsolated'
 
 jobs:
   # ── Status refresh (runs every day) ──────────────────────────────────────
