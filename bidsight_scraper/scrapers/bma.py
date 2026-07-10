@@ -146,10 +146,10 @@ class BMAScraper(BaseScraper):
         return None
 
     def _get_bidders(self, project_id: str) -> list[dict]:
-        data = self._get("/BidderOffers/GetBidderOfferInProject",
-                         projectId=project_id, pageNo=1, pageSize=50)
-        if data and data.get("data"):
-            return data["data"]
+        # BMA retired this endpoint (confirmed 2026-07-10: returns 410 Gone for
+        # every project). num_bidders now falls back to the winner-presence
+        # heuristic in _build_record. Left as a no-op call site rather than
+        # removed so a future BMA API restore only needs this body reverted.
         return []
 
     def _get_contract(self, project_id: str) -> Optional[dict]:
