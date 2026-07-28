@@ -1,17 +1,17 @@
-Scrape run: 2026-07-20T11:21:25.025350+00:00
+Scrape run: 2026-07-28T10:35:23.556624+00:00
 
-BMA: 4 records  [render=requests]
+BMA: 1 records  [render=requests]
 MEA: 22 records  [render=requests]
 PEA: 20 records  [render=requests]
-PWA: 18 records  [render=requests]
-EGAT: 40 records  [render=requests]
-MRTA: 2 records  [render=requests]
-PTT: 72 records  [render=requests]
+PWA: 23 records  [render=requests]
+EGAT: 20 records  [render=requests]
+MRTA: 1 records  [render=requests]
+PTT: 28 records  [render=requests]
 
-Total raw records:         178
-Within-source dupes:       36 (dropped)
-Unique records:            142
-  National-format IDs:     50  (YYMM+seq — not guaranteed in Firestore)
+Total raw records:         115
+Within-source dupes:       15 (dropped)
+Unique records:            100
+  National-format IDs:     44  (YYMM+seq — not guaranteed in Firestore)
   Cross-source dupes:      0  (same tender_id from 2+ scraped sites)
   Overlap details:         /Users/mgsunroof/Documents/Conjuncture/bidsight_scraper/output/parsed/overlap_report.csv
 NOTE: BMA records verified 0/19 in Firestore tenders — BMA data is genuinely new.
