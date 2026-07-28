@@ -101,6 +101,8 @@ cat "$(ls -t scripts/test-results/batch-*.json | head -1)"
 
 **Cross-batch is the only honest signal.** The within-batch backward test trains and tests on the same data — it will always look better than reality. Use it to debug, not to judge the model.
 
+**The naive baseline (always bid at benchmark median, no margin floor) is expected to beat BidSight on beat-winner rate.** BidSight's margin floor (`recommendBid` in `lib/bidsight-core.ts`) caps the bid discount at whatever preserves the assumed margin, so it deliberately declines any market discount deeper than that cap. Naive has no such cap, so it wins those buckets by default. `AwardedContract` has no real contractor cost field to calibrate the margin assumption against, so this gap isn't closeable by retuning `ASSUMED_COST_RATIO` — it's a structural side effect of enforcing a margin floor at all. Judge the model against the 45% cross-batch target, not against the naive baseline.
+
 When tuning constants in `lib/bidsight-core.ts` (`MIN_N`, `CALIB_ALPHA`, `GLOBAL_MEDIAN`, `GLOBAL_SIGMA`):
 - Change one constant at a time
 - Run the batch test immediately after: `npx ts-node --project tsconfig.scripts.json scripts/run-batch-tests.ts`

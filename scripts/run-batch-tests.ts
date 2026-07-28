@@ -350,6 +350,13 @@ async function main(): Promise<void> {
   if (crossBatch && naiveBaseline.beatWinnerRate != null) {
     const lift = Math.round(((crossBatch.beatWinnerRate ?? 0) - naiveBaseline.beatWinnerRate) * 10) / 10;
     console.log(`\n  BidSight lift over naive: ${lift > 0 ? '+' : ''}${lift}pp beat-winner rate`);
+    // Negative lift here is expected, not a regression: naive has no margin floor, so it
+    // chases every market discount including ones deeper than marginMaxDiscount (bidsight-core.ts
+    // recommendBid). BidSight declines those bids on purpose. There's no real cost field
+    // anywhere in AwardedContract to check whether the floor is too conservative — both this
+    // baseline and BidSight use the same guessed ASSUMED_COST_RATIO, so the gap can't be closed
+    // by retuning that constant. Track cross-batch beat-winner rate against the AGENTS.md
+    // target (45%) instead of against naive.
   }
 
   // Save results
