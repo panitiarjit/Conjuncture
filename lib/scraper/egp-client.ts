@@ -18,18 +18,36 @@ function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
-/** Resolve a Cloudflare Turnstile challenge via the CapSolver service. */
-export async function getTurnstileToken(config: ScrapeConfig, action?: string, cdata?: string): Promise<string> {
+/**
+ * Resolve a Cloudflare Turnstile challenge via the CapSolver service.
+ *
+ * When `proxyUrl` is set, the token is solved through the same proxy the browser will
+ * validate it from (AntiTurnstileTask) — Turnstile binds a solved token to the solving IP,
+ * so solving proxyless while validating through a residential proxy causes a mismatch and
+ * the server rejects the token. Pass the same RESIDENTIAL_PROXY_URL used for the browser.
+ */
+export async function getTurnstileToken(
+  config: ScrapeConfig,
+  action?: string,
+  cdata?: string,
+  proxyUrl?: string
+): Promise<string> {
   const apiKey = config.capsolverApiKey ?? process.env.CAPSOLVER_API_KEY;
   if (!apiKey) throw new Error('CAPSOLVER_API_KEY env var not set');
 
   const task: Record<string, string> = {
-    type: 'AntiTurnstileTaskProxyLess',
+    type: proxyUrl ? 'AntiTurnstileTask' : 'AntiTurnstileTaskProxyLess',
     websiteURL: config.cfPageUrl,
     websiteKey: config.cfTurnstileSiteKey,
   };
   if (action !== undefined) task['action'] = action;
   if (cdata !== undefined) task['cdata'] = cdata;
+  if (proxyUrl) {
+    const u = new URL(proxyUrl);
+    if (!u.username || !u.password) throw new Error('RESIDENTIAL_PROXY_URL must include username and password for CapSolver AntiTurnstileTask');
+    // CapSolver's proxied task format: "type:host:port:login:password"
+    task['proxy'] = `${u.protocol.replace(':', '')}:${u.hostname}:${u.port}:${decodeURIComponent(u.username)}:${decodeURIComponent(u.password)}`;
+  }
 
   const createRes = await fetch('https://api.capsolver.com/createTask', {
     method: 'POST',

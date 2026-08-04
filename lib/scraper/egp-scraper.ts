@@ -597,6 +597,7 @@ export async function runScrape(overrides: Partial<ScrapeConfig> = {}): Promise<
           config,
           turnstileAttrs?.action ?? undefined,
           turnstileAttrs?.cdata ?? undefined,
+          proxyUrl,
         );
 
         // Token injection via DOM events removed: dispatching input/change caused Angular
