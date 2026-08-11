@@ -14,7 +14,7 @@
  * Page tokens are stored in .batch-state.json so each run jumps directly to
  * the next 10k window without re-scanning prior pages.
  *
- * Cycle: batch 0 → 1 → … → N → reset to 0 (~21 batches for 201k contracts).
+ * Cycle: batch 0 → 1 → … → N → reset to 0 (~55 batches for 547k contracts, 2026-07-30).
  * GitHub Actions (daily-batch-test.yml) commits results back to the repo.
  *
  * Firestore cost: 10k reads/run × 1 run/day = 10k reads/day.

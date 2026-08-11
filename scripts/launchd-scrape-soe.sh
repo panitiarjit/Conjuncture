@@ -1,6 +1,6 @@
 #!/bin/bash
 set -a
-source /Users/mgsunroof/Documents/Conjuncture/.env.local
+source /Users/mgsunroof/Documents/Corizon/Conjuncture/.env.local
 set +a
 
 export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
@@ -13,5 +13,5 @@ for i in $(seq 1 30); do
   sleep 2
 done
 
-cd /Users/mgsunroof/Documents/Conjuncture/bidsight_scraper
+cd /Users/mgsunroof/Documents/Corizon/Conjuncture/bidsight_scraper
 python3 run_all.py --days 30

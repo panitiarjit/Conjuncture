@@ -1,6 +1,6 @@
 #!/bin/bash
 set -a
-source /Users/mgsunroof/Documents/Conjuncture/.env.local
+source /Users/mgsunroof/Documents/Corizon/Conjuncture/.env.local
 set +a
 
 export PATH="/Users/mgsunroof/.nvm/versions/node/v24.15.0/bin:$PATH"
@@ -12,5 +12,5 @@ for i in $(seq 1 30); do
   sleep 2
 done
 
-cd /Users/mgsunroof/Documents/Conjuncture
+cd /Users/mgsunroof/Documents/Corizon/Conjuncture
 npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
