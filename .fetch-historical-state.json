@@ -1,8 +1,8 @@
 {
   "yearIndex": 0,
-  "chunkIndex": 0,
-  "offset": 500000,
-  "totalWritten": 500000,
+  "chunkIndex": 1,
+  "offset": 7000,
+  "totalWritten": 518606,
   "done": false,
-  "lastRun": "2026-07-20T08:00:06.360Z"
+  "lastRun": "2026-07-29T08:00:08.916Z"
 }
