@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type Lang } from "@/lib/landing-translations";
+import { useTotalCount } from "@/lib/hooks/use-total-count";
 
 interface FeaturesProps { lang: Lang; }
 
@@ -122,6 +123,7 @@ const FINDINGS_TH = [
 export default function Features({ lang }: FeaturesProps) {
   const isTh = lang === "th";
   const findings = isTh ? FINDINGS_TH : FINDINGS_EN;
+  const { formatted: totalCount } = useTotalCount();
 
   return (
     <section id="findings" className="py-24 lg:py-32 bg-white">
@@ -133,7 +135,7 @@ export default function Features({ lang }: FeaturesProps) {
             {isTh ? "ผลการวิจัย" : "Research findings"}
           </span>
           <h2 className={`mt-3 text-black font-black tracking-tight leading-none ${isTh ? "th-heading text-4xl sm:text-5xl" : "en-heading text-4xl sm:text-5xl"}`}>
-            {isTh ? "6 สิ่งที่ข้อมูล\n251,000+ สัญญาบอกเรา" : "6 things 251,000+\ncontracts reveal."}
+            {isTh ? `6 สิ่งที่ข้อมูล\n${totalCount} สัญญาบอกเรา` : `6 things ${totalCount}\ncontracts reveal.`}
           </h2>
           <p className={`mt-4 text-slate-500 leading-relaxed ${isTh ? "lang-th text-base" : "text-lg"}`}>
             {isTh

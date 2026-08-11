@@ -144,10 +144,12 @@ Every read over 50k/day costs money. The current budget:
 | e-GP new listings | `launchd-scrape.sh` on self-hosted mac, every 3rd day 08:30 local | Fetches new e-GP announcements |
 | SOE scrapers | `launchd-scrape-soe.sh` on self-hosted mac, every 3rd day 08:30 local | BMA, MEA, PEA, PWA, EGAT, MRTA, PTT → `soe_tenders` |
 | BidSight batch test | Daily 08:30 UTC via GitHub Actions | Runs one 10k batch, saves results, commits to repo |
-| CGD historical fetch | Manual (`fetch-historical.ts`) | Backfills awarded contracts; one-off when needed |
+| CGD historical fetch | `run-fetch-historical.sh` on self-hosted mac, daily 15:00 local | Backfills awarded contracts into `cgd_contracts`, resumable via `.batch-state.json`-style cursor in `.fetch-historical-state.json`; stops itself at a daily write cap and picks up next run |
 
 **GitHub Actions cron for e-GP jobs was disabled 2026-06-03** — they now run exclusively via local launchd (`~/Library/LaunchAgents/com.conjuncture.{scrape-egp,refresh-statuses}.plist`). The `e-GP Tender Scrape` workflow still exists but is `workflow_dispatch`-only (manual trigger / debugging), not scheduled.
 
 **This means e-GP freshness now depends on this specific Mac being awake and online at ~08:00–08:30 local.** If the machine was asleep or just woke up, launchd still fires the job but DNS may not be ready yet — the scripts retry for up to 60s before giving up, but a cold Wi-Fi reconnect can outlast that. If e-GP data looks stale, check `~/Library/Logs/conjuncture-scrape.log` and `~/Library/Logs/conjuncture-refresh.log` for silent failures before assuming the portal itself changed. The `scrape-egp.ts` scraper requires real Google Chrome at `/Applications/Google Chrome.app` (launched via Playwright's `channel: 'chrome'`, not bundled Chromium) — its Cloudflare-bypass fingerprinting checks (`chrome.loadTimes`, `userAgentData` brands) only pass with the real browser. If Chrome gets uninstalled or auto-updated into a broken state, this job fails immediately with a clear "Chromium distribution not found" error.
+
+**The `conjuncture.fetch-historical` launchd job silently failed every day from 2026-07-30 to 2026-08-11** (13 days) — its plist and wrapper script (`run-fetch-historical.sh`) both still pointed at the pre-move path `Documents/Conjuncture` instead of `Documents/Corizon/Conjuncture`. Fixed 2026-08-11; also added the same DNS-wait retry loop `launchd-refresh.sh` already had, and moved its log from `/tmp/fetch-historical.log` to `~/Library/Logs/conjuncture-fetch-historical.log` for consistency with the other three jobs. If `cgd_contracts` growth stalls again, check that log before assuming the CGD source changed.
 
 Closed tenders are never deleted — they accumulate in Firestore as historical records.

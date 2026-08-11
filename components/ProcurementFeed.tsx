@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTotalCount } from '@/lib/hooks/use-total-count';
 
 type Signal = {
   tag: string;
@@ -16,7 +17,7 @@ type LiveSignal = Signal & {
 
 const SIGNALS: Signal[] = [
   { tag: 'ANOMALY', tagColor: 'text-red-500 bg-red-50', text: 'อบต.เสมา awarded ฿46.1M road contract for ฿461,330 — 99% below reference price', meta: 'FY2567 · Nakhon Ratchasima' },
-  { tag: 'TREND', tagColor: 'text-amber-600 bg-amber-50', text: 'Median procurement discount: 13.12% in FY2561 → 0.06% in FY2567. 218× collapse in 6 years.', meta: '251,000+ contracts · e-GP system' },
+  { tag: 'TREND', tagColor: 'text-amber-600 bg-amber-50', text: 'Median procurement discount: 13.12% in FY2561 → 0.06% in FY2567. 218× collapse in 6 years.', meta: '549,000+ contracts · e-GP system' },
   { tag: 'PATTERN', tagColor: 'text-violet-600 bg-violet-50', text: 'นางฑาณะมาศ หนูอ้น won 4 child development center contracts at 97% discount each. Same reference price: ฿308,700.', meta: 'FY2567 · Phichit province' },
   { tag: 'PROVINCE', tagColor: 'text-blue-600 bg-blue-50', text: 'Phichit median discount: 10.91%. Saraburi: 0.09%. Same country, same law — 121× gap.', meta: '77 provinces analyzed' },
   { tag: 'AGENCY', tagColor: 'text-slate-600 bg-slate-100', text: 'Department of Highways: 63.9% of contracts settled within 0.5% of reference price, despite using competitive e-bidding.', meta: '310 contracts · กรมทางหลวง' },
@@ -57,6 +58,7 @@ const INITIAL_OFFSETS = [2, 5, 8, 12, 17, 23, 31, 42].map(m => m * 60 * 1000);
 
 export default function ProcurementFeed() {
   const now = Date.now();
+  const { formatted: totalCount } = useTotalCount();
 
   const [items, setItems] = useState<LiveSignal[]>(() =>
     shuffle(SIGNALS).slice(0, 8).map((s, i) => ({
@@ -119,7 +121,7 @@ export default function ProcurementFeed() {
           </span>
           <h2 className="text-sm font-semibold text-[#111111]">Live procurement signals</h2>
         </div>
-        <span className="text-xs text-[#717171]">251,000+ contracts · e-GP · FY2561–2568</span>
+        <span className="text-xs text-[#717171]">{totalCount} contracts · e-GP · FY2561–2568</span>
       </div>
 
       <div className="flex flex-col gap-2">

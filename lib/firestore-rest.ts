@@ -94,6 +94,33 @@ export async function restGetCollection<T>(collection: string, maxDocs?: number)
   return docs;
 }
 
+/**
+ * Count all documents in a collection via Firestore's aggregation query.
+ * Costs 1 read regardless of collection size — safe to call on-demand,
+ * unlike restGetCollection which pages through (and bills for) every doc.
+ */
+export async function restCountCollection(collection: string): Promise<number> {
+  const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID!;
+  const token = await getAccessToken();
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runAggregationQuery`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredAggregationQuery: {
+        structuredQuery: { from: [{ collectionId: collection }] },
+        aggregations: [{ alias: 'count', count: {} }],
+      },
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Firestore ${res.status}: ${errText.slice(0, 300)}`);
+  }
+  const data = await res.json() as Array<{ result?: { aggregateFields?: { count?: { integerValue?: string } } } }>;
+  return parseInt(data[0]?.result?.aggregateFields?.count?.integerValue ?? '0', 10);
+}
+
 export async function restGetCollectionPage<T>(
   collection: string,
   pageSize = 500,

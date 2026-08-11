@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { type Lang } from "@/lib/landing-translations";
+import { useTotalCount } from "@/lib/hooks/use-total-count";
 
 interface HeroProps { lang: Lang; }
 
 export default function Hero({ lang }: HeroProps) {
   const isTh = lang === "th";
+  const { formatted: totalCount } = useTotalCount();
 
   return (
     <section className="relative pt-32 pb-20 bg-white overflow-hidden">
@@ -27,8 +29,8 @@ export default function Hero({ lang }: HeroProps) {
             <span className="relative inline-flex rounded-full w-2 h-2 bg-emerald-500" />
           </span>
           {isTh
-            ? "ฐานข้อมูล 251,000+ สัญญา · ระบบ e-GP ปีงบประมาณ 2561–2568"
-            : "251,000+ contracts in database · Thai e-GP system · FY2561–2568"}
+            ? `ฐานข้อมูล ${totalCount} สัญญา · ระบบ e-GP ปีงบประมาณ 2561–2568`
+            : `${totalCount} contracts in database · Thai e-GP system · FY2561–2568`}
         </div>
 
         {/* Headline */}
@@ -47,8 +49,8 @@ export default function Hero({ lang }: HeroProps) {
         {/* Subheadline */}
         <p className={`fade-up d3 text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed ${isTh ? "lang-th text-lg" : "text-xl"}`}>
           {isTh
-            ? "ราคาที่ชนะในการประมูลภาครัฐต่ำกว่ากลางเฉลี่ย 13.12% ในปี 2561 แต่ปี 2567 เหลือเพียง 0.06% ลดลง 218 เท่าในหกปี 251,000+ สัญญาบอกเราว่าแต่ละตลาดไม่เหมือนกัน Conjuncture ช่วยให้คุณรู้ว่าต้องเสนอราคาเท่าไรก่อนยื่น"
-            : "The median government procurement discount fell from 13.12% in 2018 to 0.06% in 2024 — a 218× collapse. 251,000+ contracts show every market is different. Conjuncture tells you where to bid before you submit."}
+            ? "ราคาที่ชนะในการประมูลภาครัฐต่ำกว่ากลางเฉลี่ย 13.12% ในปี 2561 แต่ปี 2567 เหลือเพียง 0.06% ลดลง 218 เท่าในหกปี Conjuncture ฝึกโมเดลด้วยสัญญาจริง 358,804 ฉบับ ช่วยให้คุณรู้ว่าต้องเสนอราคาเท่าไรก่อนยื่น"
+            : "The median government procurement discount fell from 13.12% in 2018 to 0.06% in 2024 — a 218× collapse. Conjuncture's model is trained on 358,804 real awarded contracts. It tells you where to bid before you submit."}
         </p>
 
         {/* CTA */}
@@ -71,12 +73,12 @@ export default function Hero({ lang }: HeroProps) {
         {/* Stats row */}
         <div className="fade-up d5 flex flex-wrap justify-center gap-10 text-center border-t border-slate-100 pt-10">
           {(isTh ? [
-            { value: "251,000+", label: "สัญญาในฐานข้อมูล" },
+            { value: totalCount, label: "สัญญาในฐานข้อมูล" },
             { value: "218×", label: "การแข่งขันราคาลดลงไปในหกปี" },
             { value: "77", label: "จังหวัดทั่วประเทศ" },
             { value: "121×", label: "ช่องว่างระหว่างจังหวัด" },
           ] : [
-            { value: "251,000+", label: "contracts in database" },
+            { value: totalCount, label: "contracts in database" },
             { value: "218×", label: "discount collapse over 6 yrs" },
             { value: "77", label: "provinces covered" },
             { value: "121×", label: "gap between provinces" },

@@ -20,7 +20,7 @@ export default function CaseStudy({ lang }: CaseStudyProps) {
       icon: TrendingUp,
       n: "2",
       title: "ยื่นประมูล",
-      body: "ใช้ข้อมูลจากตลาดจริง 251,000+ สัญญา แบ่งตามหน่วยงาน ประเภทโครงการ และจังหวัด ไม่ใช่การเดา",
+      body: "ใช้ข้อมูลจากตลาดจริง 358,804 สัญญา แบ่งตามหน่วยงาน ประเภทโครงการ และจังหวัด ไม่ใช่การเดา",
     },
     {
       icon: FileText,
@@ -39,7 +39,7 @@ export default function CaseStudy({ lang }: CaseStudyProps) {
       icon: TrendingUp,
       n: "2",
       title: "Submit your tender",
-      body: "Backed by 251,000+ real contracts, segmented by agency, project type, and province. Price from data, not intuition.",
+      body: "Backed by 358,804 real contracts, segmented by agency, project type, and province. Price from data, not intuition.",
     },
     {
       icon: FileText,

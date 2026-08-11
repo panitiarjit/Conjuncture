@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/language-context';
 import { ContributorStats } from '@/components/ContributorStats';
+import { useTotalCount } from '@/lib/hooks/use-total-count';
 
 const LINK_GROUPS = [
   {
@@ -30,6 +31,7 @@ const LINK_GROUPS = [
 export default function Footer() {
   const { lang } = useLanguage();
   const isTh = lang === 'th';
+  const { formatted: totalCount } = useTotalCount();
 
   return (
     <footer className="bg-white border-t border-[#E0E0E0]">
@@ -53,7 +55,7 @@ export default function Footer() {
                 : 'Thai procurement data,\nmade usable.'}
             </p>
             <p className="mt-4 text-xs text-[#B0B0B0]">
-              251,000+ contracts · e-GP · FY2559–2568
+              {totalCount} contracts · e-GP · FY2559–2568
             </p>
           </div>
 

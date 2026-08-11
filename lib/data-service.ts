@@ -20,6 +20,31 @@ function hasFirestoreCredentials(): boolean {
   );
 }
 
+// ── Total record count (landing page stat) ────────────────────────────────────
+// Uses Firestore aggregation queries — 1 read per collection regardless of
+// collection size, so this costs 3 reads per cache refresh, not 3 reads per doc.
+// Budget: negligible (3 reads / 24h).
+export async function getTotalContractCount(): Promise<number> {
+  if (!hasFirestoreCredentials()) return 0;
+  const cacheKey = 'total_contract_count';
+  const cached = memGet<number>(cacheKey);
+  if (cached !== null) return cached;
+  try {
+    const { restCountCollection } = await import('./firestore-rest');
+    const [cgd, tenders, soe] = await Promise.all([
+      restCountCollection('cgd_contracts'),
+      restCountCollection('tenders'),
+      restCountCollection('soe_tenders'),
+    ]);
+    const total = cgd + tenders + soe;
+    memSet(cacheKey, total, 24 * 60 * 60 * 1000); // 24h
+    return total;
+  } catch (err) {
+    console.error('[data-service] getTotalContractCount failed:', (err as Error).message);
+    return 0;
+  }
+}
+
 // ── CGD awarded contracts ─────────────────────────────────────────────────────
 
 /**

@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useLanguage } from '@/lib/language-context';
+import { useTotalCount } from '@/lib/hooks/use-total-count';
 
 const FINDINGS_EN = [
   {
@@ -186,6 +187,7 @@ export default function ResearchPage() {
   const { lang } = useLanguage();
   const isTh = lang === 'th';
   const findings = isTh ? FINDINGS_TH : FINDINGS_EN;
+  const { formatted: totalCount } = useTotalCount();
 
   return (
     <>
@@ -207,7 +209,7 @@ export default function ResearchPage() {
                 : 'From Thailand\'s e-GP system, covering 1,117 agencies and over ฿1 trillion in contract value. Fiscal years 2561–2568.'}
             </p>
             <div className="flex flex-wrap gap-4 text-sm">
-              <span className="text-[#717171]">251,000+ contracts in database</span>
+              <span className="text-[#717171]">{totalCount} contracts in database</span>
               <span className="text-[#E0E0E0]">·</span>
               <span className="text-[#717171]">19,773 analyzed</span>
               <span className="text-[#E0E0E0]">·</span>

@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/lib/auth-context';
 import { useLanguage } from '@/lib/language-context';
 import ProcurementFeed from '@/components/ProcurementFeed';
+import { useTotalCount } from '@/lib/hooks/use-total-count';
 
 const QUICK_ACTIONS = [
   {
@@ -58,6 +59,7 @@ export default function HomePage() {
   const { user } = useAuth();
   const { lang } = useLanguage();
   const isTh = lang === 'th';
+  const { formatted: totalCount } = useTotalCount();
 
   const firstName = user?.name?.split(' ')[0] ?? '';
 
@@ -189,12 +191,12 @@ export default function HomePage() {
           {/* ── Database stats strip ── */}
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             {(isTh ? [
-              { value: '251,000+', label: 'สัญญาในฐานข้อมูล' },
+              { value: totalCount, label: 'สัญญาในฐานข้อมูล' },
               { value: '1,117', label: 'หน่วยงานที่วิเคราะห์' },
               { value: '77', label: 'จังหวัด' },
               { value: '฿1.09T', label: 'มูลค่าสัญญารวม' },
             ] : [
-              { value: '251,000+', label: 'contracts in database' },
+              { value: totalCount, label: 'contracts in database' },
               { value: '1,117', label: 'agencies profiled' },
               { value: '77', label: 'provinces' },
               { value: '฿1.09T', label: 'total contract value' },

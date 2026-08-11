@@ -32,10 +32,16 @@ jobs:
         run: npx ts-node --project tsconfig.scripts.json scripts/run-batch-tests.ts
 
       - name: Commit results
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Self-hosted runner's macOS keychain credential helper hangs/fails
+          # when there's no interactive session (locked/asleep) to unlock it.
+          # Force token auth so push never touches the keychain.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add .batch-state.json scripts/test-results/
           git diff --staged --quiet || git commit -m "chore: bidsight batch test $(date -u +%Y-%m-%d) batch-$(jq .currentBatch .batch-state.json)"
-          git pull --rebase origin main
-          git push origin main
+          git -c credential.helper= pull --rebase origin main
+          git -c credential.helper= push origin main
