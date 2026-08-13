@@ -13,4 +13,20 @@ for i in $(seq 1 30); do
 done
 
 cd /Users/mgsunroof/Documents/Corizon/Conjuncture
-npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts
+
+# dscacheutil above only proves the *system* resolver cache is warm — Node's
+# gRPC client (c-ares) has its own resolver and keeps failing with
+# "14 UNAVAILABLE: Name resolution failed" for tens of seconds after that,
+# on cold post-sleep networking. Retry the actual run, not just the precheck.
+attempt=1
+max_attempts=4
+until npx ts-node --project tsconfig.scripts.json scripts/refresh-statuses.ts; do
+  status=$?
+  if [ "$attempt" -ge "$max_attempts" ]; then
+    echo "[launchd-refresh] giving up after $attempt attempts (exit $status)"
+    exit "$status"
+  fi
+  echo "[launchd-refresh] attempt $attempt failed (exit $status), retrying in 30s..."
+  attempt=$((attempt + 1))
+  sleep 30
+done
