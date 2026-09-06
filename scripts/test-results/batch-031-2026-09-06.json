@@ -1,0 +1,63 @@
+{
+  "batch": 31,
+  "date": "2026-09-06",
+  "contractsLoaded": 10000,
+  "forward": {
+    "competitiveCount": 9853,
+    "folds": [
+      {
+        "fold": 2,
+        "trainSize": 1970,
+        "testSize": 1970,
+        "mae": 2.7,
+        "r2": -0.094,
+        "coverage": 0.876
+      },
+      {
+        "fold": 3,
+        "trainSize": 3940,
+        "testSize": 1970,
+        "mae": 2.5,
+        "r2": -0.089,
+        "coverage": 0.89
+      },
+      {
+        "fold": 4,
+        "trainSize": 5910,
+        "testSize": 1970,
+        "mae": 2.8,
+        "r2": -0.093,
+        "coverage": 0.881
+      },
+      {
+        "fold": 5,
+        "trainSize": 7880,
+        "testSize": 1973,
+        "mae": 2.9,
+        "r2": -0.092,
+        "coverage": 0.874
+      }
+    ],
+    "avgMae": 2.7,
+    "avgR2": -0.092,
+    "avgCoverage": 0.88
+  },
+  "backward": {
+    "competitiveCount": 9853,
+    "avgAbsError": 2.7,
+    "beatWinnerRate": 62.4,
+    "profitableRate": 100
+  },
+  "crossBatch": {
+    "competitiveCount": 9853,
+    "avgAbsError": 2.7,
+    "beatWinnerRate": 63.4,
+    "profitableRate": 100
+  },
+  "naiveBaseline": {
+    "competitiveCount": 9853,
+    "avgAbsError": 2.7,
+    "beatWinnerRate": 63.7,
+    "profitableRate": 99.4
+  }
+}
