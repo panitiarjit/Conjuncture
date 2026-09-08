@@ -9,6 +9,7 @@
  * We patch dns.lookup so Node's undici (global fetch) can resolve it.
  */
 import dns from 'node:dns';
+import { ProxyAgent } from 'undici';
 import type {
   CkanResponse,
   RawCgdContract,
@@ -42,6 +43,12 @@ const CKAN_BASE = 'https://data.go.th/api/3/action/datastore_search';
 const RATE_LIMIT_MS = 500;
 const PAGE_SIZE = 1000;
 
+// data.go.th's Cloudflare WAF blocks datacenter/foreign-ASN IPs outright (403 on the
+// whole domain, not just this endpoint) — same failure mode as the e-GP Turnstile
+// rejection. Route through the same residential proxy used there when set.
+const proxyUrl = process.env.RESIDENTIAL_PROXY_URL;
+const proxyAgent = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
+
 function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
@@ -65,7 +72,7 @@ async function ckanFetch<T>(
   const key = apiKey ?? process.env.CGD_API_KEY;
   if (key) headers['api-key'] = key;
 
-  const res = await fetch(url, { headers });
+  const res = await fetch(url, { headers, ...(proxyAgent ? { dispatcher: proxyAgent } : {}) });
   if (!res.ok) throw new Error(`CKAN fetch failed: ${res.status} ${url}`);
   return res.json() as Promise<CkanResponse<T>>;
 }

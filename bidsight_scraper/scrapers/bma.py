@@ -178,7 +178,7 @@ class BMAScraper(BaseScraper):
         for ann in announcements:
             pub_date_raw = ann.get("projectAnnouncementPublishDate", "")
             pub_date = _parse_iso_date(pub_date_raw)
-            ann_type = ann.get("masterAnnounceTypeName", "")
+            ann_type = ann.get("masterAnnounceTypeName") or ""
             ann_id = ann.get("id", "")
             ann_path = ann.get("projectAnnouncementPath", "") or ann.get("projectAnnouncementRssLink", "")
             file_url = self.build_file_url(ann_id, ann_path)
@@ -312,11 +312,12 @@ class BMAScraper(BaseScraper):
                     records.append(record)
                 except Exception as e:
                     self.log.warning(f"BMA: build_record failed for {pid}: {e}")
+                    record = None
 
                 pbar.update(1)
 
                 # Early stop if announce_date before cutoff (data is newest-first)
-                if record.announcement_date:
+                if record and record.announcement_date:
                     try:
                         from datetime import date
                         ann = date.fromisoformat(record.announcement_date)
