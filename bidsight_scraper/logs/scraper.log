@@ -1075,3 +1075,35 @@
 2026-08-10 11:03:17,684 [MRTA] INFO MRTA: 0 records scraped
 2026-08-10 11:03:17,684 [MRTA] INFO === Done: MRTA — 0 records ===
 2026-08-10 11:03:17,684 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-09-08 11:55:31,041 [BMA] INFO === Starting scrape: BMA (https://egp2.bangkok.go.th) ===
+2026-09-08 11:55:31,366 [BMA] INFO BMA session cookie established
+2026-09-08 11:55:31,622 [BMA] INFO robots.txt loaded from https://egp2.bangkok.go.th/robots.txt
+2026-09-08 11:55:37,031 [BMA] INFO BMA: 273195 total projects, 5464 pages
+2026-09-08 11:55:37,031 [BMA] INFO BMA: fetching detail for page 1 items...
+2026-09-08 11:56:24,593 [BMA] INFO BMA: reached cutoff 2026-08-09, stopping
+2026-09-08 11:56:24,594 [BMA] INFO BMA: 6 records scraped (6 unique IDs)
+2026-09-08 11:56:24,594 [BMA] INFO === Done: BMA — 6 records ===
+2026-09-08 11:56:24,604 [MEA] INFO === Starting scrape: MEA (https://procurement.mea.or.th) ===
+2026-09-08 11:56:24,831 [MEA] INFO robots.txt loaded from https://procurement.mea.or.th/robots.txt
+2026-09-08 11:56:27,274 [MEA] INFO MEA: 836 total records (fetching from newest)
+2026-09-08 11:58:36,131 [MEA] INFO MEA: reached cutoff 2026-08-09 at 2026-08-06, stopping
+2026-09-08 11:58:36,131 [MEA] INFO MEA: 64 records scraped
+2026-09-08 11:58:36,131 [MEA] INFO === Done: MEA — 64 records ===
+2026-09-08 11:58:36,133 [PEA] INFO === Starting scrape: PEA (https://bidding.pea.co.th) ===
+2026-09-08 11:58:36,977 [PEA] INFO robots.txt loaded from https://bidding.pea.co.th/robots.txt
+2026-09-08 11:59:21,970 [PEA] INFO PEA: 20 records scraped across 1 pages
+2026-09-08 11:59:21,971 [PEA] INFO === Done: PEA — 20 records ===
+2026-09-08 11:59:21,975 [PWA] INFO === Starting scrape: PWA (https://eprocurement.pwa.co.th) ===
+2026-09-08 11:59:22,666 [PWA] INFO robots.txt loaded from https://eprocurement.pwa.co.th/robots.txt
+2026-09-08 11:59:29,344 [PWA] INFO PWA: 24 records scraped (site shows latest 25 only; 494 total on server but no pagination)
+2026-09-08 11:59:29,344 [PWA] INFO === Done: PWA — 24 records ===
+2026-09-08 11:59:29,348 [EGAT] INFO === Starting scrape: EGAT (https://bidding.egat.co.th) ===
+2026-09-08 12:00:08,288 [EGAT] INFO EGAT: 169 records in last 30 days
+2026-09-08 12:00:08,289 [EGAT] INFO === Done: EGAT — 169 records ===
+2026-09-08 12:00:08,296 [MRTA] INFO === Starting scrape: MRTA (https://www.mrta.co.th) ===
+2026-09-08 12:00:08,677 [MRTA] INFO robots.txt loaded from https://www.mrta.co.th/robots.txt
+2026-09-08 12:00:19,117 [MRTA] INFO MRTA: 2 records scraped
+2026-09-08 12:00:19,118 [MRTA] INFO === Done: MRTA — 2 records ===
+2026-09-08 12:00:19,121 [PTT] INFO === Starting scrape: PTT (https://procurement.pttplc.com) ===
+2026-09-08 12:00:33,886 [PTT] INFO PTT: 234 records in last 30 days
+2026-09-08 12:00:33,886 [PTT] INFO === Done: PTT — 234 records ===
